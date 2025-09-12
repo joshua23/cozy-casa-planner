@@ -7,23 +7,23 @@
 @layer base {
   :root {
     --background: 0 0% 98%;
-    --foreground: 230 10% 15%;
+    --foreground: 230 15% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 230 10% 15%;
+    --card-foreground: 230 15% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 230 10% 15%;
+    --popover-foreground: 230 15% 12%;
 
     --primary: 245 60% 50%;
     --primary-foreground: 0 0% 98%;
     --primary-glow: 245 70% 65%;
 
     --secondary: 220 14% 96%;
-    --secondary-foreground: 230 10% 15%;
+    --secondary-foreground: 230 15% 12%;
 
     --muted: 220 14% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 215 16% 40%;
 
     --accent: 245 50% 95%;
     --accent-foreground: 245 60% 50%;
@@ -37,11 +37,12 @@
 
     --radius: 0.75rem;
 
-    /* 管理系统专用色彩 */
-    --sidebar-bg: 245 60% 50%;
-    --sidebar-hover: 245 70% 60%;
+    /* 优化浅色主题侧边栏对比度 */
+    --sidebar-bg: 245 55% 45%;
+    --sidebar-hover: 245 60% 55%;
+    --sidebar-active: 245 70% 65%;
     --sidebar-text: 0 0% 100%;
-    --sidebar-text-muted: 245 30% 85%;
+    --sidebar-text-muted: 245 20% 80%;
     
     /* 统计卡片色彩 */
     --stat-blue: 210 70% 55%;
@@ -51,9 +52,9 @@
     --stat-red: 0 70% 55%;
     --stat-yellow: 45 93% 47%;
 
-    /* 渐变色 */
+    /* 渐变色 - 增强对比度 */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-sidebar: linear-gradient(180deg, hsl(245 60% 50%), hsl(245 70% 45%));
+    --gradient-sidebar: linear-gradient(180deg, hsl(245 55% 45%), hsl(245 60% 40%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98%));
 
     /* 阴影 */
@@ -65,21 +66,16 @@
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-    --sidebar-background: 0 0% 98%;
+    /* Sidebar组件专用变量 */
+    --sidebar-background: var(--sidebar-bg);
+    --sidebar-foreground: var(--sidebar-text);
+    --sidebar-primary: var(--sidebar-active);
+    --sidebar-primary-foreground: hsl(245 55% 15%);
+    --sidebar-accent: var(--sidebar-hover);
+    --sidebar-accent-foreground: var(--sidebar-text);
+    --sidebar-border: hsl(245 30% 70%);
+    --sidebar-ring: var(--primary);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
