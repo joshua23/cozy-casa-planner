@@ -87,6 +87,10 @@ export default function Dashboard() {
             <p className="text-muted-foreground">实时查看装修项目数据概览</p>
           </div>
           <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">当前主题</p>
+              <p className="text-xs text-muted-foreground">支持明暗切换</p>
+            </div>
             <button className="px-4 py-2 bg-gradient-primary text-primary-foreground rounded-lg font-medium shadow-card hover:shadow-elevated transition-all duration-smooth">
               + 新建项目
             </button>

@@ -11,6 +11,7 @@ import {
   Building2,
   Home
 } from "lucide-react";
+import ThemeToggle from "./ThemeToggle";
 
 const menuItems = [
   { icon: BarChart3, label: "数据统计", active: true },
@@ -29,14 +30,17 @@ export default function Sidebar() {
     <div className="w-64 h-screen bg-gradient-sidebar shadow-elevated">
       {/* Logo Area */}
       <div className="p-6 border-b border-sidebar-text/10">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-            <Building2 className="w-6 h-6 text-sidebar-text" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <Building2 className="w-6 h-6 text-sidebar-text" />
+            </div>
+            <div className="text-sidebar-text">
+              <h1 className="text-lg font-bold">云端艺家</h1>
+              <p className="text-xs text-sidebar-text/70">装修管理系统</p>
+            </div>
           </div>
-          <div className="text-sidebar-text">
-            <h1 className="text-lg font-bold">云端艺家</h1>
-            <p className="text-xs text-sidebar-text/70">装修管理系统</p>
-          </div>
+          <ThemeToggle />
         </div>
       </div>
 
