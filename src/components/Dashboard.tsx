@@ -9,6 +9,41 @@ import {
   Calendar
 } from "lucide-react";
 import StatCard from "./StatCard";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
+import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line } from "recharts";
+
+// 项目进度数据
+const projectProgressData = [
+  { name: "设计阶段", value: 8, percentage: 32 },
+  { name: "施工准备", value: 5, percentage: 20 },
+  { name: "装修中", value: 7, percentage: 28 },
+  { name: "验收", value: 3, percentage: 12 },
+  { name: "完工", value: 2, percentage: 8 }
+];
+
+// 财务数据
+const financeData = [
+  { month: "1月", income: 85000, expense: 52000 },
+  { month: "2月", income: 92000, expense: 58000 },
+  { month: "3月", income: 78000, expense: 48000 },
+  { month: "4月", income: 105000, expense: 65000 },
+  { month: "5月", income: 98000, expense: 61000 },
+  { month: "6月", income: 112000, expense: 70000 }
+];
+
+// 图表颜色配置
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', 'hsl(var(--destructive))'];
+
+const chartConfig = {
+  income: {
+    label: "收入",
+    color: "hsl(var(--primary))",
+  },
+  expense: {
+    label: "支出", 
+    color: "hsl(var(--secondary))",
+  },
+};
 
 const mainStats = [
   {
@@ -127,19 +162,82 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Additional Sections Placeholder */}
+        {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
             <h3 className="text-lg font-semibold text-foreground mb-4">项目进度分布</h3>
-            <div className="h-64 bg-muted/30 rounded-lg flex items-center justify-center text-muted-foreground">
-              图表区域 - 项目进度可视化
+            <ChartContainer config={chartConfig} className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={projectProgressData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    dataKey="value"
+                  >
+                    {projectProgressData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+            <div className="mt-4 space-y-2">
+              {projectProgressData.map((item, index) => (
+                <div key={item.name} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center space-x-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="text-foreground">{item.name}</span>
+                  </div>
+                  <span className="text-muted-foreground">{item.value}个 ({item.percentage}%)</span>
+                </div>
+              ))}
             </div>
           </div>
           
           <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
             <h3 className="text-lg font-semibold text-foreground mb-4">财务概览</h3>
-            <div className="h-64 bg-muted/30 rounded-lg flex items-center justify-center text-muted-foreground">
-              图表区域 - 收入支出统计
+            <ChartContainer config={chartConfig} className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={financeData}>
+                  <XAxis 
+                    dataKey="month" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                  />
+                  <YAxis 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                    tickFormatter={(value) => `¥${value/1000}k`}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent />}
+                    formatter={(value: number, name: string) => [
+                      `¥${value.toLocaleString()}`,
+                      name === 'income' ? '收入' : '支出'
+                    ]}
+                  />
+                  <Bar dataKey="income" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="expense" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+            <div className="mt-4 flex items-center justify-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-primary" />
+                <span className="text-sm text-foreground">收入</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-secondary" />
+                <span className="text-sm text-foreground">支出</span>
+              </div>
             </div>
           </div>
         </div>
