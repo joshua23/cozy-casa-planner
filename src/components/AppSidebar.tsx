@@ -58,7 +58,7 @@ export function AppSidebar() {
             </div>
             {!collapsed && (
               <div className="text-sidebar-text">
-                <h1 className="text-lg font-bold">云端艺家</h1>
+                <h1 className="text-lg font-bold">云顶艺墅</h1>
                 <p className="text-xs text-sidebar-text/70">装修管理系统</p>
               </div>
             )}
@@ -107,7 +107,7 @@ export function AppSidebar() {
         <div className="absolute bottom-6 left-6 right-6">
           <div className="bg-white/10 rounded-lg p-4 text-center">
             <Building2 className="w-8 h-8 text-sidebar-text mx-auto mb-2" />
-            <p className="text-sidebar-text/90 text-sm font-medium">云端装修管理</p>
+            <p className="text-sidebar-text/90 text-sm font-medium">云顶艺墅管理</p>
             <p className="text-sidebar-text/60 text-xs">专业 · 高效 · 智能</p>
           </div>
         </div>
