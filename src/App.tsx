@@ -8,7 +8,12 @@ import Index from "./pages/Index";
 import Dashboard from "./components/Dashboard";
 import ProjectsPage from "./pages/ProjectsPage";
 import CustomersPage from "./pages/CustomersPage";
-import ComingSoonPage from "./pages/ComingSoonPage";
+import MaterialsPage from "./pages/MaterialsPage";
+import WorkersPage from "./pages/WorkersPage";
+import TeamsPage from "./pages/TeamsPage";
+import TalentsPage from "./pages/TalentsPage";
+import FinancePage from "./pages/FinancePage";
+import AIPage from "./pages/AIPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,12 +35,12 @@ const App = () => (
               <Route index element={<Dashboard />} />
               <Route path="projects" element={<ProjectsPage />} />
               <Route path="customers" element={<CustomersPage />} />
-              <Route path="materials" element={<ComingSoonPage title="材料管理" />} />
-              <Route path="workers" element={<ComingSoonPage title="工人管理" />} />
-              <Route path="teams" element={<ComingSoonPage title="团队管理" />} />
-              <Route path="talents" element={<ComingSoonPage title="人才库" />} />
-              <Route path="finance" element={<ComingSoonPage title="财务管理" />} />
-              <Route path="ai" element={<ComingSoonPage title="AI自动管理" />} />
+              <Route path="materials" element={<MaterialsPage />} />
+              <Route path="workers" element={<WorkersPage />} />
+              <Route path="teams" element={<TeamsPage />} />
+              <Route path="talents" element={<TalentsPage />} />
+              <Route path="finance" element={<FinancePage />} />
+              <Route path="ai" element={<AIPage />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
