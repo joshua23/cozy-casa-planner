@@ -25,6 +25,7 @@ interface Customer {
 export default function CustomersPage() {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const customers: Customer[] = [
     { 
@@ -113,6 +114,8 @@ export default function CustomersPage() {
               <input 
                 type="text" 
                 placeholder="搜索客户..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -124,7 +127,12 @@ export default function CustomersPage() {
       {/* Content */}
       <div className="p-6">
         <div className="grid gap-6">
-          {customers.map((customer) => (
+          {customers.filter(customer => 
+            customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            customer.phone.includes(searchTerm) ||
+            customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            customer.status.toLowerCase().includes(searchTerm.toLowerCase())
+          ).map((customer) => (
             <Card key={customer.id} className="hover:shadow-elevated transition-all duration-smooth">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">

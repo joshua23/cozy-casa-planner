@@ -248,9 +248,9 @@ export default function Dashboard() {
           
           <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
             <h3 className="text-lg font-semibold text-foreground mb-4">财务概览</h3>
-            <ChartContainer config={chartConfig} className="h-64">
+            <ChartContainer config={chartConfig} className="h-64 md:h-80 lg:h-96">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={financeData}>
+                <BarChart data={financeData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <XAxis 
                     dataKey="month" 
                     axisLine={false}
@@ -261,12 +261,12 @@ export default function Dashboard() {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                    tickFormatter={(value) => `¥${value/1000}k`}
+                    tickFormatter={(value) => `¥${(value/10000).toFixed(0)}万`}
                   />
                   <ChartTooltip 
                     content={<ChartTooltipContent />}
                     formatter={(value: number, name: string) => [
-                      `¥${value.toLocaleString()}`,
+                      `¥${(value/10000).toFixed(1)}万`,
                       name === 'income' ? '收入' : '支出'
                     ]}
                   />

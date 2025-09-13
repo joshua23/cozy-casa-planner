@@ -25,6 +25,7 @@ interface Talent {
 export default function TalentsPage() {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
   const talents: Talent[] = [
@@ -137,6 +138,8 @@ export default function TalentsPage() {
               <input 
                 type="text" 
                 placeholder="搜索人才..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -165,7 +168,14 @@ export default function TalentsPage() {
 
         {/* Talents List */}
         <div className="grid gap-6">
-          {talents.map((talent) => (
+          {talents.filter(talent => 
+            talent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            talent.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            talent.phone.includes(searchTerm) ||
+            talent.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            talent.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            talent.specialties.some(specialty => specialty.toLowerCase().includes(searchTerm.toLowerCase()))
+          ).map((talent) => (
             <Card key={talent.id} className="hover:shadow-elevated transition-all duration-smooth">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">

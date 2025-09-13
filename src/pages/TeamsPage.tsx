@@ -1,10 +1,12 @@
 import { UsersIcon, Plus, Search, Users, Crown, Award } from "lucide-react";
+import { useState } from "react";
 import { AddTeamDialog } from "@/components/AddTeamDialog";
 import { TeamMemberDialog } from "@/components/TeamMemberDialog";
 import { TeamAssignDialog } from "@/components/TeamAssignDialog";
 import { TeamDetailDialog } from "@/components/TeamDetailDialog";
 
 export default function TeamsPage() {
+  const [searchTerm, setSearchTerm] = useState("");
   const teams = [
     { 
       id: 1, 
@@ -106,6 +108,8 @@ export default function TeamsPage() {
               <input 
                 type="text" 
                 placeholder="搜索团队..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -157,7 +161,12 @@ export default function TeamsPage() {
 
         {/* Teams Grid */}
         <div className="grid gap-6">
-          {teams.map((team) => (
+          {teams.filter(team => 
+            team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            team.leader.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            team.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            team.specialties.some(specialty => specialty.toLowerCase().includes(searchTerm.toLowerCase()))
+          ).map((team) => (
             <div key={team.id} className="bg-card rounded-lg p-6 shadow-card border border-border/50 hover:shadow-elevated transition-all duration-smooth">
               <div className="flex items-start justify-between">
                 <div className="flex-1">

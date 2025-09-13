@@ -41,6 +41,7 @@ export default function ProjectsPage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -149,6 +150,8 @@ export default function ProjectsPage() {
               <input 
                 type="text" 
                 placeholder="搜索项目..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -268,7 +271,11 @@ export default function ProjectsPage() {
         ) : (
           // 项目列表视图
           <div className="grid gap-6">
-            {projects.map((project) => (
+            {projects.filter(project => 
+              project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              project.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              project.status.toLowerCase().includes(searchTerm.toLowerCase())
+            ).map((project) => (
               <div key={project.id} className="bg-card rounded-lg p-6 shadow-card border border-border/50 hover:shadow-elevated transition-all duration-smooth">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">

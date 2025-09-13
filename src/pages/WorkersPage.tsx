@@ -29,6 +29,7 @@ interface Worker {
 
 export default function WorkersPage() {
   const [selectedType, setSelectedType] = useState<"零工" | "施工队">("零工");
+  const [searchTerm, setSearchTerm] = useState("");
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
   const { toast } = useToast();
@@ -146,6 +147,8 @@ export default function WorkersPage() {
               <input 
                 type="text" 
                 placeholder="搜索工人..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -185,7 +188,13 @@ export default function WorkersPage() {
         {selectedType === "零工" ? (
           // 零工管理
           <div className="grid gap-6">
-            {workers.map((worker) => (
+            {workers.filter(worker => 
+              worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              worker.workerType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              worker.phone.includes(searchTerm) ||
+              worker.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              worker.specialties.some(specialty => specialty.toLowerCase().includes(searchTerm.toLowerCase()))
+            ).map((worker) => (
               <Card key={worker.id} className="hover:shadow-elevated transition-all duration-smooth">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
@@ -295,7 +304,13 @@ export default function WorkersPage() {
         ) : (
           // 施工队管理
           <div className="grid gap-6">
-            {teams.map((team) => (
+            {teams.filter(team => 
+              team.teamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              team.teamLeader.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              team.teamLeaderPhone.includes(searchTerm) ||
+              team.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              team.specialties.some(specialty => specialty.toLowerCase().includes(searchTerm.toLowerCase()))
+            ).map((team) => (
               <Card key={team.id} className="hover:shadow-elevated transition-all duration-smooth">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
