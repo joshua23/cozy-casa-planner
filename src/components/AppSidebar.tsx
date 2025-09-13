@@ -24,6 +24,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import ThemeToggle from "./ThemeToggle";
+import logo from "@/assets/logo.jpg";
 
 const menuItems = [
   { title: "数据统计", url: "/", icon: BarChart3 },
@@ -53,8 +54,12 @@ export function AppSidebar() {
       <SidebarHeader className="p-6 border-b border-sidebar-text/10">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-sidebar-text" />
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1">
+              <img 
+                src={logo} 
+                alt="YDYSBDD Logo" 
+                className="w-full h-full object-contain rounded-md"
+              />
             </div>
             {!collapsed && (
               <div className="text-sidebar-text">
@@ -106,7 +111,13 @@ export function AppSidebar() {
       {!collapsed && (
         <div className="absolute bottom-6 left-6 right-6">
           <div className="bg-white/10 rounded-lg p-4 text-center">
-            <Building2 className="w-8 h-8 text-sidebar-text mx-auto mb-2" />
+            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center p-1 mx-auto mb-2">
+              <img 
+                src={logo} 
+                alt="YDYSBDD Logo" 
+                className="w-full h-full object-contain rounded-sm"
+              />
+            </div>
             <p className="text-sidebar-text/90 text-sm font-medium">云顶艺墅管理</p>
             <p className="text-sidebar-text/60 text-xs">专业 · 高效 · 智能</p>
           </div>

@@ -12,18 +12,7 @@ const Layout = () => {
           {/* Global header with trigger */}
           <header className="h-12 flex items-center border-b border-border bg-card px-4">
             <SidebarTrigger className="mr-2" />
-            <div className="flex items-center gap-3">
-              <img 
-                src={logo} 
-                alt="YDYSBDD Logo" 
-                className="h-8 w-8 rounded-lg object-contain bg-white p-1"
-                onError={(e) => {
-                  console.error('Logo failed to load:', e);
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-              <span className="text-sm text-muted-foreground">装修管理系统</span>
-            </div>
+            <span className="text-sm text-muted-foreground">装修管理系统</span>
           </header>
           <main className="flex-1">
             <Outlet />
