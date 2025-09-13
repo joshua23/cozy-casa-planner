@@ -32,8 +32,12 @@ export default function WorkersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  console.log("SearchTerm state:", searchTerm); // Debug log
 
   const workers: Worker[] = [
     {
