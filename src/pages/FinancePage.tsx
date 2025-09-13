@@ -1,6 +1,11 @@
-import { Calculator, Plus, Search, TrendingUp, TrendingDown, DollarSign, CreditCard, PieChart } from "lucide-react";
+import { DollarSign, Plus, Search, TrendingUp, TrendingDown, BarChart3, PieChart, Calculator, CreditCard } from "lucide-react";
 import { AddFinanceDialog } from "@/components/AddFinanceDialog";
+import { FinanceDetailDialog } from "@/components/FinanceDetailDialog";
+import { EditFinanceDialog } from "@/components/EditFinanceDialog";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
 export default function FinancePage() {
   const { toast } = useToast();
