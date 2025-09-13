@@ -1,6 +1,10 @@
 import { Bot, Plus, Search, Zap, BarChart3, Settings, MessageCircle, Brain } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from "recharts";
 
 export default function AIPage() {
+  const { toast } = useToast();
   const aiFeatures = [
     {
       id: 1,
@@ -113,11 +117,23 @@ export default function AIPage() {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="px-4 py-2 border border-border rounded-lg text-foreground hover:bg-muted transition-colors flex items-center space-x-2">
+            <button 
+              className="px-4 py-2 border border-border rounded-lg text-foreground hover:bg-muted transition-colors flex items-center space-x-2"
+              onClick={() => toast({
+                title: "AI设置",
+                description: "AI模型设置功能开发中",
+              })}
+            >
               <Settings className="w-4 h-4" />
               <span>AI设置</span>
             </button>
-            <button className="px-4 py-2 bg-gradient-primary text-primary-foreground rounded-lg font-medium shadow-card hover:shadow-elevated transition-all duration-smooth flex items-center space-x-2">
+            <button 
+              className="px-4 py-2 bg-gradient-primary text-primary-foreground rounded-lg font-medium shadow-card hover:shadow-elevated transition-all duration-smooth flex items-center space-x-2"
+              onClick={() => toast({
+                title: "新增模型",
+                description: "AI模型训练功能开发中",
+              })}
+            >
               <Plus className="w-4 h-4" />
               <span>新增模型</span>
             </button>
@@ -222,16 +238,57 @@ export default function AIPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
             <h3 className="text-lg font-semibold text-foreground mb-4">AI模型性能趋势</h3>
-            <div className="h-64 bg-muted/30 rounded-lg flex items-center justify-center text-muted-foreground">
-              AI性能趋势图表区域
-            </div>
+            <ChartContainer config={{
+              accuracy: { label: "准确率", color: "hsl(var(--primary))" },
+              efficiency: { label: "效率", color: "hsl(var(--secondary))" }
+            }} className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={[
+                  { month: "1月", accuracy: 89, efficiency: 85 },
+                  { month: "2月", accuracy: 91, efficiency: 88 },
+                  { month: "3月", accuracy: 93, efficiency: 90 },
+                  { month: "4月", accuracy: 92, efficiency: 92 },
+                  { month: "5月", accuracy: 94, efficiency: 94 },
+                  { month: "6月", accuracy: 96, efficiency: 96 }
+                ]}>
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} 
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
+                  <YAxis axisLine={false} tickLine={false} 
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                    domain={[80, 100]} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line type="monotone" dataKey="accuracy" stroke="hsl(var(--primary))" strokeWidth={2} />
+                  <Line type="monotone" dataKey="efficiency" stroke="hsl(var(--secondary))" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </div>
           
           <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
             <h3 className="text-lg font-semibold text-foreground mb-4">任务处理统计</h3>
-            <div className="h-64 bg-muted/30 rounded-lg flex items-center justify-center text-muted-foreground">
-              任务处理统计图表区域
-            </div>
+            <ChartContainer config={{
+              tasks: { label: "处理任务", color: "hsl(var(--primary))" }
+            }} className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={[
+                  { day: "周一", tasks: 142 },
+                  { day: "周二", tasks: 158 },
+                  { day: "周三", tasks: 173 },
+                  { day: "周四", tasks: 189 },
+                  { day: "周五", tasks: 205 },
+                  { day: "周六", tasks: 167 },
+                  { day: "周日", tasks: 134 }
+                ]}>
+                  <XAxis dataKey="day" axisLine={false} tickLine={false} 
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
+                  <YAxis axisLine={false} tickLine={false} 
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area type="monotone" dataKey="tasks" stroke="hsl(var(--primary))" 
+                    fill="hsl(var(--primary))" fillOpacity={0.3} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </div>
         </div>
       </div>

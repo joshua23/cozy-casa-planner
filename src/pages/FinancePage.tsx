@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function FinancePage() {
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
   const transactions = [
     { 
       id: 1, 
@@ -91,11 +92,13 @@ export default function FinancePage() {
           <div className="flex items-center space-x-4">
             <div className="relative">
               <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <input 
-                type="text" 
-                placeholder="搜索交易..." 
-                className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              />
+            <input 
+              type="text" 
+              placeholder="搜索交易..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            />
             </div>
             <AddFinanceDialog />
           </div>
@@ -214,8 +217,15 @@ export default function FinancePage() {
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">操作</th>
                 </tr>
               </thead>
-              <tbody>
-                {transactions.map((transaction) => (
+            <tbody>
+              {transactions
+                .filter(transaction => 
+                  transaction.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  transaction.project.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
+                )
+                .map((transaction) => (
                   <tr key={transaction.id} className="border-b border-border hover:bg-muted/20 transition-colors">
                     <td className="p-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(transaction.type)}`}>

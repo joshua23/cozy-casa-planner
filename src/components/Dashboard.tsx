@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { 
   TrendingUp, 
   DollarSign, 
@@ -17,24 +18,76 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line } from "recharts";
 import { useNavigate } from "react-router-dom";
 
-// 项目进度数据
-const projectProgressData = [
-  { name: "设计阶段", value: 8, percentage: 32 },
-  { name: "施工准备", value: 5, percentage: 20 },
-  { name: "装修中", value: 7, percentage: 28 },
-  { name: "验收", value: 3, percentage: 12 },
-  { name: "完工", value: 2, percentage: 8 }
-];
+// 项目进度数据 - 按时间过滤
+const getAllProjectData = () => ({
+  month: [
+    { name: "设计阶段", value: 8, percentage: 32 },
+    { name: "施工准备", value: 5, percentage: 20 },
+    { name: "装修中", value: 7, percentage: 28 },
+    { name: "验收", value: 3, percentage: 12 },
+    { name: "完工", value: 2, percentage: 8 }
+  ],
+  quarter: [
+    { name: "设计阶段", value: 25, percentage: 31 },
+    { name: "施工准备", value: 18, percentage: 22 },
+    { name: "装修中", value: 22, percentage: 27 },
+    { name: "验收", value: 10, percentage: 12 },
+    { name: "完工", value: 6, percentage: 8 }
+  ],
+  year: [
+    { name: "设计阶段", value: 96, percentage: 30 },
+    { name: "施工准备", value: 71, percentage: 22 },
+    { name: "装修中", value: 89, percentage: 28 },
+    { name: "验收", value: 38, percentage: 12 },
+    { name: "完工", value: 26, percentage: 8 }
+  ]
+});
 
-// 财务数据
-const financeData = [
-  { month: "1月", income: 85000, expense: 52000 },
-  { month: "2月", income: 92000, expense: 58000 },
-  { month: "3月", income: 78000, expense: 48000 },
-  { month: "4月", income: 105000, expense: 65000 },
-  { month: "5月", income: 98000, expense: 61000 },
-  { month: "6月", income: 112000, expense: 70000 }
-];
+// 财务数据 - 按时间过滤
+const getAllFinanceData = () => ({
+  month: [
+    { month: "1月", income: 85000, expense: 52000 },
+    { month: "2月", income: 92000, expense: 58000 },
+    { month: "3月", income: 78000, expense: 48000 },
+    { month: "4月", income: 105000, expense: 65000 },
+    { month: "5月", income: 98000, expense: 61000 },
+    { month: "6月", income: 112000, expense: 70000 }
+  ],
+  quarter: [
+    { month: "Q1", income: 255000, expense: 158000 },
+    { month: "Q2", income: 315000, expense: 193000 },
+    { month: "Q3", income: 289000, expense: 175000 },
+    { month: "Q4", income: 338000, expense: 208000 }
+  ],
+  year: [
+    { month: "2021", income: 956000, expense: 582000 },
+    { month: "2022", income: 1124000, expense: 695000 },
+    { month: "2023", income: 1289000, expense: 758000 },
+    { month: "2024", income: 1197000, expense: 734000 }
+  ]
+});
+
+// 二级统计数据 - 按时间过滤
+const getAllSecondaryStats = () => ({
+  month: [
+    { title: "在建项目", value: "12", subtitle: "进行中项目", icon: Zap, color: "yellow" as const },
+    { title: "已完项目", value: "8", subtitle: "本月完成", icon: CheckCircle, color: "green" as const },
+    { title: "未开项目", value: "4", subtitle: "待开工项目", icon: Calendar, color: "red" as const },
+    { title: "立项上周", value: "6", subtitle: "新增项目", icon: Package, color: "blue" as const }
+  ],
+  quarter: [
+    { title: "在建项目", value: "35", subtitle: "进行中项目", icon: Zap, color: "yellow" as const },
+    { title: "已完项目", value: "24", subtitle: "本季完成", icon: CheckCircle, color: "green" as const },
+    { title: "未开项目", value: "12", subtitle: "待开工项目", icon: Calendar, color: "red" as const },
+    { title: "立项本季", value: "18", subtitle: "新增项目", icon: Package, color: "blue" as const }
+  ],
+  year: [
+    { title: "在建项目", value: "89", subtitle: "进行中项目", icon: Zap, color: "yellow" as const },
+    { title: "已完项目", value: "156", subtitle: "本年完成", icon: CheckCircle, color: "green" as const },
+    { title: "未开项目", value: "23", subtitle: "待开工项目", icon: Calendar, color: "red" as const },
+    { title: "立项本年", value: "64", subtitle: "新增项目", icon: Package, color: "blue" as const }
+  ]
+});
 
 // 图表颜色配置
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', 'hsl(var(--destructive))'];
@@ -85,39 +138,14 @@ const mainStats = [
   }
 ];
 
-const secondaryStats = [
-  {
-    title: "在建项目",
-    value: "12",
-    subtitle: "进行中项目",
-    icon: Zap,
-    color: "yellow" as const
-  },
-  {
-    title: "已完项目", 
-    value: "8",
-    subtitle: "本月完成",
-    icon: CheckCircle,
-    color: "green" as const
-  },
-  {
-    title: "未开项目",
-    value: "4", 
-    subtitle: "待开工项目",
-    icon: Calendar,
-    color: "red" as const
-  },
-  {
-    title: "立项上周",
-    value: "6",
-    subtitle: "新增项目",
-    icon: Package,
-    color: "blue" as const
-  }
-];
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [timeFilter, setTimeFilter] = useState<'month' | 'quarter' | 'year'>('month');
+  
+  const projectProgressData = getAllProjectData()[timeFilter];
+  const financeData = getAllFinanceData()[timeFilter];
+  const secondaryStats = getAllSecondaryStats()[timeFilter];
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
@@ -163,10 +191,8 @@ export default function Dashboard() {
             <div className="flex items-center space-x-2">
               <select 
                 className="text-sm border border-border rounded-lg px-3 py-1 bg-card text-foreground"
-                onChange={(e) => {
-                  console.log('Time filter changed:', e.target.value);
-                  // Add actual filter logic here
-                }}
+                value={timeFilter}
+                onChange={(e) => setTimeFilter(e.target.value as 'month' | 'quarter' | 'year')}
               >
                 <option value="month">本月</option>
                 <option value="quarter">本季度</option>

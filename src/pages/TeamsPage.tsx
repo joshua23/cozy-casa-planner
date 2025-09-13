@@ -1,4 +1,8 @@
 import { UsersIcon, Plus, Search, Users, Crown, Award } from "lucide-react";
+import { AddTeamDialog } from "@/components/AddTeamDialog";
+import { TeamMemberDialog } from "@/components/TeamMemberDialog";
+import { TeamAssignDialog } from "@/components/TeamAssignDialog";
+import { TeamDetailDialog } from "@/components/TeamDetailDialog";
 
 export default function TeamsPage() {
   const teams = [
@@ -105,10 +109,12 @@ export default function TeamsPage() {
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            <button className="px-4 py-2 bg-gradient-primary text-primary-foreground rounded-lg font-medium shadow-card hover:shadow-elevated transition-all duration-smooth flex items-center space-x-2">
-              <Plus className="w-4 h-4" />
-              <span>新建团队</span>
-            </button>
+            <AddTeamDialog>
+              <button className="px-4 py-2 bg-gradient-primary text-primary-foreground rounded-lg font-medium shadow-card hover:shadow-elevated transition-all duration-smooth flex items-center space-x-2">
+                <Plus className="w-4 h-4" />
+                <span>新建团队</span>
+              </button>
+            </AddTeamDialog>
           </div>
         </div>
       </div>
@@ -217,15 +223,21 @@ export default function TeamsPage() {
                 </div>
 
                 <div className="flex items-center space-x-2 ml-4">
-                  <button className="px-3 py-1 text-sm border border-border rounded-lg hover:bg-muted transition-colors">
-                    成员管理
-                  </button>
-                  <button className="px-3 py-1 text-sm border border-border rounded-lg hover:bg-muted transition-colors">
-                    分配项目
-                  </button>
-                  <button className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
-                    详情
-                  </button>
+                  <TeamMemberDialog team={team}>
+                    <button className="px-3 py-1 text-sm border border-border rounded-lg hover:bg-muted transition-colors">
+                      成员管理
+                    </button>
+                  </TeamMemberDialog>
+                  <TeamAssignDialog team={team}>
+                    <button className="px-3 py-1 text-sm border border-border rounded-lg hover:bg-muted transition-colors">
+                      分配项目
+                    </button>
+                  </TeamAssignDialog>
+                  <TeamDetailDialog team={team}>
+                    <button className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+                      详情
+                    </button>
+                  </TeamDetailDialog>
                 </div>
               </div>
             </div>

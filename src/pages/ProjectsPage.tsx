@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AddProjectDialog } from "@/components/AddProjectDialog";
+import { EditProjectDialog } from "@/components/EditProjectDialog";
 import { ContactDialog } from "@/components/ContactDialog";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -312,17 +313,11 @@ export default function ProjectsPage() {
                     >
                       查看详情
                     </Button>
-                    <Button 
-                      size="sm"
-                      onClick={() => {
-                        toast({
-                          title: "编辑项目",
-                          description: `正在编辑项目 ${project.name}`,
-                        });
-                      }}
-                    >
-                      编辑
-                    </Button>
+                    <EditProjectDialog project={project}>
+                      <Button size="sm">
+                        编辑
+                      </Button>
+                    </EditProjectDialog>
                   </div>
                 </div>
               </div>
