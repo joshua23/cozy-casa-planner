@@ -16,7 +16,11 @@ const Layout = () => {
               <img 
                 src={logo} 
                 alt="YDYSBDD Logo" 
-                className="h-8 w-8 rounded-lg object-contain"
+                className="h-8 w-8 rounded-lg object-contain bg-white p-1"
+                onError={(e) => {
+                  console.error('Logo failed to load:', e);
+                  e.currentTarget.style.display = 'none';
+                }}
               />
               <span className="text-sm text-muted-foreground">装修管理系统</span>
             </div>
