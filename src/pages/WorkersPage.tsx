@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ContactDialog } from "@/components/ContactDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { AddWorkerDialog } from "@/components/AddWorkerDialog";
+import { AddTeamDialog } from "@/components/AddTeamDialog";
 
 interface Worker {
   id: number;
@@ -145,7 +147,7 @@ export default function WorkersPage() {
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            <AddWorkerDialog />
+            {selectedType === "零工" ? <AddWorkerDialog /> : <AddTeamDialog />}
           </div>
         </div>
       </div>
