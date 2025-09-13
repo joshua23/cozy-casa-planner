@@ -224,36 +224,38 @@ export default function FinancePage() {
             </div>
             <ChartContainer config={{}} className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <RechartsPieChart>
-                  <Pie
-                    data={[
-                      { name: "海景别墅", value: 1200000 },
-                      { name: "现代公寓", value: 450000 },
-                      { name: "办公室装修", value: 680000 },
-                      { name: "商铺装修", value: 320000 }
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    dataKey="value"
-                  >
-                    {[
-                      { name: "海景别墅", value: 1200000 },
-                      { name: "现代公寓", value: 450000 },
-                      { name: "办公室装修", value: 680000 },
-                      { name: "商铺装修", value: 320000 }
-                    ].map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={
-                        ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted-foreground))'][index]
-                      } />
-                    ))}
-                  </Pie>
-                  <ChartTooltip content={<ChartTooltipContent />} 
-                    formatter={(value: number) => [
-                      `¥${value.toLocaleString()}`,
-                      '项目收益'
-                    ]} />
-                </RechartsPieChart>
+                 <RechartsPieChart>
+                   <Pie
+                     data={[
+                       { name: "海景别墅", value: 1200000 },
+                       { name: "现代公寓", value: 450000 },
+                       { name: "办公室装修", value: 680000 },
+                       { name: "商铺装修", value: 320000 }
+                     ]}
+                     cx="50%"
+                     cy="50%"
+                     outerRadius={80}
+                     dataKey="value"
+                     label={({ name, value, percent }) => `${name}: ¥${(value / 10000).toFixed(0)}万 (${(percent * 100).toFixed(1)}%)`}
+                     labelLine={false}
+                   >
+                     {[
+                       { name: "海景别墅", value: 1200000 },
+                       { name: "现代公寓", value: 450000 },
+                       { name: "办公室装修", value: 680000 },
+                       { name: "商铺装修", value: 320000 }
+                     ].map((entry, index) => (
+                       <Cell key={`cell-${index}`} fill={
+                         ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted-foreground))'][index]
+                       } />
+                     ))}
+                   </Pie>
+                   <ChartTooltip content={<ChartTooltipContent />} 
+                     formatter={(value: number) => [
+                       `¥${value.toLocaleString()}`,
+                       '项目收益'
+                     ]} />
+                 </RechartsPieChart>
               </ResponsiveContainer>
             </ChartContainer>
           </div>
