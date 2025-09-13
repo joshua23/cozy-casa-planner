@@ -309,24 +309,16 @@ export default function FinancePage() {
                     <td className="p-4 text-sm text-muted-foreground">{transaction.description}</td>
                     <td className="p-4">
                       <div className="flex items-center space-x-2">
-                        <button 
-                          className="px-3 py-1 text-xs border border-border rounded hover:bg-muted transition-colors"
-                          onClick={() => toast({
-                            title: "交易详情",
-                            description: `查看交易 ${transaction.description} 的详细信息`,
-                          })}
-                        >
-                          详情
-                        </button>
-                        <button 
-                          className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
-                          onClick={() => toast({
-                            title: "编辑交易",
-                            description: `正在编辑交易记录 ${transaction.id}`,
-                          })}
-                        >
-                          编辑
-                        </button>
+                        <FinanceDetailDialog transaction={transaction}>
+                          <button className="px-3 py-1 text-xs border border-border rounded hover:bg-muted transition-colors">
+                            详情
+                          </button>
+                        </FinanceDetailDialog>
+                        <EditFinanceDialog transaction={transaction}>
+                          <button className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors">
+                            编辑
+                          </button>
+                        </EditFinanceDialog>
                       </div>
                     </td>
                   </tr>

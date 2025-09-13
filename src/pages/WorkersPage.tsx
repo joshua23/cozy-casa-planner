@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ContactDialog } from "@/components/ContactDialog";
+import { WorkerAssignDialog } from "@/components/WorkerAssignDialog";
+import { TeamAssignDialog } from "@/components/TeamAssignDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { AddWorkerDialog } from "@/components/AddWorkerDialog";
@@ -273,17 +275,17 @@ export default function WorkersPage() {
                       >
                         联系
                       </Button>
-                      <Button 
-                        size="sm"
-                        onClick={() => {
-                          toast({
-                            title: "分配项目",
-                            description: `正在为 ${worker.name} 分配项目`,
-                          });
-                        }}
-                      >
-                        分配项目
-                      </Button>
+                      <WorkerAssignDialog worker={{
+                        ...worker,
+                        type: worker.workerType,
+                        specialties: worker.specialties || [],
+                        hourlyRate: worker.hourlyRate || 0,
+                        dailyRate: worker.dailyRate || 0
+                      }}>
+                        <Button size="sm">
+                          分配项目
+                        </Button>
+                      </WorkerAssignDialog>
                     </div>
                   </div>
                 </CardContent>
@@ -384,17 +386,20 @@ export default function WorkersPage() {
                       >
                         联系工长
                       </Button>
-                      <Button 
-                        size="sm"
-                        onClick={() => {
-                          toast({
-                            title: "分配项目",
-                            description: `正在为 ${team.teamName} 分配项目`,
-                          });
-                        }}
-                      >
-                        分配项目
-                      </Button>
+                      <TeamAssignDialog team={{
+                        ...team,
+                        name: team.teamName,
+                        leader: team.teamLeader,
+                        members: team.teamSize,
+                        currentProjects: 0,
+                        completedProjects: 0,
+                        efficiency: team.efficiencyRating,
+                        rating: 4.5
+                      }}>
+                        <Button size="sm">
+                          分配项目
+                        </Button>
+                      </TeamAssignDialog>
                     </div>
                   </div>
                 </CardContent>
