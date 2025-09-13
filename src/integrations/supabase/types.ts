@@ -14,7 +14,612 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      construction_teams: {
+        Row: {
+          created_at: string
+          efficiency_rating: number | null
+          id: string
+          pricing_model: string | null
+          specialties: string[] | null
+          status: string
+          team_leader: string
+          team_leader_phone: string | null
+          team_name: string
+          team_size: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          efficiency_rating?: number | null
+          id?: string
+          pricing_model?: string | null
+          specialties?: string[] | null
+          status?: string
+          team_leader: string
+          team_leader_phone?: string | null
+          team_name: string
+          team_size?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          efficiency_rating?: number | null
+          id?: string
+          pricing_model?: string | null
+          specialties?: string[] | null
+          status?: string
+          team_leader?: string
+          team_leader_phone?: string | null
+          team_name?: string
+          team_size?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      customers: {
+        Row: {
+          created_at: string
+          decoration_style: string | null
+          designer_in_charge: string | null
+          email: string | null
+          id: string
+          last_contact_date: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          preliminary_budget: number | null
+          property_type: string | null
+          responsible_person: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          decoration_style?: string | null
+          designer_in_charge?: string | null
+          email?: string | null
+          id?: string
+          last_contact_date?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          preliminary_budget?: number | null
+          property_type?: string | null
+          responsible_person?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          decoration_style?: string | null
+          designer_in_charge?: string | null
+          email?: string | null
+          id?: string
+          last_contact_date?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          preliminary_budget?: number | null
+          property_type?: string | null
+          responsible_person?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      financial_records: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          invoice_number: string | null
+          payment_method: string | null
+          project_id: string | null
+          transaction_date: string
+          transaction_type: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          invoice_number?: string | null
+          payment_method?: string | null
+          project_id?: string | null
+          transaction_date?: string
+          transaction_type: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          invoice_number?: string | null
+          payment_method?: string | null
+          project_id?: string | null
+          transaction_date?: string
+          transaction_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_records_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      material_transactions: {
+        Row: {
+          created_at: string
+          delivered_by: string | null
+          id: string
+          material_id: string
+          notes: string | null
+          project_id: string | null
+          quantity: number
+          supplier_name: string | null
+          total_amount: number | null
+          transaction_date: string
+          transaction_type: string
+          unit_price: number | null
+        }
+        Insert: {
+          created_at?: string
+          delivered_by?: string | null
+          id?: string
+          material_id: string
+          notes?: string | null
+          project_id?: string | null
+          quantity: number
+          supplier_name?: string | null
+          total_amount?: number | null
+          transaction_date?: string
+          transaction_type: string
+          unit_price?: number | null
+        }
+        Update: {
+          created_at?: string
+          delivered_by?: string | null
+          id?: string
+          material_id?: string
+          notes?: string | null
+          project_id?: string | null
+          quantity?: number
+          supplier_name?: string | null
+          total_amount?: number | null
+          transaction_date?: string
+          transaction_type?: string
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_transactions_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_transactions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materials: {
+        Row: {
+          category: string
+          created_at: string
+          current_stock: number | null
+          id: string
+          min_stock_alert: number | null
+          name: string
+          supplier_contact: string | null
+          supplier_name: string | null
+          unit: string
+          unit_price: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          current_stock?: number | null
+          id?: string
+          min_stock_alert?: number | null
+          name: string
+          supplier_contact?: string | null
+          supplier_name?: string | null
+          unit: string
+          unit_price?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          current_stock?: number | null
+          id?: string
+          min_stock_alert?: number | null
+          name?: string
+          supplier_contact?: string | null
+          supplier_name?: string | null
+          unit?: string
+          unit_price?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      payment_nodes: {
+        Row: {
+          amount: number
+          created_at: string
+          due_date: string | null
+          id: string
+          node_type: string
+          paid_amount: number | null
+          project_id: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          node_type: string
+          paid_amount?: number | null
+          project_id: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          node_type?: string
+          paid_amount?: number | null
+          project_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_nodes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_phases: {
+        Row: {
+          completion_percentage: number | null
+          created_at: string
+          end_date: string | null
+          id: string
+          phase_name: string
+          project_id: string
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completion_percentage?: number | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          phase_name: string
+          project_id: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completion_percentage?: number | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          phase_name?: string
+          project_id?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_phases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          area: number | null
+          client_email: string | null
+          client_name: string
+          client_phone: string | null
+          created_at: string
+          decoration_style: string | null
+          end_date: string | null
+          id: string
+          name: string
+          property_type: string | null
+          start_date: string | null
+          status: string
+          total_contract_amount: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          area?: number | null
+          client_email?: string | null
+          client_name: string
+          client_phone?: string | null
+          created_at?: string
+          decoration_style?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          property_type?: string | null
+          start_date?: string | null
+          status?: string
+          total_contract_amount?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          area?: number | null
+          client_email?: string | null
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string
+          decoration_style?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          property_type?: string | null
+          start_date?: string | null
+          status?: string
+          total_contract_amount?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      talents: {
+        Row: {
+          created_at: string
+          email: string | null
+          experience_years: number | null
+          id: string
+          last_contact_date: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          role: string
+          skill_rating: number | null
+          specialties: string[] | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          experience_years?: number | null
+          id?: string
+          last_contact_date?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          role: string
+          skill_rating?: number | null
+          specialties?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          experience_years?: number | null
+          id?: string
+          last_contact_date?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          role?: string
+          skill_rating?: number | null
+          specialties?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      team_assignments: {
+        Row: {
+          contract_amount: number | null
+          created_at: string
+          end_date: string | null
+          id: string
+          paid_amount: number | null
+          project_id: string
+          start_date: string | null
+          status: string
+          team_id: string
+          updated_at: string
+          work_scope: string | null
+        }
+        Insert: {
+          contract_amount?: number | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          paid_amount?: number | null
+          project_id: string
+          start_date?: string | null
+          status?: string
+          team_id: string
+          updated_at?: string
+          work_scope?: string | null
+        }
+        Update: {
+          contract_amount?: number | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          paid_amount?: number | null
+          project_id?: string
+          start_date?: string | null
+          status?: string
+          team_id?: string
+          updated_at?: string
+          work_scope?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_assignments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_assignments_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "construction_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      worker_assignments: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          estimated_amount: number | null
+          id: string
+          paid_amount: number | null
+          project_id: string
+          remaining_amount: number | null
+          start_date: string | null
+          status: string
+          updated_at: string
+          work_description: string | null
+          worker_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          estimated_amount?: number | null
+          id?: string
+          paid_amount?: number | null
+          project_id: string
+          remaining_amount?: number | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          work_description?: string | null
+          worker_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          estimated_amount?: number | null
+          id?: string
+          paid_amount?: number | null
+          project_id?: string
+          remaining_amount?: number | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          work_description?: string | null
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_assignments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worker_assignments_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workers: {
+        Row: {
+          created_at: string
+          daily_rate: number | null
+          hourly_rate: number | null
+          id: string
+          name: string
+          phone: string | null
+          skill_rating: number | null
+          specialties: string[] | null
+          status: string
+          updated_at: string
+          user_id: string | null
+          worker_type: string
+        }
+        Insert: {
+          created_at?: string
+          daily_rate?: number | null
+          hourly_rate?: number | null
+          id?: string
+          name: string
+          phone?: string | null
+          skill_rating?: number | null
+          specialties?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          worker_type: string
+        }
+        Update: {
+          created_at?: string
+          daily_rate?: number | null
+          hourly_rate?: number | null
+          id?: string
+          name?: string
+          phone?: string | null
+          skill_rating?: number | null
+          specialties?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          worker_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
