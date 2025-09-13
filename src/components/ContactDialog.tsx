@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ContactDialogProps {
   open: boolean;
@@ -27,7 +28,7 @@ export function ContactDialog({ open, onOpenChange, contactInfo }: ContactDialog
     });
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!message.trim()) {
       toast({
         title: "错误",
@@ -37,14 +38,49 @@ export function ContactDialog({ open, onOpenChange, contactInfo }: ContactDialog
       return;
     }
 
-    // 在实际应用中，这里会发送短信或消息
-    toast({
-      title: "消息发送成功",
-      description: `消息已发送给 ${contactInfo.name}`,
-    });
-    
-    setMessage("");
-    onOpenChange(false);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "错误",
+          description: "请先登录",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update customer contact information in database
+      if (contactInfo.phone || contactInfo.email) {
+        const { error } = await supabase
+          .from('customers')
+          .update({
+            phone: contactInfo.phone,
+            email: contactInfo.email,
+            last_contact_date: new Date().toISOString().split('T')[0]
+          })
+          .eq('name', contactInfo.name)
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Error updating customer contact:', error);
+        }
+      }
+
+      toast({
+        title: "消息发送成功",
+        description: `消息已发送给 ${contactInfo.name}`,
+      });
+      
+      setMessage("");
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error in send message:', error);
+      toast({
+        title: "错误",
+        description: "发送消息时出现错误",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEmailContact = () => {

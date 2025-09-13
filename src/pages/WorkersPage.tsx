@@ -145,10 +145,7 @@ export default function WorkersPage() {
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            <Button className="flex items-center space-x-2">
-              <Plus className="w-4 h-4" />
-              <span>新增工人</span>
-            </Button>
+            <AddWorkerDialog />
           </div>
         </div>
       </div>

@@ -132,12 +132,6 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground">当前主题</p>
               <p className="text-xs text-muted-foreground">支持明暗切换</p>
             </div>
-            <button 
-              onClick={() => navigate('/projects')}
-              className="px-4 py-2 bg-gradient-primary text-primary-foreground rounded-lg font-medium shadow-card hover:shadow-elevated transition-all duration-smooth"
-            >
-              + 新建项目
-            </button>
           </div>
         </div>
       </div>
@@ -167,10 +161,16 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">项目状态分析</h2>
             <div className="flex items-center space-x-2">
-              <select className="text-sm border border-border rounded-lg px-3 py-1 bg-card text-foreground">
-                <option>本月</option>
-                <option>本季度</option>
-                <option>本年</option>
+              <select 
+                className="text-sm border border-border rounded-lg px-3 py-1 bg-card text-foreground"
+                onChange={(e) => {
+                  console.log('Time filter changed:', e.target.value);
+                  // Add actual filter logic here
+                }}
+              >
+                <option value="month">本月</option>
+                <option value="quarter">本季度</option>
+                <option value="year">本年</option>
               </select>
             </div>
           </div>

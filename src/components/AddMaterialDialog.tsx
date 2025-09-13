@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MaterialFormData {
   name: string;
@@ -32,7 +33,7 @@ export function AddMaterialDialog() {
   });
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name || !formData.category || !formData.unit) {
@@ -44,24 +45,57 @@ export function AddMaterialDialog() {
       return;
     }
 
-    console.log("新增材料:", formData);
-    
-    toast({
-      title: "成功",
-      description: "材料添加成功！",
-    });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "错误",
+          description: "请先登录",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    setFormData({
-      name: "",
-      category: "",
-      unit: "",
-      unitPrice: "",
-      currentStock: "",
-      minStockAlert: "",
-      supplierName: "",
-      supplierContact: "",
-    });
-    setOpen(false);
+      const { error } = await supabase
+        .from('materials')
+        .insert({
+          name: formData.name,
+          category: formData.category,
+          unit: formData.unit,
+          unit_price: formData.unitPrice ? parseFloat(formData.unitPrice) : null,
+          current_stock: formData.currentStock ? parseFloat(formData.currentStock) : 0,
+          min_stock_alert: formData.minStockAlert ? parseFloat(formData.minStockAlert) : 0,
+          supplier_name: formData.supplierName,
+          supplier_contact: formData.supplierContact,
+          user_id: user.id
+        });
+
+      if (error) throw error;
+      
+      toast({
+        title: "成功",
+        description: "材料添加成功！",
+      });
+
+      setFormData({
+        name: "",
+        category: "",
+        unit: "",
+        unitPrice: "",
+        currentStock: "",
+        minStockAlert: "",
+        supplierName: "",
+        supplierContact: "",
+      });
+      setOpen(false);
+    } catch (error) {
+      console.error('Error adding material:', error);
+      toast({
+        title: "错误",
+        description: "添加材料失败，请重试",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleInputChange = (field: keyof MaterialFormData, value: string) => {

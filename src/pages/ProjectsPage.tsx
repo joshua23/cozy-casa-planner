@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AddProjectDialog } from "@/components/AddProjectDialog";
 import { ContactDialog } from "@/components/ContactDialog";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface PaymentNode {
   type: string;
@@ -40,6 +41,7 @@ export default function ProjectsPage() {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const projects: Project[] = [
     { 
@@ -310,7 +312,15 @@ export default function ProjectsPage() {
                     >
                       查看详情
                     </Button>
-                    <Button size="sm">
+                    <Button 
+                      size="sm"
+                      onClick={() => {
+                        toast({
+                          title: "编辑项目",
+                          description: `正在编辑项目 ${project.name}`,
+                        });
+                      }}
+                    >
                       编辑
                     </Button>
                   </div>
