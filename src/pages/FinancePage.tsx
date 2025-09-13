@@ -184,22 +184,78 @@ export default function FinancePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
             <div className="flex items-center space-x-2 mb-4">
-              <PieChart className="w-5 h-5 text-primary" />
+              <BarChart3 className="w-5 h-5 text-primary" />
               <h3 className="text-lg font-semibold text-foreground">收支趋势</h3>
             </div>
-            <div className="h-64 bg-muted/30 rounded-lg flex items-center justify-center text-muted-foreground">
-              收支趋势图表区域
-            </div>
+            <ChartContainer config={{
+              income: { label: "收入", color: "hsl(var(--primary))" },
+              expense: { label: "支出", color: "hsl(var(--secondary))" }
+            }} className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={[
+                  { month: "1月", income: 285000, expense: 178000 },
+                  { month: "2月", income: 321000, expense: 195000 },
+                  { month: "3月", income: 298000, expense: 162000 },
+                  { month: "4月", income: 356000, expense: 201000 },
+                  { month: "5月", income: 312000, expense: 189000 },
+                  { month: "6月", income: 398000, expense: 234000 }
+                ]}>
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} 
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
+                  <YAxis axisLine={false} tickLine={false} 
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                    tickFormatter={(value) => `¥${value/1000}k`} />
+                  <ChartTooltip content={<ChartTooltipContent />} 
+                    formatter={(value: number, name: string) => [
+                      `¥${value.toLocaleString()}`,
+                      name === 'income' ? '收入' : '支出'
+                    ]} />
+                  <Bar dataKey="income" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="expense" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </div>
           
           <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
             <div className="flex items-center space-x-2 mb-4">
-              <DollarSign className="w-5 h-5 text-primary" />
+              <PieChart className="w-5 h-5 text-primary" />
               <h3 className="text-lg font-semibold text-foreground">项目收益分析</h3>
             </div>
-            <div className="h-64 bg-muted/30 rounded-lg flex items-center justify-center text-muted-foreground">
-              项目收益分析图表
-            </div>
+            <ChartContainer config={{}} className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsPieChart>
+                  <Pie
+                    data={[
+                      { name: "海景别墅", value: 1200000 },
+                      { name: "现代公寓", value: 450000 },
+                      { name: "办公室装修", value: 680000 },
+                      { name: "商铺装修", value: 320000 }
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    dataKey="value"
+                  >
+                    {[
+                      { name: "海景别墅", value: 1200000 },
+                      { name: "现代公寓", value: 450000 },
+                      { name: "办公室装修", value: 680000 },
+                      { name: "商铺装修", value: 320000 }
+                    ].map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={
+                        ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted-foreground))'][index]
+                      } />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} 
+                    formatter={(value: number) => [
+                      `¥${value.toLocaleString()}`,
+                      '项目收益'
+                    ]} />
+                </RechartsPieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </div>
         </div>
 

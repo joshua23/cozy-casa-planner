@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { AddMemberDialog } from "@/components/AddMemberDialog";
+import { EditMemberDialog } from "@/components/EditMemberDialog";
 import { User, Phone, Star, Edit, Trash2 } from "lucide-react";
 
 interface TeamMember {
@@ -152,9 +154,11 @@ export function TeamMemberDialog({ team, children }: TeamMemberDialogProps) {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="font-medium text-foreground">团队成员列表</h4>
-              <Button size="sm">
-                添加成员
-              </Button>
+              <AddMemberDialog teamId={team.id}>
+                <Button size="sm">
+                  添加成员
+                </Button>
+              </AddMemberDialog>
             </div>
             
             {teamMembers.map((member) => (
@@ -188,14 +192,15 @@ export function TeamMemberDialog({ team, children }: TeamMemberDialogProps) {
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handleEditMember(member)}
-                    >
-                      <Edit className="w-3 h-3 mr-1" />
-                      编辑
-                    </Button>
+                    <EditMemberDialog member={member}>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        编辑
+                      </Button>
+                    </EditMemberDialog>
                     <Button 
                       size="sm" 
                       variant="outline"
