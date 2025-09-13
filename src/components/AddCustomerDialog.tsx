@@ -1,0 +1,196 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface CustomerFormData {
+  name: string;
+  phone: string;
+  email: string;
+  preliminaryBudget: string;
+  decorationStyle: string;
+  propertyType: string;
+  designerInCharge: string;
+  responsiblePerson: string;
+  notes: string;
+}
+
+export function AddCustomerDialog() {
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState<CustomerFormData>({
+    name: "",
+    phone: "",
+    email: "",
+    preliminaryBudget: "",
+    decorationStyle: "",
+    propertyType: "",
+    designerInCharge: "",
+    responsiblePerson: "",
+    notes: "",
+  });
+  const { toast } = useToast();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name || !formData.phone) {
+      toast({
+        title: "错误",
+        description: "请填写客户姓名和联系电话",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log("新增客户:", formData);
+    
+    toast({
+      title: "成功",
+      description: "客户信息添加成功！",
+    });
+
+    setFormData({
+      name: "",
+      phone: "",
+      email: "",
+      preliminaryBudget: "",
+      decorationStyle: "",
+      propertyType: "",
+      designerInCharge: "",
+      responsiblePerson: "",
+      notes: "",
+    });
+    setOpen(false);
+  };
+
+  const handleInputChange = (field: keyof CustomerFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="flex items-center space-x-2">
+          <Plus className="w-4 h-4" />
+          <span>新增客户</span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>新增客户信息</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">客户姓名 *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleInputChange("name", e.target.value)}
+                placeholder="请输入客户姓名"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">联系电话 *</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => handleInputChange("phone", e.target.value)}
+                placeholder="请输入联系电话"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">邮箱地址</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                placeholder="请输入邮箱地址"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="preliminaryBudget">初步预算 (元)</Label>
+              <Input
+                id="preliminaryBudget"
+                type="number"
+                value={formData.preliminaryBudget}
+                onChange={(e) => handleInputChange("preliminaryBudget", e.target.value)}
+                placeholder="请输入初步预算"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="decorationStyle">装修风格</Label>
+              <Input
+                id="decorationStyle"
+                value={formData.decorationStyle}
+                onChange={(e) => handleInputChange("decorationStyle", e.target.value)}
+                placeholder="如：现代简约、北欧风等"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="propertyType">户型结构</Label>
+              <Select value={formData.propertyType} onValueChange={(value) => handleInputChange("propertyType", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="选择户型结构" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="平层">平层</SelectItem>
+                  <SelectItem value="小商品">小商品</SelectItem>
+                  <SelectItem value="别墅">别墅</SelectItem>
+                  <SelectItem value="办公室">办公室</SelectItem>
+                  <SelectItem value="商业空间">商业空间</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="designerInCharge">负责设计师</Label>
+              <Input
+                id="designerInCharge"
+                value={formData.designerInCharge}
+                onChange={(e) => handleInputChange("designerInCharge", e.target.value)}
+                placeholder="请输入负责设计师"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="responsiblePerson">跟踪负责人</Label>
+              <Input
+                id="responsiblePerson"
+                value={formData.responsiblePerson}
+                onChange={(e) => handleInputChange("responsiblePerson", e.target.value)}
+                placeholder="请输入跟踪负责人"
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="notes">备注信息</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => handleInputChange("notes", e.target.value)}
+              placeholder="请输入备注信息"
+              rows={3}
+            />
+          </div>
+          
+          <div className="flex justify-end space-x-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              取消
+            </Button>
+            <Button type="submit">
+              添加客户
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

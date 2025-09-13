@@ -1,7 +1,11 @@
 import { Users, Plus, Search, Star, Mail, Phone, Calendar, Briefcase } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ContactDialog } from "@/components/ContactDialog";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface Talent {
   id: number;
@@ -18,6 +22,10 @@ interface Talent {
 }
 
 export default function TalentsPage() {
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const talents: Talent[] = [
     {
       id: 1,
@@ -231,21 +239,51 @@ export default function TalentsPage() {
                   </div>
 
                   <div className="flex items-center space-x-2 ml-4">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setContactInfo({
+                          name: talent.name,
+                          phone: talent.phone,
+                          email: talent.email
+                        });
+                        setContactDialogOpen(true);
+                      }}
+                    >
                       联系
                     </Button>
                     {talent.status === "潜在" && (
-                      <Button size="sm">
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          toast({
+                            title: "邀请面试",
+                            description: `已向 ${talent.name} 发送面试邀请`,
+                          });
+                        }}
+                      >
                         邀请面试
                       </Button>
                     )}
                     {talent.status === "离职" && (
-                      <Button size="sm">
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          toast({
+                            title: "重新邀请",
+                            description: `已向 ${talent.name} 发送重新合作邀请`,
+                          });
+                        }}
+                      >
                         重新邀请
                       </Button>
                     )}
                     {talent.status === "在职" && (
-                      <Button size="sm">
+                      <Button 
+                        size="sm"
+                        onClick={() => navigate('/projects')}
+                      >
                         查看项目
                       </Button>
                     )}
@@ -256,6 +294,12 @@ export default function TalentsPage() {
           ))}
         </div>
       </div>
+      
+      <ContactDialog
+        open={contactDialogOpen}
+        onOpenChange={setContactDialogOpen}
+        contactInfo={contactInfo}
+      />
     </div>
   );
 }

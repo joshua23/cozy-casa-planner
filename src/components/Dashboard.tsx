@@ -6,11 +6,16 @@ import {
   Zap,
   Package,
   CheckCircle,
-  Calendar
+  Calendar,
+  BarChart3,
+  FolderOpen,
+  Calculator,
+  ArrowRight
 } from "lucide-react";
 import StatCard from "./StatCard";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 // 项目进度数据
 const projectProgressData = [
@@ -112,6 +117,7 @@ const secondaryStats = [
 ];
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
@@ -126,7 +132,10 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground">当前主题</p>
               <p className="text-xs text-muted-foreground">支持明暗切换</p>
             </div>
-            <button className="px-4 py-2 bg-gradient-primary text-primary-foreground rounded-lg font-medium shadow-card hover:shadow-elevated transition-all duration-smooth">
+            <button 
+              onClick={() => navigate('/projects')}
+              className="px-4 py-2 bg-gradient-primary text-primary-foreground rounded-lg font-medium shadow-card hover:shadow-elevated transition-all duration-smooth"
+            >
               + 新建项目
             </button>
           </div>
@@ -138,7 +147,18 @@ export default function Dashboard() {
         {/* Main Statistics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {mainStats.map((stat, index) => (
-            <StatCard key={index} {...stat} />
+            <div 
+              key={index} 
+              onClick={() => {
+                if (stat.title === "完成项目") navigate('/projects');
+                else if (stat.title === "活跃客户") navigate('/customers');
+                else if (stat.title === "工人数量") navigate('/workers');
+                else if (stat.title === "本月收入") navigate('/finance');
+              }}
+              className="cursor-pointer"
+            >
+              <StatCard {...stat} />
+            </div>
           ))}
         </div>
 

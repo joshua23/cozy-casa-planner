@@ -1,6 +1,10 @@
 import { Package, Plus, Search, AlertTriangle, TrendingDown, TrendingUp } from "lucide-react";
+import { AddMaterialDialog } from "@/components/AddMaterialDialog";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function MaterialsPage() {
+  const { toast } = useToast();
   const materials = [
     { 
       id: 1, 
@@ -97,10 +101,7 @@ export default function MaterialsPage() {
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            <button className="px-4 py-2 bg-gradient-primary text-primary-foreground rounded-lg font-medium shadow-card hover:shadow-elevated transition-all duration-smooth flex items-center space-x-2">
-              <Plus className="w-4 h-4" />
-              <span>新增材料</span>
-            </button>
+            <AddMaterialDialog />
           </div>
         </div>
       </div>
@@ -189,10 +190,22 @@ export default function MaterialsPage() {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center space-x-2">
-                        <button className="px-3 py-1 text-xs border border-border rounded hover:bg-muted transition-colors">
+                        <button 
+                          className="px-3 py-1 text-xs border border-border rounded hover:bg-muted transition-colors"
+                          onClick={() => toast({
+                            title: "编辑材料",
+                            description: `正在编辑 ${material.name}`,
+                          })}
+                        >
                           编辑
                         </button>
-                        <button className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors">
+                        <button 
+                          className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+                          onClick={() => toast({
+                            title: "补货提醒",
+                            description: `${material.name} 补货提醒已发送`,
+                          })}
+                        >
                           补货
                         </button>
                       </div>

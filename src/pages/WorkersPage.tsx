@@ -3,6 +3,9 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ContactDialog } from "@/components/ContactDialog";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface Worker {
   id: number;
@@ -22,6 +25,10 @@ interface Worker {
 
 export default function WorkersPage() {
   const [selectedType, setSelectedType] = useState<"零工" | "施工队">("零工");
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const workers: Worker[] = [
     {
@@ -253,10 +260,29 @@ export default function WorkersPage() {
                     </div>
 
                     <div className="flex items-center space-x-2 ml-4">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setContactInfo({
+                            name: worker.name,
+                            phone: worker.phone,
+                            email: ""
+                          });
+                          setContactDialogOpen(true);
+                        }}
+                      >
                         联系
                       </Button>
-                      <Button size="sm">
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          toast({
+                            title: "分配项目",
+                            description: `正在为 ${worker.name} 分配项目`,
+                          });
+                        }}
+                      >
                         分配项目
                       </Button>
                     </div>
@@ -345,10 +371,29 @@ export default function WorkersPage() {
                     </div>
 
                     <div className="flex items-center space-x-2 ml-4">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setContactInfo({
+                            name: team.teamLeader,
+                            phone: team.teamLeaderPhone,
+                            email: ""
+                          });
+                          setContactDialogOpen(true);
+                        }}
+                      >
                         联系工长
                       </Button>
-                      <Button size="sm">
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          toast({
+                            title: "分配项目",
+                            description: `正在为 ${team.teamName} 分配项目`,
+                          });
+                        }}
+                      >
                         分配项目
                       </Button>
                     </div>
@@ -359,6 +404,12 @@ export default function WorkersPage() {
           </div>
         )}
       </div>
+      
+      <ContactDialog
+        open={contactDialogOpen}
+        onOpenChange={setContactDialogOpen}
+        contactInfo={contactInfo}
+      />
     </div>
   );
 }

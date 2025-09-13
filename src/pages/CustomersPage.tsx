@@ -1,7 +1,11 @@
 import { Users, Plus, Search, Mail, Phone, Calendar, Home, User, DollarSign } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AddCustomerDialog } from "@/components/AddCustomerDialog";
+import { ContactDialog } from "@/components/ContactDialog";
+import { useNavigate } from "react-router-dom";
 
 interface Customer {
   id: number;
@@ -19,6 +23,9 @@ interface Customer {
 }
 
 export default function CustomersPage() {
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
+  const navigate = useNavigate();
   const customers: Customer[] = [
     { 
       id: 1, 
@@ -109,10 +116,7 @@ export default function CustomersPage() {
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            <button className="px-4 py-2 bg-gradient-primary text-primary-foreground rounded-lg font-medium shadow-card hover:shadow-elevated transition-all duration-smooth flex items-center space-x-2">
-              <Plus className="w-4 h-4" />
-              <span>新增客户</span>
-            </button>
+            <AddCustomerDialog />
           </div>
         </div>
       </div>
@@ -208,11 +212,25 @@ export default function CustomersPage() {
                   </div>
 
                   <div className="flex items-center space-x-2 ml-4">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setContactInfo({
+                          name: customer.name,
+                          phone: customer.phone,
+                          email: customer.email
+                        });
+                        setContactDialogOpen(true);
+                      }}
+                    >
                       联系客户
                     </Button>
-                    <Button size="sm">
-                      查看详情
+                    <Button 
+                      size="sm"
+                      onClick={() => navigate('/projects')}
+                    >
+                      查看项目
                     </Button>
                   </div>
                 </div>
@@ -221,6 +239,12 @@ export default function CustomersPage() {
           ))}
         </div>
       </div>
+      
+      <ContactDialog
+        open={contactDialogOpen}
+        onOpenChange={setContactDialogOpen}
+        contactInfo={contactInfo}
+      />
     </div>
   );
 }

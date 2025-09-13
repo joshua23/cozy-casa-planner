@@ -1,9 +1,12 @@
-import { FolderOpen, Plus, Search, Calendar, Users, CreditCard, Wrench, CheckCircle, XCircle, Clock } from "lucide-react";
+import { FolderOpen, Plus, Search, Calendar, Users, CreditCard, Wrench, CheckCircle, XCircle, Clock, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AddProjectDialog } from "@/components/AddProjectDialog";
+import { ContactDialog } from "@/components/ContactDialog";
+import { useNavigate } from "react-router-dom";
 
 interface PaymentNode {
   type: string;
@@ -34,6 +37,9 @@ interface Project {
 
 export default function ProjectsPage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
+  const navigate = useNavigate();
   
   const projects: Project[] = [
     { 
@@ -143,10 +149,7 @@ export default function ProjectsPage() {
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            <button className="px-4 py-2 bg-gradient-primary text-primary-foreground rounded-lg font-medium shadow-card hover:shadow-elevated transition-all duration-smooth flex items-center space-x-2">
-              <Plus className="w-4 h-4" />
-              <span>新建项目</span>
-            </button>
+            <AddProjectDialog />
           </div>
         </div>
       </div>
@@ -157,8 +160,13 @@ export default function ProjectsPage() {
           // 项目详情视图
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <Button variant="outline" onClick={() => setSelectedProject(null)}>
-                ← 返回项目列表
+              <Button 
+                variant="outline" 
+                onClick={() => setSelectedProject(null)}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>返回项目列表</span>
               </Button>
               <div className="flex items-center space-x-3">
                 <h2 className="text-xl font-bold text-foreground">{selectedProject.name}</h2>
@@ -312,6 +320,12 @@ export default function ProjectsPage() {
           </div>
         )}
       </div>
+      
+      <ContactDialog
+        open={contactDialogOpen}
+        onOpenChange={setContactDialogOpen}
+        contactInfo={contactInfo}
+      />
     </div>
   );
 }
