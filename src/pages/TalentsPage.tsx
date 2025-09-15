@@ -7,20 +7,7 @@ import { ContactDialog } from "@/components/ContactDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { AddTalentDialog } from "@/components/AddTalentDialog";
-
-interface Talent {
-  id: number;
-  name: string;
-  role: string;
-  phone: string;
-  email: string;
-  status: "在职" | "离职" | "潜在";
-  skillRating: number;
-  experienceYears: number;
-  specialties: string[];
-  lastContactDate: string;
-  notes?: string;
-}
+import { useTalents } from "@/hooks/useTalents";
 
 export default function TalentsPage() {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
@@ -28,60 +15,29 @@ export default function TalentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
-  const talents: Talent[] = [
-    {
-      id: 1,
-      name: "陈设计师",
-      role: "室内设计师",
-      phone: "138****1234",
-      email: "chen@design.com",
-      status: "在职",
-      skillRating: 5,
-      experienceYears: 8,
-      specialties: ["现代简约", "欧式", "中式"],
-      lastContactDate: "2024-01-15",
-      notes: "擅长大户型设计，客户满意度高"
-    },
-    {
-      id: 2,
-      name: "李设计师",
-      role: "室内设计师",
-      phone: "139****5678",
-      email: "li@design.com",
-      status: "离职",
-      skillRating: 4,
-      experienceYears: 5,
-      specialties: ["北欧风", "小户型"],
-      lastContactDate: "2023-12-20",
-      notes: "因个人原因离职，技能优秀"
-    },
-    {
-      id: 3,
-      name: "王设计师",
-      role: "软装设计师",
-      phone: "137****9012",
-      email: "wang@design.com",
-      status: "潜在",
-      skillRating: 4,
-      experienceYears: 6,
-      specialties: ["软装搭配", "色彩搭配"],
-      lastContactDate: "2024-01-10",
-      notes: "面试表现良好，可考虑合作"
-    },
-    {
-      id: 4,
-      name: "张设计师",
-      role: "室内设计师",
-      phone: "136****3456",
-      email: "zhang@design.com",
-      status: "潜在",
-      skillRating: 3,
-      experienceYears: 3,
-      specialties: ["工装", "现代风"],
-      lastContactDate: "2024-01-08",
-      notes: "年轻有潜力，需要更多培养"
-    },
-  ];
+  const { talents, loading, error } = useTalents();
+
+  if (loading) {
+    return (
+      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">加载人才数据中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive mb-4">加载人才数据失败：{error}</p>
+          <Button onClick={() => window.location.reload()}>重试</Button>
+        </div>
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -120,6 +76,14 @@ export default function TalentsPage() {
     ];
   };
 
+  const filteredTalents = talents.filter(talent => 
+    talent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    talent.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (talent.phone && talent.phone.includes(searchTerm)) ||
+    (talent.email && talent.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    talent.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (talent.specialties && talent.specialties.some((specialty: string) => specialty.toLowerCase().includes(searchTerm.toLowerCase())))
+  );
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
@@ -168,14 +132,16 @@ export default function TalentsPage() {
 
         {/* Talents List */}
         <div className="grid gap-6">
-          {talents.filter(talent => 
-            talent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            talent.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            talent.phone.includes(searchTerm) ||
-            talent.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            talent.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            talent.specialties.some(specialty => specialty.toLowerCase().includes(searchTerm.toLowerCase()))
-          ).map((talent) => (
+          {filteredTalents.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground mb-4">
+                {talents.length === 0 ? "还没有人才记录，点击上方按钮添加第一个人才" : "没有找到匹配的人才"}
+              </p>
+              {talents.length === 0 && <AddTalentDialog />}
+            </div>
+          ) : (
+            filteredTalents.map((talent) => (
             <Card key={talent.id} className="hover:shadow-elevated transition-all duration-smooth">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
@@ -191,14 +157,18 @@ export default function TalentsPage() {
                             <Briefcase className="w-4 h-4" />
                             <span>{talent.role}</span>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <Phone className="w-4 h-4" />
-                            <span>{talent.phone}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Mail className="w-4 h-4" />
-                            <span>{talent.email}</span>
-                          </div>
+                          {talent.phone && (
+                            <div className="flex items-center space-x-1">
+                              <Phone className="w-4 h-4" />
+                              <span>{talent.phone}</span>
+                            </div>
+                          )}
+                          {talent.email && (
+                            <div className="flex items-center space-x-1">
+                              <Mail className="w-4 h-4" />
+                              <span>{talent.email}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -212,17 +182,17 @@ export default function TalentsPage() {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">技能评级</p>
-                        {renderStars(talent.skillRating)}
+                        {renderStars(talent.skill_rating || 0)}
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">工作经验</p>
-                        <p className="font-medium text-foreground">{talent.experienceYears}年</p>
+                        <p className="font-medium text-foreground">{talent.experience_years || 0}年</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">最后联系</p>
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4" />
-                          <span className="text-sm text-foreground">{talent.lastContactDate}</span>
+                          <span className="text-sm text-foreground">{talent.last_contact_date || "未联系"}</span>
                         </div>
                       </div>
                     </div>
@@ -230,7 +200,7 @@ export default function TalentsPage() {
                     <div className="mb-4">
                       <p className="text-sm text-muted-foreground mb-2">专业领域</p>
                       <div className="flex flex-wrap gap-2">
-                        {talent.specialties.map((specialty, index) => (
+                        {(talent.specialties || []).map((specialty, index) => (
                           <Badge key={index} variant="outline">
                             {specialty}
                           </Badge>
@@ -253,8 +223,8 @@ export default function TalentsPage() {
                       onClick={() => {
                         setContactInfo({
                           name: talent.name,
-                          phone: talent.phone,
-                          email: talent.email
+                          phone: talent.phone || "",
+                          email: talent.email || ""
                         });
                         setContactDialogOpen(true);
                       }}
@@ -299,7 +269,8 @@ export default function TalentsPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
       
