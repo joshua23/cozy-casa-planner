@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { CheckCircle, XCircle, PlayCircle, PauseCircle, Clock, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProjectPhases } from "@/hooks/useProjectPhases";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProjectFormData {
   name: string;
@@ -60,6 +61,54 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
     startDate: "",
     endDate: project.deadline,
   });
+
+  const createDefaultPhases = async () => {
+    try {
+      const defaultPhases = [
+        { name: '跟进洽谈', order: 1, duration: 3, description: '项目前期沟通、需求确认、合同签订等' },
+        { name: '设计阶段', order: 2, duration: 14, description: '量房、设计方案、效果图制作、方案确认' },
+        { name: '拆除阶段', order: 3, duration: 3, description: '原有装修拆除、垃圾清理' },
+        { name: '水电改造', order: 4, duration: 7, description: '水电线路改造、开槽布线' },
+        { name: '泥瓦工程', order: 5, duration: 10, description: '防水、贴砖、地面找平等' },
+        { name: '木工阶段', order: 6, duration: 12, description: '吊顶、柜体制作、木工装饰' },
+        { name: '油漆涂料', order: 7, duration: 8, description: '墙面处理、刷漆、贴壁纸' },
+        { name: '安装阶段', order: 8, duration: 5, description: '灯具、开关插座、洁具安装' },
+        { name: '软装配饰', order: 9, duration: 3, description: '家具摆放、装饰品安装' },
+        { name: '收尾阶段', order: 10, duration: 2, description: '清洁、验收、整改' },
+        { name: '已完工', order: 11, duration: 1, description: '项目交付、售后服务' },
+      ];
+
+      // 批量创建阶段
+      for (const phase of defaultPhases) {
+        await supabase
+          .from('project_phases')
+          .insert({
+            project_id: project.id,
+            phase_name: phase.name,
+            phase_order: phase.order,
+            estimated_duration: phase.duration,
+            status: '未开始',
+            description: phase.description,
+            progress: 0
+          });
+      }
+
+      toast({
+        title: "成功",
+        description: "已创建默认项目阶段",
+      });
+
+      // 刷新阶段数据
+      window.location.reload();
+    } catch (error) {
+      console.error('Error creating phases:', error);
+      toast({
+        title: "错误",
+        description: "创建默认阶段失败",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -272,8 +321,11 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
                   <span className="ml-2 text-muted-foreground">加载阶段数据...</span>
                 </div>
               ) : phases.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  暂无项目阶段数据
+                <div className="text-center py-8">
+                  <div className="text-muted-foreground mb-4">该项目还没有设置阶段</div>
+                  <Button onClick={createDefaultPhases}>
+                    创建默认项目阶段
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
