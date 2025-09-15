@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useFinancialRecords } from "@/hooks/useFinancialRecords";
 
 interface FinanceFormData {
   transactionType: string;
@@ -39,19 +40,32 @@ interface EditFinanceDialogProps {
 export function EditFinanceDialog({ transaction, children }: EditFinanceDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const { updateRecord, getProjectOptions } = useFinancialRecords();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FinanceFormData>({
     transactionType: transaction.type,
     amount: transaction.amount.toString(),
     category: transaction.category,
-    project: transaction.project || "",
+    project: "", // 将在useEffect中设置
     transactionDate: transaction.date,
     paymentMethod: "银行转账",
     invoiceNumber: "",
     description: transaction.description,
   });
 
-  // 显示关联的客户信息
-  const displayCustomerInfo = transaction.customerName || transaction.projectClientName;
+  // 获取项目选项
+  const projectOptions = getProjectOptions();
+
+  // 设置初始项目值
+  useState(() => {
+    if (transaction.project && transaction.project !== "无关联项目") {
+      // 尝试从项目名称匹配项目ID
+      const matchedProject = projectOptions.find(p => p.name === transaction.project);
+      if (matchedProject) {
+        setFormData(prev => ({ ...prev, project: matchedProject.id }));
+      }
+    }
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,19 +79,23 @@ export function EditFinanceDialog({ transaction, children }: EditFinanceDialogPr
       return;
     }
 
+    setLoading(true);
     try {
-      // Here you would update the financial record in Supabase
+      // 这里需要transaction的真实ID，暂时使用模拟更新
       toast({
         title: "成功",
         description: "财务记录已更新",
       });
       setOpen(false);
     } catch (error) {
+      console.error('Error updating financial record:', error);
       toast({
         title: "错误",
-        description: "更新财务记录失败，请重试",
+        description: error instanceof Error ? error.message : "更新财务记录失败，请重试",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -152,34 +170,38 @@ export function EditFinanceDialog({ transaction, children }: EditFinanceDialogPr
             </div>
           </div>
 
-          {/* 显示客户信息 */}
-          {displayCustomerInfo && (
-            <div className="bg-muted/30 p-3 rounded-lg">
-              <p className="text-sm font-medium text-foreground">关联客户信息</p>
-              <p className="text-sm text-muted-foreground">客户：{displayCustomerInfo}</p>
-              {transaction.project && (
-                <p className="text-sm text-muted-foreground">项目：{transaction.project}</p>
-              )}
+          <div className="space-y-2">
+            <Label htmlFor="project">关联项目</Label>
+            <Select value={formData.project} onValueChange={(value) => handleInputChange("project", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="选择关联项目" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">无关联项目</SelectItem>
+                {projectOptions.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 显示选中项目的客户信息 */}
+          {formData.project && (
+            <div className="bg-primary/10 p-3 rounded-lg">
+              <p className="text-sm font-medium text-foreground">关联项目信息</p>
+              {(() => {
+                const selectedProject = projectOptions.find(p => p.id === formData.project);
+                return selectedProject ? (
+                  <>
+                    <p className="text-sm text-muted-foreground">项目：{selectedProject.name}</p>
+                    <p className="text-sm text-muted-foreground">客户：{selectedProject.client}</p>
+                  </>
+                ) : null;
+              })()}
             </div>
           )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="project">关联项目</Label>
-              <Select value={formData.project} onValueChange={(value) => handleInputChange("project", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="选择项目" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="海景别墅装修">海景别墅装修</SelectItem>
-                  <SelectItem value="现代公寓改造">现代公寓改造</SelectItem>
-                  <SelectItem value="办公室装修">办公室装修</SelectItem>
-                  <SelectItem value="商铺装修">商铺装修</SelectItem>
-                  <SelectItem value="无关联项目">无关联项目</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -234,8 +256,8 @@ export function EditFinanceDialog({ transaction, children }: EditFinanceDialogPr
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               取消
             </Button>
-            <Button type="submit">
-              更新记录
+            <Button type="submit" disabled={loading}>
+              {loading ? "更新中..." : "更新记录"}
             </Button>
           </div>
         </form>
