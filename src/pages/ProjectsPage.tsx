@@ -121,6 +121,48 @@ export default function ProjectsPage() {
     }
   }, [projects]);
 
+  // 单项目付款节点刷新函数
+  const refreshProjectPayments = async (projectId: string) => {
+    try {
+      setPaymentsLoading(prev => ({ ...prev, [projectId]: true }));
+      const { data, error } = await supabase
+        .from('payment_nodes')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      setProjectPayments(prev => ({ ...prev, [projectId]: data || [] }));
+    } catch (err) {
+      console.error('Error refreshing payments for project', projectId, err);
+    } finally {
+      setPaymentsLoading(prev => ({ ...prev, [projectId]: false }));
+    }
+  };
+
+  // 订阅付款节点变更，实时刷新列表摘要
+  useEffect(() => {
+    if (projects.length === 0) return;
+    const channel = supabase
+      .channel('payment_nodes_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'payment_nodes' },
+        (payload: any) => {
+          const projectId = payload?.new?.project_id || payload?.old?.project_id;
+          if (projectId) {
+            // 仅刷新相关项目的付款节点
+            refreshProjectPayments(projectId);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      // @ts-ignore removeChannel is available on supabase client
+      supabase.removeChannel(channel);
+    };
+  }, [projects]);
+
   // 计算付款汇总
   const calcPaymentStats = (nodes: any[] | undefined) => {
     const list = nodes || [];
