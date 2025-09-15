@@ -1,0 +1,287 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { LogIn, UserPlus, Building2 } from "lucide-react";
+import logo from "@/assets/logo.jpg";
+
+interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+interface SignupFormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  fullName: string;
+  username: string;
+}
+
+export default function AuthPage() {
+  const { signIn, signUp, user, loading } = useAuth();
+  const navigate = useNavigate();
+  
+  const [activeTab, setActiveTab] = useState("signin");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  
+  const [loginForm, setLoginForm] = useState<LoginFormData>({
+    email: "",
+    password: "",
+  });
+  
+  const [signupForm, setSignupForm] = useState<SignupFormData>({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    fullName: "",
+    username: "",
+  });
+
+  // 如果用户已登录，重定向到主页
+  useEffect(() => {
+    if (user && !loading) {
+      navigate("/");
+    }
+  }, [user, loading, navigate]);
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    if (!loginForm.email || !loginForm.password) {
+      setError("请填写所有字段");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await signIn(loginForm.email, loginForm.password);
+      
+      if (error) {
+        if (error.message === "Invalid login credentials") {
+          setError("邮箱或密码错误");
+        } else {
+          setError(error.message);
+        }
+      } else {
+        // 登录成功，useEffect 会处理重定向
+      }
+    } catch (error) {
+      setError("登录失败，请重试");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    if (!signupForm.email || !signupForm.password || !signupForm.fullName || !signupForm.username) {
+      setError("请填写所有必填字段");
+      setIsLoading(false);
+      return;
+    }
+
+    if (signupForm.password !== signupForm.confirmPassword) {
+      setError("密码确认不匹配");
+      setIsLoading(false);
+      return;
+    }
+
+    if (signupForm.password.length < 6) {
+      setError("密码至少需要6个字符");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await signUp(
+        signupForm.email,
+        signupForm.password,
+        signupForm.fullName,
+        signupForm.username
+      );
+      
+      if (error) {
+        if (error.message === "User already registered") {
+          setError("该邮箱已被注册");
+        } else {
+          setError(error.message);
+        }
+      } else {
+        setSuccess("注册成功！请检查您的邮箱进行验证。");
+        setSignupForm({
+          email: "",
+          password: "",
+          confirmPassword: "",
+          fullName: "",
+          username: "",
+        });
+      }
+    } catch (error) {
+      setError("注册失败，请重试");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <img 
+              src={logo} 
+              alt="YDYSBDD Logo" 
+              className="w-16 h-16 rounded-lg object-cover bg-white p-2"
+            />
+          </div>
+          <CardTitle className="text-2xl font-bold">装修管理系统</CardTitle>
+          <CardDescription>
+            欢迎使用 YDYSBDD 装修项目管理平台
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin" className="flex items-center space-x-2">
+                <LogIn className="w-4 h-4" />
+                <span>登录</span>
+              </TabsTrigger>
+              <TabsTrigger value="signup" className="flex items-center space-x-2">
+                <UserPlus className="w-4 h-4" />
+                <span>注册</span>
+              </TabsTrigger>
+            </TabsList>
+
+            {error && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {success && (
+              <Alert className="mt-4">
+                <AlertDescription>{success}</AlertDescription>
+              </Alert>
+            )}
+
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">邮箱</Label>
+                  <Input
+                    id="signin-email"
+                    type="email"
+                    placeholder="请输入邮箱"
+                    value={loginForm.email}
+                    onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password">密码</Label>
+                  <Input
+                    id="signin-password"
+                    type="password"
+                    placeholder="请输入密码"
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "登录中..." : "登录"}
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-fullname">姓名 *</Label>
+                  <Input
+                    id="signup-fullname"
+                    type="text"
+                    placeholder="请输入真实姓名"
+                    value={signupForm.fullName}
+                    onChange={(e) => setSignupForm({ ...signupForm, fullName: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-username">用户名 *</Label>
+                  <Input
+                    id="signup-username"
+                    type="text"
+                    placeholder="请输入用户名"
+                    value={signupForm.username}
+                    onChange={(e) => setSignupForm({ ...signupForm, username: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">邮箱 *</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    placeholder="请输入邮箱"
+                    value={signupForm.email}
+                    onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">密码 *</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    placeholder="请输入密码（至少6个字符）"
+                    value={signupForm.password}
+                    onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-confirm-password">确认密码 *</Label>
+                  <Input
+                    id="signup-confirm-password"
+                    type="password"
+                    placeholder="请再次输入密码"
+                    value={signupForm.confirmPassword}
+                    onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "注册中..." : "注册"}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
