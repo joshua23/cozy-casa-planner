@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useProjects } from "@/hooks/useProjects";
 
 interface ProjectFormData {
   name: string;
@@ -23,6 +24,7 @@ interface ProjectFormData {
 
 export function AddProjectDialog() {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<ProjectFormData>({
     name: "",
     clientName: "",
@@ -36,10 +38,11 @@ export function AddProjectDialog() {
     endDate: "",
   });
   const { toast } = useToast();
+  const { createProject } = useProjects();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // 验证必填字段
     if (!formData.name || !formData.clientName || !formData.contractAmount) {
       toast({
@@ -50,28 +53,51 @@ export function AddProjectDialog() {
       return;
     }
 
-    // 这里应该调用API保存数据
-    console.log("新建项目:", formData);
-    
-    toast({
-      title: "成功",
-      description: "项目创建成功！",
-    });
+    setLoading(true);
 
-    // 重置表单并关闭对话框
-    setFormData({
-      name: "",
-      clientName: "",
-      clientPhone: "",
-      clientEmail: "",
-      propertyType: "",
-      decorationStyle: "",
-      area: "",
-      contractAmount: "",
-      startDate: "",
-      endDate: "",
-    });
-    setOpen(false);
+    try {
+      await createProject({
+        name: formData.name,
+        client_name: formData.clientName,
+        client_phone: formData.clientPhone || null,
+        client_email: formData.clientEmail || null,
+        property_type: formData.propertyType || null,
+        decoration_style: formData.decorationStyle || null,
+        area: formData.area ? parseFloat(formData.area) : null,
+        total_contract_amount: formData.contractAmount ? parseFloat(formData.contractAmount) : null,
+        start_date: formData.startDate || null,
+        end_date: formData.endDate || null,
+        status: "设计中",
+      });
+
+      toast({
+        title: "成功",
+        description: "项目创建成功！",
+      });
+
+      // 重置表单并关闭对话框
+      setFormData({
+        name: "",
+        clientName: "",
+        clientPhone: "",
+        clientEmail: "",
+        propertyType: "",
+        decorationStyle: "",
+        area: "",
+        contractAmount: "",
+        startDate: "",
+        endDate: "",
+      });
+      setOpen(false);
+    } catch (error) {
+      toast({
+        title: "错误",
+        description: error instanceof Error ? error.message : "创建项目失败",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (field: keyof ProjectFormData, value: string) => {
@@ -200,8 +226,8 @@ export function AddProjectDialog() {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               取消
             </Button>
-            <Button type="submit">
-              创建项目
+            <Button type="submit" disabled={loading}>
+              {loading ? "创建中..." : "创建项目"}
             </Button>
           </div>
         </form>

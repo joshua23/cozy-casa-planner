@@ -9,6 +9,7 @@ import { EditProjectDialog } from "@/components/EditProjectDialog";
 import { ContactDialog } from "@/components/ContactDialog";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useProjects, type Project as DBProject } from "@/hooks/useProjects";
 
 interface PaymentNode {
   type: string;
@@ -38,14 +39,16 @@ interface Project {
 }
 
 export default function ProjectsPage() {
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedProject, setSelectedProject] = useState<DBProject | null>(null);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  const projects: Project[] = [
+  const { projects, loading, error } = useProjects();
+
+  // 示例数据，用于演示UI结构
+  const sampleProjects: Project[] = [
     { 
       id: 1, 
       name: "海景别墅装修", 
@@ -103,6 +106,53 @@ export default function ProjectsPage() {
       ]
     },
   ];
+
+  // 转换数据库项目为显示格式
+  const displayProjects = projects.map(project => ({
+    id: project.id,
+    name: project.name,
+    status: project.status,
+    client: project.client_name,
+    deadline: project.end_date || "未设定",
+    contractAmount: project.total_contract_amount || 0,
+    propertyType: project.property_type || "未知",
+    decorationStyle: project.decoration_style || "未设定",
+    area: project.area || 0,
+    paymentNodes: [
+      { type: "合同总价", amount: project.total_contract_amount || 0, paid: 0, status: "未付" as const },
+    ],
+    phases: [
+      { name: "拆除阶段", status: "未开始" as const, progress: 0 },
+      { name: "水电阶段", status: "未开始" as const, progress: 0 },
+      { name: "泥工阶段", status: "未开始" as const, progress: 0 },
+      { name: "木工阶段", status: "未开始" as const, progress: 0 },
+      { name: "油漆阶段", status: "未开始" as const, progress: 0 },
+      { name: "保洁阶段", status: "未开始" as const, progress: 0 },
+      { name: "收尾阶段", status: "未开始" as const, progress: 0 },
+    ]
+  }));
+
+  if (loading) {
+    return (
+      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">加载项目数据中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive mb-4">加载项目数据失败：{error}</p>
+          <Button onClick={() => window.location.reload()}>重试</Button>
+        </div>
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -271,11 +321,18 @@ export default function ProjectsPage() {
         ) : (
           // 项目列表视图
           <div className="grid gap-6">
-            {projects.filter(project => 
-              project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              project.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              project.status.toLowerCase().includes(searchTerm.toLowerCase())
-            ).map((project) => (
+            {displayProjects.length === 0 ? (
+              <div className="text-center py-12">
+                <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">还没有项目，点击上方按钮创建第一个项目</p>
+                <AddProjectDialog />
+              </div>
+            ) : (
+              displayProjects.filter(project =>
+                project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                project.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                project.status.toLowerCase().includes(searchTerm.toLowerCase())
+              ).map((project) => (
               <div key={project.id} className="bg-card rounded-lg p-6 shadow-card border border-border/50 hover:shadow-elevated transition-all duration-smooth">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -328,7 +385,8 @@ export default function ProjectsPage() {
                   </div>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
         )}
       </div>
