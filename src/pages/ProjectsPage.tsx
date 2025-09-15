@@ -455,111 +455,129 @@ export default function ProjectsPage() {
                       </div>
                     </div>
 
-                    {/* 付款节点摘要（列表卡片外层展示） */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2 text-sm">
-                          <CreditCard className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-foreground">付款节点</span>
-                          {paymentsLoading[project.id] && (
-                            <span className="text-xs text-muted-foreground">加载中...</span>
-                          )}
+                    {/* 双栏布局：左侧项目进度，右侧付款节点 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+                      {/* 左侧：项目进度 */}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-medium text-foreground flex items-center space-x-2">
+                            <Wrench className="w-4 h-4 text-muted-foreground" />
+                            <span>项目进度</span>
+                            {phasesLoading[project.id] && (
+                              <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                            )}
+                          </h4>
+                          <span className="text-xs text-muted-foreground">
+                            {projectPhases[project.id]?.filter(p => p.status === '已完成').length || 0} / {projectPhases[project.id]?.length || 0}
+                          </span>
                         </div>
+
+                        {/* 总体进度条 */}
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div
+                            className="bg-gradient-primary h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${projectPhases[project.id]?.filter(p => p.status === '已完成').length / (projectPhases[project.id]?.length || 1) * 100 || 0}%` }}
+                          ></div>
+                        </div>
+
+                        {/* 项目阶段列表 */}
+                        {projectPhases[project.id] && projectPhases[project.id].length > 0 ? (
+                          <div className="space-y-2 max-h-40 md:max-h-48 lg:max-h-56 overflow-y-auto">
+                            {projectPhases[project.id].map((phase) => (
+                              <div key={phase.id} className="bg-muted/30 rounded-lg p-2 md:p-3">
+                                <div className="flex items-center justify-between mb-1 md:mb-2">
+                                  <div className="flex items-center space-x-2">
+                                    {getPhaseStatusIcon(phase.status)}
+                                    <span className="text-xs md:text-sm font-medium text-foreground truncate">{phase.phase_name}</span>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground flex-shrink-0">{Math.round(phase.progress || 0)}%</span>
+                                </div>
+                                <div className="w-full bg-background rounded-full h-1.5">
+                                  <div
+                                    className="bg-gradient-primary h-1.5 rounded-full transition-all duration-300"
+                                    style={{ width: `${phase.progress || 0}%` }}
+                                  ></div>
+                                </div>
+                                {phase.start_date && phase.end_date && (
+                                  <div className="text-xs text-muted-foreground mt-1 hidden md:block">
+                                    {phase.start_date} ~ {phase.end_date}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-muted-foreground bg-muted/30 rounded-lg p-3 text-center">
+                            {phasesLoading[project.id] ? "加载阶段数据中..." : "暂无阶段数据"}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 右侧：付款节点 */}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2 text-sm">
+                            <CreditCard className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-foreground">付款节点</span>
+                            {paymentsLoading[project.id] && (
+                              <span className="text-xs text-muted-foreground">加载中...</span>
+                            )}
+                          </div>
+                          {(() => {
+                            const stats = calcPaymentStats(projectPayments[project.id]);
+                            return (
+                              <span className="text-xs text-muted-foreground">
+                                ￥{(stats.totalPaid/10000).toFixed(1)}万 / ￥{(stats.totalAmount/10000).toFixed(1)}万
+                              </span>
+                            );
+                          })()}
+                        </div>
+
+                        {/* 付款总体进度条 */}
                         {(() => {
                           const stats = calcPaymentStats(projectPayments[project.id]);
                           return (
-                            <span className="text-xs text-muted-foreground">
-                              ￥{(stats.totalPaid/10000).toFixed(1)}万 / ￥{(stats.totalAmount/10000).toFixed(1)}万
-                            </span>
+                            <div className="w-full bg-muted rounded-full h-2">
+                              <div
+                                className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${stats.progress}%` }}
+                              ></div>
+                            </div>
                           );
                         })()}
-                      </div>
-                      {(() => {
-                        const stats = calcPaymentStats(projectPayments[project.id]);
-                        return (
-                          <div className="w-full bg-muted rounded-full h-2 mb-2">
-                            <div 
-                              className="bg-gradient-primary h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${stats.progress}%` }}
-                            ></div>
-                          </div>
-                        );
-                      })()}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {(projectPayments[project.id] || []).slice(0, 3).map((node: any) => (
-                          <div key={node.id} className="flex items-center justify-between bg-muted/30 rounded-md px-3 py-2">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-sm text-foreground">{node.node_type}</span>
-                              <Badge className={getPaymentStatusColor(node.status)}>{node.status}</Badge>
-                            </div>
-                            <span className="text-xs text-muted-foreground">
-                              ￥{(Number(node.paid_amount||0)/10000).toFixed(1)}万 / ￥{(Number(node.amount||0)/10000).toFixed(1)}万
-                            </span>
-                          </div>
-                        ))}
-                        {projectPayments[project.id] && projectPayments[project.id].length > 3 && (
-                          <div className="text-xs text-muted-foreground px-1 py-0.5">还有 {projectPayments[project.id].length - 3} 个节点...</div>
-                        )}
-                        {!paymentsLoading[project.id] && (!projectPayments[project.id] || projectPayments[project.id].length === 0) && (
-                          <div className="text-xs text-muted-foreground">暂无付款节点</div>
-                        )}
-                      </div>
-                    </div>
 
-                    {/* Progress Bar */}
-                    <div className="w-full bg-muted rounded-full h-2 mb-4">
-                      <div 
-                        className="bg-gradient-primary h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${projectPhases[project.id]?.filter(p => p.status === '已完成').length / (projectPhases[project.id]?.length || 1) * 100 || 0}%` }}
-                      ></div>
-                    </div>
-
-                    {/* 项目阶段详情 */}
-                    <div className="mt-4 space-y-3">
-                      <h4 className="text-sm font-medium text-foreground flex items-center space-x-2">
-                        <span>项目阶段进度</span>
-                        {phasesLoading[project.id] && (
-                          <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                        )}
-                      </h4>
-                      
-                      {projectPhases[project.id] && projectPhases[project.id].length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {projectPhases[project.id].slice(0, 6).map((phase) => (
-                            <div key={phase.id} className="bg-muted/30 rounded-lg p-3">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center space-x-2">
-                                  {getPhaseStatusIcon(phase.status)}
-                                  <span className="text-sm font-medium text-foreground">{phase.phase_name}</span>
+                        {/* 付款节点列表 */}
+                        <div className="space-y-2 max-h-40 md:max-h-48 lg:max-h-56 overflow-y-auto">
+                          {(projectPayments[project.id] || []).map((node: any) => (
+                            <div key={node.id} className="bg-muted/30 rounded-lg p-2 md:p-3">
+                              <div className="flex items-center justify-between mb-1 md:mb-2">
+                                <div className="flex items-center space-x-1 md:space-x-2 flex-1 min-w-0">
+                                  <span className="text-xs md:text-sm font-medium text-foreground truncate">{node.node_type}</span>
+                                  <Badge className={`${getPaymentStatusColor(node.status)} text-xs flex-shrink-0`}>{node.status}</Badge>
                                 </div>
-                                <span className="text-xs text-muted-foreground">{Math.round(phase.progress || 0)}%</span>
+                                <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+                                  {Math.round((Number(node.paid_amount||0) / Number(node.amount||1)) * 100)}%
+                                </span>
                               </div>
-                              <div className="w-full bg-background rounded-full h-1.5">
-                                <div 
-                                  className="bg-gradient-primary h-1.5 rounded-full transition-all duration-300"
-                                  style={{ width: `${phase.progress || 0}%` }}
+                              <div className="w-full bg-background rounded-full h-1.5 mb-2">
+                                <div
+                                  className="bg-gradient-to-r from-green-500 to-green-600 h-1.5 rounded-full transition-all duration-300"
+                                  style={{ width: `${Math.round((Number(node.paid_amount||0) / Number(node.amount||1)) * 100)}%` }}
                                 ></div>
                               </div>
-                              {phase.start_date && phase.end_date && (
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  {phase.start_date} ~ {phase.end_date}
-                                </div>
-                              )}
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-muted-foreground space-y-1 sm:space-y-0">
+                                <span>已付：￥{(Number(node.paid_amount||0)/10000).toFixed(1)}万</span>
+                                <span>总额：￥{(Number(node.amount||0)/10000).toFixed(1)}万</span>
+                              </div>
                             </div>
                           ))}
-                          {projectPhases[project.id].length > 6 && (
-                            <div className="bg-muted/30 rounded-lg p-3 flex items-center justify-center">
-                              <span className="text-sm text-muted-foreground">
-                                还有 {projectPhases[project.id].length - 6} 个阶段...
-                              </span>
+                          {!paymentsLoading[project.id] && (!projectPayments[project.id] || projectPayments[project.id].length === 0) && (
+                            <div className="text-sm text-muted-foreground bg-muted/30 rounded-lg p-3 text-center">
+                              暂无付款节点
                             </div>
                           )}
                         </div>
-                      ) : (
-                        <div className="text-sm text-muted-foreground bg-muted/30 rounded-lg p-3 text-center">
-                          {phasesLoading[project.id] ? "加载阶段数据中..." : "暂无阶段数据"}
-                        </div>
-                      )}
+                      </div>
                     </div>
                   </div>
 
