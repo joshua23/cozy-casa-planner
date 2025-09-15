@@ -29,12 +29,14 @@ export default function StatCard({
     yellow: "text-stat-yellow bg-stat-yellow/10",
   };
 
+  const cardColorClass = colorClasses[color] || "";
+
   return (
     <div className="bg-gradient-card rounded-lg p-6 shadow-card hover:shadow-elevated transition-all duration-smooth border border-border/50">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center space-x-3 mb-4">
-            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${colorClasses[color]}`}>
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${cardColorClass}`}>
               <Icon className="w-6 h-6" />
             </div>
             <div>
