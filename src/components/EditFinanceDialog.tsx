@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useFinancialRecords } from "@/hooks/useFinancialRecords";
+import type { FinancialRecord } from "@/hooks/useFinancialRecords";
 
 interface FinanceFormData {
   transactionType: string;
@@ -19,22 +20,22 @@ interface FinanceFormData {
   description: string;
 }
 
-interface Transaction {
-  id: number;
+interface EditFinanceDialogProps {
+  transaction: FinancialRecord;
+  children: React.ReactNode;
+}
+
+interface LegacyTransaction {
+  id: string;
   type: string;
   amount: number;
   category: string;
-  project: string | null;
+  project: string;
   date: string;
   status: string;
   description: string;
   customerName?: string;
   projectClientName?: string;
-}
-
-interface EditFinanceDialogProps {
-  transaction: Transaction;
-  children: React.ReactNode;
 }
 
 export function EditFinanceDialog({ transaction, children }: EditFinanceDialogProps) {
@@ -43,14 +44,14 @@ export function EditFinanceDialog({ transaction, children }: EditFinanceDialogPr
   const { updateRecord, projects } = useFinancialRecords();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FinanceFormData>({
-    transactionType: transaction.type,
-    amount: transaction.amount.toString(),
+    transactionType: transaction.transaction_type || "",
+    amount: (transaction.amount || 0).toString(),
     category: transaction.category,
-    projectId: "none",
-    transactionDate: transaction.date,
-    paymentMethod: "银行转账",
-    invoiceNumber: "",
-    description: transaction.description,
+    projectId: transaction.project_id || "none",
+    transactionDate: transaction.transaction_date,
+    paymentMethod: transaction.payment_method || "银行转账",
+    invoiceNumber: transaction.invoice_number || "",
+    description: transaction.description || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,7 +68,19 @@ export function EditFinanceDialog({ transaction, children }: EditFinanceDialogPr
 
     setLoading(true);
     try {
-      // 这里需要transaction的真实ID，暂时使用模拟更新
+      const updateData = {
+        transaction_type: formData.transactionType,
+        amount: parseFloat(formData.amount),
+        category: formData.category,
+        project_id: formData.projectId === "none" ? null : formData.projectId,
+        transaction_date: formData.transactionDate,
+        payment_method: formData.paymentMethod,
+        invoice_number: formData.invoiceNumber,
+        description: formData.description,
+      };
+
+      await updateRecord(transaction.id, updateData);
+
       toast({
         title: "成功",
         description: "财务记录已更新",

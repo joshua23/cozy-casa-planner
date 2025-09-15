@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useFinancialRecords } from "@/hooks/useFinancialRecords";
+import type { FinancialRecord } from "@/hooks/useFinancialRecords";
 import { Badge } from "@/components/ui/badge";
 
 export default function FinancePage() {
@@ -380,11 +381,12 @@ export default function FinancePage() {
                       </td>
                       <td className="p-4 text-sm text-foreground">{transaction.category || "未分类"}</td>
                       <td className="p-4 text-sm text-muted-foreground">
-                        {(() => {
-                          if (!transaction.project_id) return "无关联项目";
-                          const project = projects.find(p => p.id === transaction.project_id);
-                          return project ? `${project.name} (${project.client_name})` : "项目已删除";
-                        })()}
+                        {transaction.project_id ? (
+                          (() => {
+                            const project = projects.find(p => p.id === transaction.project_id);
+                            return project ? `${project.name} (${project.client_name})` : "项目已删除";
+                          })()
+                        ) : "无关联项目"}
                       </td>
                       <td className="p-4 text-sm text-muted-foreground">{transaction.transaction_date || "未设定"}</td>
                       <td className="p-4">
@@ -412,15 +414,8 @@ export default function FinancePage() {
                             </button>
                           </FinanceDetailDialog>
                           <EditFinanceDialog transaction={{
-                            id: parseInt(transaction.id.toString()) || 0,
-                            type: transaction.transaction_type || "",
-                            amount: transaction.amount || 0,
-                            category: transaction.category || "",
-                            project: transaction.project_id ? "关联项目" : "无关联项目",
-                            date: transaction.transaction_date || "",
-                            status: "已完成",
-                            description: transaction.description || "无备注"
-                          }}>
+                            ...transaction
+                          } as FinancialRecord}>
                             <button className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors">
                               编辑
                             </button>
