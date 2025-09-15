@@ -2,16 +2,24 @@ import { DollarSign, Plus, Search, TrendingUp, TrendingDown, BarChart3, PieChart
 import { AddFinanceDialog } from "@/components/AddFinanceDialog";
 import { FinanceDetailDialog } from "@/components/FinanceDetailDialog";
 import { EditFinanceDialog } from "@/components/EditFinanceDialog";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useFinancialRecords } from "@/hooks/useFinancialRecords";
+import { Badge } from "@/components/ui/badge";
 
 export default function FinancePage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const { records, loading, error } = useFinancialRecords();
+
+  // Debug log to check data
+  useEffect(() => {
+    console.log('Financial records:', records);
+    console.log('Loading:', loading);
+    console.log('Error:', error);
+  }, [records, loading, error]);
 
   // 计算统计数据
   const statistics = useMemo(() => {
@@ -31,13 +39,13 @@ export default function FinancePage() {
     const currentYear = new Date().getFullYear();
     
     const monthlyIncome = records
-      .filter(r => r.transaction_type === '收入' && 
+      .filter(r => r.transaction_type === '收入' &&
         new Date(r.transaction_date).getMonth() === currentMonth &&
         new Date(r.transaction_date).getFullYear() === currentYear)
       .reduce((sum, r) => sum + (r.amount || 0), 0);
     
     const monthlyExpense = records
-      .filter(r => r.transaction_type === '支出' && 
+      .filter(r => r.transaction_type === '支出' &&
         new Date(r.transaction_date).getMonth() === currentMonth &&
         new Date(r.transaction_date).getFullYear() === currentYear)
       .reduce((sum, r) => sum + (r.amount || 0), 0);
@@ -118,6 +126,24 @@ export default function FinancePage() {
     return { monthlyData, projectData };
   }, [records]);
 
+  const getTypeColor = (type: string) => {
+    return type === "收入" ? "text-stat-green bg-stat-green/10" : "text-stat-red bg-stat-red/10";
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "已完成": return "text-stat-green bg-stat-green/10";
+      case "待处理": return "text-stat-orange bg-stat-orange/10";
+      case "处理中": return "text-stat-blue bg-stat-blue/10";
+      case "已取消": return "text-stat-red bg-stat-red/10";
+      default: return "text-muted-foreground bg-muted";
+    }
+  };
+
+  const formatAmount = (amount: number) => {
+    return `¥${amount.toLocaleString()}`;
+  };
+
   if (loading) {
     return (
       <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
@@ -177,13 +203,13 @@ export default function FinancePage() {
           <div className="flex items-center space-x-4">
             <div className="relative">
               <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-            <input 
-              type="text" 
-              placeholder="搜索交易..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+              <input 
+                type="text" 
+                placeholder="搜索交易..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
             </div>
             <AddFinanceDialog />
           </div>
@@ -297,28 +323,28 @@ export default function FinancePage() {
             </div>
             <ChartContainer config={{}} className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                 <RechartsPieChart>
-                   <Pie
-                     data={chartData.projectData}
-                     cx="50%"
-                     cy="50%"
-                     outerRadius={80}
-                     dataKey="value"
-                     label={({ name, value, percent }) => `${name}: ¥${(value / 10000).toFixed(0)}万 (${(percent * 100).toFixed(1)}%)`}
-                     labelLine={false}
-                   >
-                     {chartData.projectData.map((entry, index) => (
-                       <Cell key={`cell-${index}`} fill={
-                         ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted-foreground))'][index]
-                       } />
-                     ))}
-                   </Pie>
-                   <ChartTooltip content={<ChartTooltipContent />} 
-                     formatter={(value: number) => [
-                       `¥${value.toLocaleString()}`,
-                       '项目收益'
-                     ]} />
-                 </RechartsPieChart>
+                <RechartsPieChart>
+                  <Pie
+                    data={chartData.projectData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    dataKey="value"
+                    label={({ name, value, percent }) => `${name}: ¥${(value / 10000).toFixed(0)}万 (${(percent * 100).toFixed(1)}%)`}
+                    labelLine={false}
+                  >
+                    {chartData.projectData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={
+                        ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted-foreground))'][index]
+                      } />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} 
+                    formatter={(value: number) => [
+                      `¥${value.toLocaleString()}`,
+                      '项目收益'
+                    ]} />
+                </RechartsPieChart>
               </ResponsiveContainer>
             </ChartContainer>
           </div>
@@ -352,37 +378,39 @@ export default function FinancePage() {
                 </tr>
               ) : (
                 records
-                .filter(transaction => 
-                  transaction.transaction_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  (transaction.description && transaction.description.toLowerCase().includes(searchTerm.toLowerCase()))
-                )
-                .map((transaction) => (
+                  .filter(transaction => 
+                    transaction.transaction_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    transaction.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (transaction.description && transaction.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    (transaction.project_display_name && transaction.project_display_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    (transaction.customer_name && transaction.customer_name.toLowerCase().includes(searchTerm.toLowerCase()))
+                  )
+                  .map((transaction) => (
                   <tr key={transaction.id} className="border-b border-border hover:bg-muted/20 transition-colors">
                     <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(transaction.transaction_type)}`}>
+                      <Badge className={getTypeColor(transaction.transaction_type || "")}>
                         {transaction.transaction_type}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="p-4">
                       <span className={`font-semibold ${transaction.transaction_type === '收入' ? 'text-stat-green' : 'text-stat-red'}`}>
-                        {transaction.transaction_type === '收入' ? '+' : '-'}{formatAmount(transaction.amount)}
+                        {transaction.transaction_type === '收入' ? '+' : '-'}{formatAmount(transaction.amount || 0)}
                       </span>
                     </td>
-                    <td className="p-4 text-sm text-foreground">{transaction.category}</td>
+                    <td className="p-4 text-sm text-foreground">{transaction.category || "未分类"}</td>
                     <td className="p-4 text-sm text-muted-foreground">
                       {transaction.project_display_name || transaction.project_name || "无关联项目"}
-                      {transaction.project_client_name && (
+                      {(transaction.project_client_name || transaction.customer_name) && (
                         <div className="text-xs text-muted-foreground/70">
-                          客户：{transaction.project_client_name}
+                          客户：{transaction.project_client_name || transaction.customer_name}
                         </div>
                       )}
                     </td>
-                    <td className="p-4 text-sm text-muted-foreground">{transaction.transaction_date}</td>
+                    <td className="p-4 text-sm text-muted-foreground">{transaction.transaction_date || "未设定"}</td>
                     <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.payment_status || "已完成")}`}>
+                      <Badge className={getStatusColor(transaction.payment_status || "已完成")}>
                         {transaction.payment_status || "已完成"}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="p-4 text-sm text-muted-foreground">
                       {transaction.description || "无备注"}
@@ -395,32 +423,32 @@ export default function FinancePage() {
                     <td className="p-4">
                       <div className="flex items-center space-x-2">
                         <FinanceDetailDialog transaction={{
-                          id: parseInt(transaction.id) || 0,
-                          type: transaction.transaction_type,
+                          id: parseInt(transaction.id.toString()) || 0,
+                          type: transaction.transaction_type || "",
                           amount: transaction.amount || 0,
-                          category: transaction.category,
+                          category: transaction.category || "",
                           project: transaction.project_display_name || transaction.project_name || "无关联项目",
-                          date: transaction.transaction_date,
+                          date: transaction.transaction_date || "",
                           status: transaction.payment_status || "已完成",
                           description: transaction.description || "无备注",
-                          customerName: transaction.customer_name,
-                          projectClientName: transaction.project_client_name
+                          customerName: transaction.customer_name || undefined,
+                          projectClientName: transaction.project_client_name || undefined
                         }}>
                           <button className="px-3 py-1 text-xs border border-border rounded hover:bg-muted transition-colors">
                             详情
                           </button>
                         </FinanceDetailDialog>
                         <EditFinanceDialog transaction={{
-                          id: parseInt(transaction.id) || 0,
-                          type: transaction.transaction_type,
+                          id: parseInt(transaction.id.toString()) || 0,
+                          type: transaction.transaction_type || "",
                           amount: transaction.amount || 0,
-                          category: transaction.category,
+                          category: transaction.category || "",
                           project: transaction.project_display_name || transaction.project_name || "无关联项目",
-                          date: transaction.transaction_date,
+                          date: transaction.transaction_date || "",
                           status: transaction.payment_status || "已完成",
                           description: transaction.description || "无备注",
-                          customerName: transaction.customer_name,
-                          projectClientName: transaction.project_client_name
+                          customerName: transaction.customer_name || undefined,
+                          projectClientName: transaction.project_client_name || undefined
                         }}>
                           <button className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors">
                             编辑
@@ -429,9 +457,9 @@ export default function FinancePage() {
                       </div>
                     </td>
                   </tr>
-                ))
+                  ))
               )}
-              </tbody>
+            </tbody>
             </table>
           </div>
         </div>

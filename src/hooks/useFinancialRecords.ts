@@ -29,44 +29,19 @@ export function useFinancialRecords() {
   const fetchRecords = async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      // 使用详细视图获取包含关联信息的财务记录
       const { data, error } = await supabase
         .from('financial_records')
-        .select(`
-          *,
-          projects:project_id (
-            name,
-            client_name,
-            client_phone,
-            project_address
-          ),
-          customers:customer_id (
-            name,
-            phone,
-            email,
-            status
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // 转换数据格式以包含关联信息
-      const detailedRecords = (data || []).map(record => ({
-        ...record,
-        project_display_name: record.projects?.name || record.project_name,
-        project_client_name: record.projects?.client_name || record.customer_name,
-        project_client_phone: record.projects?.client_phone,
-        project_address: record.projects?.project_address,
-        customer_display_name: record.customers?.name || record.customer_name,
-        customer_phone: record.customers?.phone,
-        customer_email: record.customers?.email,
-        customer_status: record.customers?.status
-      }));
-      
-      setRecords(detailedRecords);
+      console.log('Fetched financial records:', data);
+      setRecords(data || []);
     } catch (err) {
+      console.error('Error fetching financial records:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch financial records');
     } finally {
       setLoading(false);
@@ -76,7 +51,7 @@ export function useFinancialRecords() {
   const createRecord = async (recordData: FinancialRecordInsert & { 
     customer_id?: string; 
     customer_name?: string; 
-    project_name?: string; 
+    project_name?: string;
   }) => {
     try {
       // 获取当前用户ID
@@ -88,18 +63,29 @@ export function useFinancialRecords() {
       const { data, error } = await supabase
         .from('financial_records')
         .insert({
-          ...recordData,
           user_id: user.id,
+          transaction_type: recordData.transaction_type,
+          amount: recordData.amount,
+          category: recordData.category,
+          project_id: recordData.project_id,
+          customer_id: recordData.customer_id,
+          customer_name: recordData.customer_name,
+          project_name: recordData.project_name,
+          description: recordData.description,
+          transaction_date: recordData.transaction_date,
+          payment_method: recordData.payment_method,
+          invoice_number: recordData.invoice_number,
+          payment_status: recordData.payment_status || '已完成'
         })
         .select()
         .single();
 
       if (error) throw error;
       
-      // 重新获取记录以包含关联信息
       await fetchRecords();
       return data;
     } catch (err) {
+      console.error('Error creating financial record:', err);
       throw new Error(err instanceof Error ? err.message : 'Failed to create financial record');
     }
   };
