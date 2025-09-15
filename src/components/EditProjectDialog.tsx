@@ -476,7 +476,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
                               <label className="text-sm text-muted-foreground">状态：</label>
                               <Select
                                 value={phase.status}
-                                onValueChange={(value) => handleStatusChange(phase.id, value)}
+                               onValueChange={(value) => updatePhaseStatus(phase.id, value)}
                               >
                                 <SelectTrigger className="w-24">
                                   <SelectValue />
@@ -497,7 +497,12 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
                                 min="0"
                                 max="100"
                                 value={Math.round(phase.progress)}
-                                onChange={(e) => handleProgressChange(phase.id, e.target.value)}
+                               onChange={(e) => {
+                                 const progressValue = parseInt(e.target.value);
+                                 if (progressValue >= 0 && progressValue <= 100) {
+                                   updatePhaseProgress(phase.id, progressValue);
+                                 }
+                               }}
                                 className="w-20"
                               />
                               <span className="text-sm text-muted-foreground">%</span>
