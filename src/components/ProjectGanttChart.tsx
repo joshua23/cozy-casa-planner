@@ -7,7 +7,7 @@ import { Calendar, Clock, CheckCircle, XCircle, PlayCircle, PauseCircle } from "
 import { useProjectPhases, ProjectPhase } from "@/hooks/useProjectPhases";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { format, addDays, differenceInDays, parseISO } from "date-fns";
+import { format, addDays, differenceInDays, parseISO, isValid } from "date-fns";
 
 interface ProjectGanttChartProps {
   projectId: string;
@@ -51,42 +51,91 @@ export function ProjectGanttChart({ projectId }: ProjectGanttChartProps) {
   };
 
   const calculateGanttData = () => {
-    if (phases.length === 0) return { startDate: new Date(), endDate: new Date(), totalDays: 0 };
+    if (phases.length === 0) return { startDate: new Date(), endDate: new Date(), totalDays: 1 };
 
-    // 找到项目的开始和结束日期
     const today = new Date();
     let projectStart = today;
     let projectEnd = today;
 
-    phases.forEach((phase, index) => {
-      if (phase.start_date) {
-        const phaseStart = parseISO(phase.start_date);
-        if (index === 0) {
-          projectStart = phaseStart;
+    try {
+      phases.forEach((phase, index) => {
+        // 处理开始日期
+        if (phase.start_date && phase.start_date.trim() !== '') {
+          try {
+            const phaseStart = parseISO(phase.start_date);
+            if (!isNaN(phaseStart.getTime())) {
+              if (index === 0) {
+                projectStart = phaseStart;
+              }
+            }
+          } catch (e) {
+            console.warn('Invalid start_date:', phase.start_date);
+          }
+        } else if (index === 0) {
+          projectStart = today;
+        } else {
+          // 根据前一个阶段计算开始日期
+          const prevPhase = phases[index - 1];
+          if (prevPhase.end_date && prevPhase.end_date.trim() !== '') {
+            try {
+              const prevEndDate = parseISO(prevPhase.end_date);
+              if (!isNaN(prevEndDate.getTime())) {
+                projectStart = addDays(prevEndDate, 1);
+              }
+            } catch (e) {
+              console.warn('Invalid prev end_date:', prevPhase.end_date);
+            }
+          }
         }
-      } else if (index === 0) {
-        // 第一个阶段没有开始日期，使用今天
-        projectStart = today;
-      } else {
-        // 根据前一个阶段计算开始日期
-        const prevPhase = phases[index - 1];
-        if (prevPhase.end_date) {
-          projectStart = addDays(parseISO(prevPhase.end_date), 1);
+
+        // 处理结束日期
+        if (phase.end_date && phase.end_date.trim() !== '') {
+          try {
+            const phaseEnd = parseISO(phase.end_date);
+            if (!isNaN(phaseEnd.getTime())) {
+              projectEnd = phaseEnd;
+            }
+          } catch (e) {
+            console.warn('Invalid end_date:', phase.end_date);
+          }
+        } else {
+          // 没有结束日期，根据预计工期计算
+          const duration = phase.estimated_duration || 1;
+          let phaseStart = projectStart;
+          
+          if (phase.start_date && phase.start_date.trim() !== '') {
+            try {
+              const parsedStart = parseISO(phase.start_date);
+              if (!isNaN(parsedStart.getTime())) {
+                phaseStart = parsedStart;
+              }
+            } catch (e) {
+              console.warn('Invalid phase start_date:', phase.start_date);
+            }
+          } else if (index > 0) {
+            const prevPhase = phases[index - 1];
+            if (prevPhase.end_date && prevPhase.end_date.trim() !== '') {
+              try {
+                const prevEndDate = parseISO(prevPhase.end_date);
+                if (!isNaN(prevEndDate.getTime())) {
+                  phaseStart = addDays(prevEndDate, 1);
+                }
+              } catch (e) {
+                console.warn('Invalid prev phase end_date:', prevPhase.end_date);
+              }
+            }
+          }
+          
+          projectEnd = addDays(phaseStart, duration);
         }
-      }
+      });
 
-      if (phase.end_date) {
-        projectEnd = parseISO(phase.end_date);
-      } else {
-        // 没有结束日期，根据预计工期计算
-        const phaseStart = phase.start_date ? parseISO(phase.start_date) : 
-          (index === 0 ? projectStart : addDays(parseISO(phases[index - 1].end_date || ''), 1));
-        projectEnd = addDays(phaseStart, phase.estimated_duration);
-      }
-    });
-
-    const totalDays = differenceInDays(projectEnd, projectStart) + 1;
-    return { startDate: projectStart, endDate: projectEnd, totalDays };
+      const totalDays = Math.max(1, differenceInDays(projectEnd, projectStart) + 1);
+      return { startDate: projectStart, endDate: projectEnd, totalDays };
+    } catch (error) {
+      console.error('Error calculating gantt data:', error);
+      return { startDate: today, endDate: addDays(today, 30), totalDays: 30 };
+    }
   };
 
   const { startDate, endDate, totalDays } = calculateGanttData();
@@ -110,7 +159,7 @@ export function ProjectGanttChart({ projectId }: ProjectGanttChartProps) {
           项目进度甘特图
         </CardTitle>
         <div className="text-sm text-muted-foreground">
-          项目周期：{format(startDate, 'yyyy-MM-dd')} - {format(endDate, 'yyyy-MM-dd')} ({totalDays} 天)
+          项目周期：{startDate && !isNaN(startDate.getTime()) ? format(startDate, 'yyyy-MM-dd') : '未设定'} - {endDate && !isNaN(endDate.getTime()) ? format(endDate, 'yyyy-MM-dd') : '未设定'} ({totalDays} 天)
         </div>
       </CardHeader>
       <CardContent>
@@ -121,15 +170,47 @@ export function ProjectGanttChart({ projectId }: ProjectGanttChartProps) {
             </div>
           ) : (
             phases.map((phase, index) => {
-              const phaseStartDate = phase.start_date ? parseISO(phase.start_date) : 
-                (index === 0 ? startDate : addDays(parseISO(phases[index - 1].end_date || ''), 1));
-              const phaseEndDate = phase.end_date ? parseISO(phase.end_date) : 
-                addDays(phaseStartDate, phase.estimated_duration);
+              // 安全地处理日期解析
+              let phaseStartDate = startDate;
+              let phaseEndDate = endDate;
               
-              const daysSinceStart = differenceInDays(phaseStartDate, startDate);
-              const phaseDuration = differenceInDays(phaseEndDate, phaseStartDate) + 1;
-              const leftPercentage = totalDays > 0 ? (daysSinceStart / totalDays) * 100 : 0;
-              const widthPercentage = totalDays > 0 ? (phaseDuration / totalDays) * 100 : 0;
+              try {
+                if (phase.start_date && phase.start_date.trim() !== '') {
+                  const parsedStart = parseISO(phase.start_date);
+                  if (!isNaN(parsedStart.getTime())) {
+                    phaseStartDate = parsedStart;
+                  }
+                } else if (index === 0) {
+                  phaseStartDate = startDate;
+                } else {
+                  const prevPhase = phases[index - 1];
+                  if (prevPhase.end_date && prevPhase.end_date.trim() !== '') {
+                    const prevEndDate = parseISO(prevPhase.end_date);
+                    if (!isNaN(prevEndDate.getTime())) {
+                      phaseStartDate = addDays(prevEndDate, 1);
+                    }
+                  }
+                }
+
+                if (phase.end_date && phase.end_date.trim() !== '') {
+                  const parsedEnd = parseISO(phase.end_date);
+                  if (!isNaN(parsedEnd.getTime())) {
+                    phaseEndDate = parsedEnd;
+                  }
+                } else {
+                  const duration = phase.estimated_duration || 1;
+                  phaseEndDate = addDays(phaseStartDate, duration);
+                }
+              } catch (error) {
+                console.warn('Error parsing phase dates:', error);
+                phaseStartDate = startDate;
+                phaseEndDate = addDays(startDate, phase.estimated_duration || 1);
+              }
+              
+              const daysSinceStart = Math.max(0, differenceInDays(phaseStartDate, startDate));
+              const phaseDuration = Math.max(1, differenceInDays(phaseEndDate, phaseStartDate) + 1);
+              const leftPercentage = totalDays > 0 ? Math.min(100, (daysSinceStart / totalDays) * 100) : 0;
+              const widthPercentage = totalDays > 0 ? Math.min(100, (phaseDuration / totalDays) * 100) : 0;
 
               return (
                 <div key={phase.id} className="border rounded-lg p-4 space-y-3">
@@ -166,7 +247,7 @@ export function ProjectGanttChart({ projectId }: ProjectGanttChartProps) {
                       />
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center text-xs text-foreground font-medium">
-                      {format(phaseStartDate, 'MM/dd')} - {format(phaseEndDate, 'MM/dd')}
+                      {phaseStartDate && !isNaN(phaseStartDate.getTime()) ? format(phaseStartDate, 'MM/dd') : '--'} - {phaseEndDate && !isNaN(phaseEndDate.getTime()) ? format(phaseEndDate, 'MM/dd') : '--'}
                     </div>
                   </div>
 
