@@ -1,5 +1,5 @@
 import { FolderOpen, Plus, Search, Calendar, Users, CreditCard, Wrench, CheckCircle, XCircle, Clock, ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
