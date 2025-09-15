@@ -296,7 +296,7 @@ export default function ProjectsPage() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">合同总价</p>
-                    <p className="font-medium text-foreground">¥{selectedProject.total_contract_amount?.toLocaleString()}</p>
+                    <p className="font-medium text-foreground">￥{selectedProject.total_contract_amount?.toLocaleString()}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">项目地址</p>
@@ -370,7 +370,7 @@ export default function ProjectsPage() {
                         <span>户型：{project.propertyType}</span>
                       </div>
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <span>合同：¥{(project.contractAmount / 10000).toFixed(0)}万</span>
+                        <span>合同：￥{(project.contractAmount / 10000).toFixed(0)}万</span>
                       </div>
                     </div>
 

@@ -207,7 +207,7 @@ export default function FinancePage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground">本月收入</p>
-                <p className="text-2xl font-bold text-stat-green">¥{statistics.monthlyIncome.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-stat-green">￥{statistics.monthlyIncome.toLocaleString()}</p>
               </div>
               <div className="w-12 h-12 bg-stat-green/10 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-stat-green" />
@@ -224,7 +224,7 @@ export default function FinancePage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground">本月支出</p>
-                <p className="text-2xl font-bold text-stat-red">¥{statistics.monthlyExpense.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-stat-red">￥{statistics.monthlyExpense.toLocaleString()}</p>
               </div>
               <div className="w-12 h-12 bg-stat-red/10 rounded-lg flex items-center justify-center">
                 <TrendingDown className="w-6 h-6 text-stat-red" />
@@ -241,7 +241,7 @@ export default function FinancePage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground">净利润</p>
-                <p className="text-2xl font-bold text-foreground">¥{statistics.netProfit.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-foreground">￥{statistics.netProfit.toLocaleString()}</p>
               </div>
               <div className="w-12 h-12 bg-stat-blue/10 rounded-lg flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-stat-blue" />
@@ -258,7 +258,7 @@ export default function FinancePage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground">账户余额</p>
-                <p className="text-2xl font-bold text-foreground">¥{statistics.accountBalance.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-foreground">￥{statistics.accountBalance.toLocaleString()}</p>
               </div>
               <div className="w-12 h-12 bg-stat-purple/10 rounded-lg flex items-center justify-center">
                 <CreditCard className="w-6 h-6 text-stat-purple" />
@@ -287,10 +287,10 @@ export default function FinancePage() {
                     tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
                   <YAxis axisLine={false} tickLine={false} 
                     tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                    tickFormatter={(value) => `¥${value/1000}k`} />
+                    tickFormatter={(value) => `￥${value/1000}k`} />
                   <ChartTooltip content={<ChartTooltipContent />} 
                     formatter={(value: number, name: string) => [
-                      `¥${value.toLocaleString()}`,
+                      `￥${value.toLocaleString()}`,
                       name === 'income' ? '收入' : '支出'
                     ]} />
                   <Bar dataKey="income" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
@@ -376,7 +376,7 @@ export default function FinancePage() {
                       </td>
                       <td className="p-4">
                         <span className={`font-semibold ${transaction.transaction_type === '收入' ? 'text-stat-green' : 'text-stat-red'}`}>
-                          {transaction.transaction_type === '收入' ? '+' : '-'}{formatAmount(transaction.amount || 0)}
+                          {transaction.transaction_type === '收入' ? '+' : '-'}￥{(transaction.amount || 0).toLocaleString()}
                         </span>
                       </td>
                       <td className="p-4 text-sm text-foreground">{transaction.category || "未分类"}</td>
