@@ -370,14 +370,28 @@ export default function FinancePage() {
                       </span>
                     </td>
                     <td className="p-4 text-sm text-foreground">{transaction.category}</td>
-                    <td className="p-4 text-sm text-muted-foreground">{transaction.project_id || "无关联项目"}</td>
+                    <td className="p-4 text-sm text-muted-foreground">
+                      {transaction.project_display_name || transaction.project_name || "无关联项目"}
+                      {transaction.project_client_name && (
+                        <div className="text-xs text-muted-foreground/70">
+                          客户：{transaction.project_client_name}
+                        </div>
+                      )}
+                    </td>
                     <td className="p-4 text-sm text-muted-foreground">{transaction.transaction_date}</td>
                     <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor("已完成")}`}>
-                        已完成
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.payment_status || "已完成")}`}>
+                        {transaction.payment_status || "已完成"}
                       </span>
                     </td>
-                    <td className="p-4 text-sm text-muted-foreground">{transaction.description || "无备注"}</td>
+                    <td className="p-4 text-sm text-muted-foreground">
+                      {transaction.description || "无备注"}
+                      {transaction.customer_name && transaction.customer_name !== transaction.project_client_name && (
+                        <div className="text-xs text-muted-foreground/70">
+                          关联客户：{transaction.customer_name}
+                        </div>
+                      )}
+                    </td>
                     <td className="p-4">
                       <div className="flex items-center space-x-2">
                         <FinanceDetailDialog transaction={{
@@ -385,10 +399,12 @@ export default function FinancePage() {
                           type: transaction.transaction_type,
                           amount: transaction.amount || 0,
                           category: transaction.category,
-                          project: transaction.project_id || "无关联项目",
+                          project: transaction.project_display_name || transaction.project_name || "无关联项目",
                           date: transaction.transaction_date,
-                          status: "已完成",
-                          description: transaction.description || "无备注"
+                          status: transaction.payment_status || "已完成",
+                          description: transaction.description || "无备注",
+                          customerName: transaction.customer_name,
+                          projectClientName: transaction.project_client_name
                         }}>
                           <button className="px-3 py-1 text-xs border border-border rounded hover:bg-muted transition-colors">
                             详情
@@ -399,10 +415,12 @@ export default function FinancePage() {
                           type: transaction.transaction_type,
                           amount: transaction.amount || 0,
                           category: transaction.category,
-                          project: transaction.project_id || "无关联项目",
+                          project: transaction.project_display_name || transaction.project_name || "无关联项目",
                           date: transaction.transaction_date,
-                          status: "已完成",
-                          description: transaction.description || "无备注"
+                          status: transaction.payment_status || "已完成",
+                          description: transaction.description || "无备注",
+                          customerName: transaction.customer_name,
+                          projectClientName: transaction.project_client_name
                         }}>
                           <button className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors">
                             编辑

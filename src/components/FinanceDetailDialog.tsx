@@ -14,6 +14,8 @@ interface Transaction {
   date: string;
   status: string;
   description: string;
+  customerName?: string;
+  projectClientName?: string;
 }
 
 interface FinanceDetailDialogProps {
@@ -39,7 +41,7 @@ export function FinanceDetailDialog({ transaction, children }: FinanceDetailDial
       { name: "收据.jpg", size: "856KB" }
     ],
     relatedContacts: {
-      client: "张先生",
+      client: transaction.customerName || transaction.projectClientName || "张先生",
       phone: "138****1234",
       company: "海景地产"
     }
