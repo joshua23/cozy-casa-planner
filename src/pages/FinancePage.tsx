@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 export default function FinancePage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const { records, loading, error } = useFinancialRecords();
+  const { records, loading, error, projects } = useFinancialRecords();
 
   // Debug log to check data
   useEffect(() => {
