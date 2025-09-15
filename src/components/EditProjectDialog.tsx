@@ -62,53 +62,6 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
     endDate: project.deadline,
   });
 
-  const createDefaultPhases = async () => {
-    try {
-      const defaultPhases = [
-        { name: '跟进洽谈', order: 1, duration: 3, description: '项目前期沟通、需求确认、合同签订等' },
-        { name: '设计阶段', order: 2, duration: 14, description: '量房、设计方案、效果图制作、方案确认' },
-        { name: '拆除阶段', order: 3, duration: 3, description: '原有装修拆除、垃圾清理' },
-        { name: '水电改造', order: 4, duration: 7, description: '水电线路改造、开槽布线' },
-        { name: '泥瓦工程', order: 5, duration: 10, description: '防水、贴砖、地面找平等' },
-        { name: '木工阶段', order: 6, duration: 12, description: '吊顶、柜体制作、木工装饰' },
-        { name: '油漆涂料', order: 7, duration: 8, description: '墙面处理、刷漆、贴壁纸' },
-        { name: '安装阶段', order: 8, duration: 5, description: '灯具、开关插座、洁具安装' },
-        { name: '软装配饰', order: 9, duration: 3, description: '家具摆放、装饰品安装' },
-        { name: '收尾阶段', order: 10, duration: 2, description: '清洁、验收、整改' },
-        { name: '已完工', order: 11, duration: 1, description: '项目交付、售后服务' },
-      ];
-
-      // 批量创建阶段
-      for (const phase of defaultPhases) {
-        await supabase
-          .from('project_phases')
-          .insert({
-            project_id: project.id,
-            phase_name: phase.name,
-            phase_order: phase.order,
-            estimated_duration: phase.duration,
-            status: '未开始',
-            description: phase.description,
-            progress: 0
-          });
-      }
-
-      toast({
-        title: "成功",
-        description: "已创建默认项目阶段",
-      });
-
-      // 刷新阶段数据
-      window.location.reload();
-    } catch (error) {
-      console.error('Error creating phases:', error);
-      toast({
-        title: "错误",
-        description: "创建默认阶段失败",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -323,14 +276,15 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
               ) : phases.length === 0 ? (
                 <div className="text-center py-8">
                   <div className="text-muted-foreground mb-4">该项目还没有设置阶段</div>
-                  <Button onClick={createDefaultPhases}>
-                    创建默认项目阶段
-                  </Button>
+                  <div className="text-sm text-muted-foreground">请在项目详情页面的甘特图中查看和管理项目阶段</div>
                 </div>
               ) : (
                 <div className="space-y-4">
+                  <div className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg">
+                    项目阶段管理功能已移至项目详情页面的甘特图中，在那里可以更直观地查看和编辑项目进度。
+                  </div>
                   {phases.map((phase, index) => (
-                    <div key={phase.id} className="border rounded-lg p-4 space-y-3">
+                    <div key={phase.id} className="border rounded-lg p-4 space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           {getStatusIcon(phase.status)}
@@ -348,84 +302,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
                           </span>
                         </div>
                       </div>
-
-                      {/* 进度条 */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">完成进度</span>
-                          <span className="font-medium">{Math.round(phase.progress)}%</span>
-                        </div>
-                        <Progress value={phase.progress} className="h-2" />
-                      </div>
-
-                      {/* 操作区域 */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                        <div className="flex items-center gap-2">
-                          <label className="text-sm text-muted-foreground min-w-fit">状态：</label>
-                          <Select
-                            value={phase.status}
-                            onValueChange={(value) => updatePhaseStatus(phase.id, value)}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="未开始">未开始</SelectItem>
-                              <SelectItem value="进行中">进行中</SelectItem>
-                              <SelectItem value="已完成">已完成</SelectItem>
-                              <SelectItem value="暂停">暂停</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <label className="text-sm text-muted-foreground min-w-fit">进度：</label>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="100"
-                            value={Math.round(phase.progress)}
-                            onChange={(e) => {
-                              const progress = parseInt(e.target.value);
-                              if (progress >= 0 && progress <= 100) {
-                                updatePhaseProgress(phase.id, progress);
-                              }
-                            }}
-                            className="w-full"
-                          />
-                          <span className="text-sm text-muted-foreground">%</span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="w-4 h-4" />
-                          <span>预计 {phase.estimated_duration} 天</span>
-                          {phase.actual_start_date && (
-                            <span className="ml-2">
-                              • 开始：{new Date(phase.actual_start_date).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* 日期设置 */}
-                      <div className="grid grid-cols-2 gap-4 pt-2">
-                        <div className="space-y-2">
-                          <Label className="text-sm">计划开始日期</Label>
-                          <Input
-                            type="date"
-                            value={phase.start_date || ''}
-                            onChange={(e) => updatePhaseDates(phase.id, e.target.value, phase.end_date)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm">计划结束日期</Label>
-                          <Input
-                            type="date"
-                            value={phase.end_date || ''}
-                            onChange={(e) => updatePhaseDates(phase.id, phase.start_date, e.target.value)}
-                          />
-                        </div>
-                      </div>
+                      <Progress value={phase.progress} className="h-2" />
                     </div>
                   ))}
                 </div>

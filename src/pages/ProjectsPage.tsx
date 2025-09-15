@@ -249,17 +249,7 @@ export default function ProjectsPage() {
               </Card>
 
               {/* 项目进度节点 */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Wrench className="w-5 h-5" />
-                    <span>项目进度节点</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ProjectGanttChart projectId={selectedProject.id} />
-                </CardContent>
-              </Card>
+              <ProjectGanttChart projectId={selectedProject.id} />
             </div>
 
             {/* 项目基本信息 */}
