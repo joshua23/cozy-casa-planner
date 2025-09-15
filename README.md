@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# 云顶艺墅装修管理系统
 
 ## Project info
 
@@ -50,9 +50,9 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+## 技术栈
 
-This project is built with:
+本项目基于：
 
 - Vite
 - TypeScript
@@ -60,9 +60,13 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
+## 最近变更摘要（将随PR提交）
 
-Simply open [Lovable](https://lovable.dev/projects/9b2e3aba-a0df-4dff-bd2a-fa187f756bfe) and click on Share -> Publish.
+- 新增：项目列表卡片展示“付款节点摘要”和进度条，免进入详情
+- 新增：在“编辑项目”弹窗中集成“付款节点”页签，可直接增删改付款节点
+- 新增：`payment_nodes` 实时订阅，前端新增/修改后自动刷新列表摘要
+- 修复：`Dashboard.tsx` 残留 JSX 语法错误
+- 清理：删除临时调试脚本 `src/utils/testSupabase.ts`
 
 ## Can I connect a custom domain to my Lovable project?
 
