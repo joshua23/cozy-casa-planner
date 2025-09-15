@@ -140,7 +140,7 @@ export default function CustomersPage() {
                         </div>
                       )}
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">跟踪负责人</p>
+                        <p className="text-sm text-muted-foreground mb-1">工地负责人</p>
                         <div className="flex items-center space-x-1">
                           <User className="w-4 h-4" />
                           <span className="text-sm text-foreground">{customer.responsible_person}</span>
