@@ -56,10 +56,13 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+        <Button 
+          variant="ghost" 
+          className="relative h-10 w-10 rounded-full hover:bg-sidebar-accent/50 text-sidebar-text"
+        >
           <Avatar className="h-10 w-10">
             <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name} />
-            <AvatarFallback>
+            <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground">
               {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
