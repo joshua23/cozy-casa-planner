@@ -180,28 +180,6 @@ export default function WorkersPage() {
                         </div>
                       </div>
 
-                      {worker.current_project && (
-                        <div className="bg-muted/50 rounded-lg p-4">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Clock className="w-4 h-4 text-primary" />
-                            <span className="font-medium text-foreground">当前项目: {worker.current_project}</span>
-                          </div>
-                          <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <p className="text-muted-foreground">估价金额</p>
-                              <p className="font-medium text-foreground">¥{worker.estimated_amount?.toLocaleString()}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">已付金额</p>
-                              <p className="font-medium text-stat-green">¥{worker.paid_amount?.toLocaleString()}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">未付金额</p>
-                              <p className="font-medium text-stat-orange">¥{worker.unpaid_amount?.toLocaleString()}</p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     <div className="flex items-center space-x-2 ml-4">
@@ -219,13 +197,7 @@ export default function WorkersPage() {
                       >
                         联系
                       </Button>
-                      <WorkerAssignDialog worker={{
-                        ...worker,
-                        type: worker.worker_type,
-                        specialties: worker.specialties || [],
-                        hourlyRate: worker.hourly_rate || 0,
-                        dailyRate: worker.daily_rate || 0
-                      }}>
+                      <WorkerAssignDialog worker={worker}>
                         <Button size="sm">
                           分配项目
                         </Button>
@@ -315,24 +287,6 @@ export default function WorkersPage() {
                         </div>
                       </div>
 
-                      {team.current_project && (
-                        <div className="bg-muted/50 rounded-lg p-4">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Clock className="w-4 h-4 text-primary" />
-                            <span className="font-medium text-foreground">当前项目: {team.current_project}</span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <p className="text-muted-foreground">合同金额</p>
-                              <p className="font-medium text-foreground">¥{team.contract_amount?.toLocaleString()}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">已付金额</p>
-                              <p className="font-medium text-stat-green">¥{team.paid_amount?.toLocaleString()}</p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     <div className="flex items-center space-x-2 ml-4">
@@ -350,16 +304,7 @@ export default function WorkersPage() {
                       >
                         联系工长
                       </Button>
-                      <TeamAssignDialog team={{
-                        ...team,
-                        name: team.team_name,
-                        leader: team.team_leader,
-                        members: team.team_size,
-                        currentProjects: 0,
-                        completedProjects: 0,
-                        efficiency: team.efficiency_rating,
-                        rating: 4.5
-                      }}>
+                      <TeamAssignDialog team={team}>
                         <Button size="sm">
                           分配项目
                         </Button>

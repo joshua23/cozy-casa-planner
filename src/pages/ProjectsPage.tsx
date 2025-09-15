@@ -242,19 +242,7 @@ export default function ProjectsPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {selectedProject.paymentNodes.map((node, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-foreground">{node.type}</p>
-                        <p className="text-sm text-muted-foreground">
-                          已付: ¥{node.paid.toLocaleString()} / ¥{node.amount.toLocaleString()}
-                        </p>
-                      </div>
-                      <Badge className={getPaymentStatusColor(node.status)}>
-                        {node.status}
-                      </Badge>
-                    </div>
-                  ))}
+                  <p className="text-muted-foreground">暂无付款节点数据</p>
                 </CardContent>
               </Card>
 
@@ -267,18 +255,7 @@ export default function ProjectsPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {selectedProject.phases.map((phase, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          {getPhaseStatusIcon(phase.status)}
-                          <span className="font-medium text-foreground">{phase.name}</span>
-                        </div>
-                        <span className="text-sm text-muted-foreground">{phase.progress}%</span>
-                      </div>
-                      <Progress value={phase.progress} className="h-2" />
-                    </div>
-                  ))}
+                  <p className="text-muted-foreground">暂无项目进度节点数据</p>
                 </CardContent>
               </Card>
             </div>
@@ -292,15 +269,15 @@ export default function ProjectsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">客户姓名</p>
-                    <p className="font-medium text-foreground">{selectedProject.client}</p>
+                    <p className="font-medium text-foreground">{selectedProject.client_name}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">户型结构</p>
-                    <p className="font-medium text-foreground">{selectedProject.propertyType}</p>
+                    <p className="font-medium text-foreground">{selectedProject.property_type}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">装修风格</p>
-                    <p className="font-medium text-foreground">{selectedProject.decorationStyle}</p>
+                    <p className="font-medium text-foreground">{selectedProject.decoration_style}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">面积</p>
@@ -308,11 +285,11 @@ export default function ProjectsPage() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">合同总价</p>
-                    <p className="font-medium text-foreground">¥{selectedProject.contractAmount.toLocaleString()}</p>
+                    <p className="font-medium text-foreground">¥{selectedProject.total_contract_amount?.toLocaleString()}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">截止日期</p>
-                    <p className="font-medium text-foreground">{selectedProject.deadline}</p>
+                    <p className="font-medium text-foreground">{selectedProject.end_date}</p>
                   </div>
                 </div>
               </CardContent>
