@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { AddProjectDialog } from "@/components/AddProjectDialog";
 import { EditProjectDialog } from "@/components/EditProjectDialog";
 import { ContactDialog } from "@/components/ContactDialog";
+import { ProjectGanttChart } from "@/components/ProjectGanttChart";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useProjects, type Project as DBProject } from "@/hooks/useProjects";
+import { useProjectPhases } from "@/hooks/useProjectPhases";
 
 interface PaymentNode {
   type: string;
@@ -254,8 +256,8 @@ export default function ProjectsPage() {
                     <span>项目进度节点</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground">暂无项目进度节点数据</p>
+                <CardContent>
+                  <ProjectGanttChart projectId={selectedProject.id} />
                 </CardContent>
               </Card>
             </div>
