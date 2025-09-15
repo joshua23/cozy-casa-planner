@@ -1,107 +1,197 @@
-import { Bot, Plus, Search, Zap, BarChart3, Settings, MessageCircle, Brain } from "lucide-react";
+import { Calculator, Plus, Save, FileText, Download, RefreshCw, Home, Wrench } from "lucide-react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
+interface BudgetItem {
+  id: string;
+  category: string;
+  name: string;
+  area: number;
+  unitPrice: number;
+  totalPrice: number;
+  notes: string;
+}
+
+interface BudgetCalculation {
+  projectName: string;
+  clientName: string;
+  totalArea: number;
+  propertyType: string;
+  decorationStyle: string;
+  items: BudgetItem[];
+  constructionFeeRate: number;
+  managementFeeRate: number;
+  designFeeRate: number;
+  taxRate: number;
+}
 
 export default function AIPage() {
   const { toast } = useToast();
-  const aiFeatures = [
-    {
-      id: 1,
-      title: "智能项目分析",
-      description: "基于历史数据分析项目风险和预期收益",
-      status: "运行中",
-      lastUpdate: "2024-01-20 14:30",
-      accuracy: "94%",
-      icon: BarChart3,
-      color: "stat-blue"
-    },
-    {
-      id: 2,
-      title: "自动材料采购",
-      description: "智能监控库存，自动生成采购建议",
-      status: "运行中",
-      lastUpdate: "2024-01-20 12:15",
-      accuracy: "91%",
-      icon: Bot,
-      color: "stat-green"
-    },
-    {
-      id: 3,
-      title: "工期预测优化",
-      description: "预测项目工期并提供优化建议",
-      status: "学习中",
-      lastUpdate: "2024-01-20 10:45",
-      accuracy: "87%",
-      icon: Brain,
-      color: "stat-purple"
-    },
-    {
-      id: 4,
-      title: "客户服务助手",
-      description: "智能客服机器人，24小时响应客户咨询",
-      status: "运行中",
-      lastUpdate: "2024-01-20 16:22",
-      accuracy: "96%",
-      icon: MessageCircle,
-      color: "stat-orange"
-    }
-  ];
+  
+  const [calculation, setCalculation] = useState<BudgetCalculation>({
+    projectName: "",
+    clientName: "",
+    totalArea: 696,
+    propertyType: "别墅",
+    decorationStyle: "现代简约",
+    items: [
+      {
+        id: "1",
+        category: "直接费",
+        name: "基建部分",
+        area: 696,
+        unitPrice: 814.50,
+        totalPrice: 566895.30,
+        notes: ""
+      },
+      {
+        id: "2", 
+        category: "直接费",
+        name: "装修工程",
+        area: 696,
+        unitPrice: 1487.85,
+        totalPrice: 1035540.70,
+        notes: ""
+      },
+      {
+        id: "3",
+        category: "直接费", 
+        name: "柜子定制",
+        area: 696,
+        unitPrice: 334.37,
+        totalPrice: 232723.50,
+        notes: ""
+      },
+      {
+        id: "4",
+        category: "直接费",
+        name: "新风设备/空调设备/地暖",
+        area: 696,
+        unitPrice: 545.98,
+        totalPrice: 380000.00,
+        notes: "预估"
+      },
+      {
+        id: "5",
+        category: "直接费",
+        name: "电梯",
+        area: 696,
+        unitPrice: 215.52,
+        totalPrice: 150000.00,
+        notes: "预估"
+      },
+      {
+        id: "6",
+        category: "直接费",
+        name: "灯具",
+        area: 696,
+        unitPrice: 114.94,
+        totalPrice: 80000.00,
+        notes: "预估"
+      },
+      {
+        id: "7",
+        category: "直接费",
+        name: "家私",
+        area: 696,
+        unitPrice: 373.56,
+        totalPrice: 260000.00,
+        notes: "预估"
+      },
+      {
+        id: "8",
+        category: "直接费",
+        name: "铝合金窗户",
+        area: 696,
+        unitPrice: 88.86,
+        totalPrice: 61849.20,
+        notes: "窗户面积39.84平方，玻璃栏杆72.96平米"
+      }
+    ],
+    constructionFeeRate: 3,
+    managementFeeRate: 5,
+    designFeeRate: 0,
+    taxRate: 1
+  });
 
-  const aiInsights = [
-    {
-      title: "项目预警",
-      content: "海景别墅装修项目可能延期2-3天，建议增加人力投入",
-      type: "warning",
-      priority: "高"
-    },
-    {
-      title: "材料建议",
-      content: "瓷砖库存不足，建议本周内补货1500㎡",
-      type: "info", 
-      priority: "中"
-    },
-    {
-      title: "成本优化",
-      content: "通过优化材料采购路径，可节省成本约8%",
-      type: "success",
-      priority: "中"
-    },
-    {
-      title: "客户满意度",
-      content: "本月客户满意度提升12%，主要得益于沟通效率改善",
-      type: "success",
-      priority: "低"
-    }
-  ];
+  // 计算各项费用
+  const directCostTotal = calculation.items.reduce((sum, item) => sum + item.totalPrice, 0);
+  const constructionFee = directCostTotal * (calculation.constructionFeeRate / 100);
+  const managementFee = directCostTotal * (calculation.managementFeeRate / 100);
+  const designFee = calculation.totalArea * calculation.designFeeRate;
+  const subtotal = directCostTotal + constructionFee + managementFee + designFee;
+  const tax = subtotal * (calculation.taxRate / 100);
+  const grandTotal = subtotal + tax;
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "运行中": return "text-stat-green bg-stat-green/10";
-      case "学习中": return "text-stat-blue bg-stat-blue/10";
-      case "维护中": return "text-stat-orange bg-stat-orange/10";
-      case "已停用": return "text-muted-foreground bg-muted";
-      default: return "text-muted-foreground bg-muted";
-    }
+  const handleItemChange = (id: string, field: keyof BudgetItem, value: string | number) => {
+    setCalculation(prev => ({
+      ...prev,
+      items: prev.items.map(item => {
+        if (item.id === id) {
+          const updatedItem = { ...item, [field]: value };
+          // 自动计算总价
+          if (field === 'area' || field === 'unitPrice') {
+            updatedItem.totalPrice = updatedItem.area * updatedItem.unitPrice;
+          }
+          return updatedItem;
+        }
+        return item;
+      })
+    }));
   };
 
-  const getInsightColor = (type: string) => {
-    switch (type) {
-      case "warning": return "border-l-stat-orange bg-stat-orange/5";
-      case "info": return "border-l-stat-blue bg-stat-blue/5";
-      case "success": return "border-l-stat-green bg-stat-green/5";
-      case "error": return "border-l-stat-red bg-stat-red/5";
-      default: return "border-l-muted-foreground bg-muted/5";
-    }
+  const addNewItem = () => {
+    const newItem: BudgetItem = {
+      id: Date.now().toString(),
+      category: "直接费",
+      name: "",
+      area: calculation.totalArea,
+      unitPrice: 0,
+      totalPrice: 0,
+      notes: ""
+    };
+    setCalculation(prev => ({
+      ...prev,
+      items: [...prev.items, newItem]
+    }));
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "高": return "text-stat-red bg-stat-red/10";
-      case "中": return "text-stat-orange bg-stat-orange/10";
-      case "低": return "text-stat-green bg-stat-green/10";
-      default: return "text-muted-foreground bg-muted";
-    }
+  const removeItem = (id: string) => {
+    setCalculation(prev => ({
+      ...prev,
+      items: prev.items.filter(item => item.id !== id)
+    }));
+  };
+
+  const handleSave = () => {
+    toast({
+      title: "保存成功",
+      description: "预算方案已保存",
+    });
+  };
+
+  const handleExport = () => {
+    toast({
+      title: "导出成功", 
+      description: "预算表已导出为Excel文件",
+    });
+  };
+
+  const resetCalculation = () => {
+    setCalculation(prev => ({
+      ...prev,
+      items: prev.items.map(item => ({ ...item, totalPrice: item.area * item.unitPrice }))
+    }));
+    toast({
+      title: "重新计算",
+      description: "所有费用已重新计算",
+    });
   };
 
   return (
@@ -110,187 +200,475 @@ export default function AIPage() {
       <div className="bg-card border-b border-border p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Bot className="w-6 h-6 text-primary" />
+            <Calculator className="w-6 h-6 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">AI智能管理</h1>
-              <p className="text-muted-foreground">智能化管理决策和自动化流程</p>
+              <h1 className="text-2xl font-bold text-foreground">装修预算测算</h1>
+              <p className="text-muted-foreground">智能化装修费用预算计算和方案生成</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <button 
-              className="px-4 py-2 border border-border rounded-lg text-foreground hover:bg-muted transition-colors flex items-center space-x-2"
-              onClick={() => toast({
-                title: "AI设置",
-                description: "AI模型设置功能开发中",
-              })}
-            >
-              <Settings className="w-4 h-4" />
-              <span>AI设置</span>
-            </button>
-            <button 
-              className="px-4 py-2 bg-gradient-primary text-primary-foreground rounded-lg font-medium shadow-card hover:shadow-elevated transition-all duration-smooth flex items-center space-x-2"
-              onClick={() => toast({
-                title: "新增模型",
-                description: "AI模型训练功能开发中",
-              })}
-            >
-              <Plus className="w-4 h-4" />
-              <span>新增模型</span>
-            </button>
+            <Button variant="outline" onClick={resetCalculation}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              重新计算
+            </Button>
+            <Button variant="outline" onClick={handleSave}>
+              <Save className="w-4 h-4 mr-2" />
+              保存方案
+            </Button>
+            <Button onClick={handleExport}>
+              <Download className="w-4 h-4 mr-2" />
+              导出Excel
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* AI Overview */}
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-card rounded-lg p-4 shadow-card border border-border/50">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">AI模型数量</p>
-                <p className="text-2xl font-bold text-foreground">8</p>
+      <div className="p-6 space-y-6">
+        {/* 项目基本信息 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Home className="w-5 h-5" />
+              <span>项目基本信息</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="projectName">项目名称</Label>
+                <Input
+                  id="projectName"
+                  value={calculation.projectName}
+                  onChange={(e) => setCalculation(prev => ({ ...prev, projectName: e.target.value }))}
+                  placeholder="请输入项目名称"
+                />
               </div>
-              <Bot className="w-8 h-8 text-stat-blue" />
+              <div className="space-y-2">
+                <Label htmlFor="clientName">客户姓名</Label>
+                <Input
+                  id="clientName"
+                  value={calculation.clientName}
+                  onChange={(e) => setCalculation(prev => ({ ...prev, clientName: e.target.value }))}
+                  placeholder="请输入客户姓名"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="totalArea">总面积 (㎡)</Label>
+                <Input
+                  id="totalArea"
+                  type="number"
+                  value={calculation.totalArea}
+                  onChange={(e) => {
+                    const newArea = parseFloat(e.target.value) || 0;
+                    setCalculation(prev => ({
+                      ...prev,
+                      totalArea: newArea,
+                      items: prev.items.map(item => ({
+                        ...item,
+                        area: newArea,
+                        totalPrice: newArea * item.unitPrice
+                      }))
+                    }));
+                  }}
+                  placeholder="请输入总面积"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="propertyType">户型类型</Label>
+                <Select 
+                  value={calculation.propertyType} 
+                  onValueChange={(value) => setCalculation(prev => ({ ...prev, propertyType: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择户型" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="平层">平层</SelectItem>
+                    <SelectItem value="小商品">小商品</SelectItem>
+                    <SelectItem value="别墅">别墅</SelectItem>
+                    <SelectItem value="办公室">办公室</SelectItem>
+                    <SelectItem value="商业空间">商业空间</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="decorationStyle">装修风格</Label>
+                <Select 
+                  value={calculation.decorationStyle} 
+                  onValueChange={(value) => setCalculation(prev => ({ ...prev, decorationStyle: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择风格" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="现代简约">现代简约</SelectItem>
+                    <SelectItem value="北欧风">北欧风</SelectItem>
+                    <SelectItem value="中式">中式</SelectItem>
+                    <SelectItem value="欧式">欧式</SelectItem>
+                    <SelectItem value="美式">美式</SelectItem>
+                    <SelectItem value="工业风">工业风</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
-          <div className="bg-card rounded-lg p-4 shadow-card border border-border/50">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">运行中模型</p>
-                <p className="text-2xl font-bold text-foreground">6</p>
+          </CardContent>
+        </Card>
+
+        {/* 费用明细表 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <FileText className="w-5 h-5" />
+                <span>费用明细</span>
               </div>
-              <Zap className="w-8 h-8 text-stat-green" />
+              <Button onClick={addNewItem} size="sm">
+                <Plus className="w-4 h-4 mr-2" />
+                添加项目
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">序号</th>
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">专业类别</th>
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">取费基数</th>
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">面积 (㎡)</th>
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">合价</th>
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">单方造价 (元/㎡)</th>
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">备注</th>
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {calculation.items.map((item, index) => (
+                    <tr key={item.id} className="border-b border-border hover:bg-muted/20">
+                      <td className="p-3 text-sm text-foreground">{index + 1}</td>
+                      <td className="p-3">
+                        <Input
+                          value={item.name}
+                          onChange={(e) => handleItemChange(item.id, 'name', e.target.value)}
+                          placeholder="请输入专业类别"
+                          className="min-w-32"
+                        />
+                      </td>
+                      <td className="p-3 text-sm text-muted-foreground">{item.category}</td>
+                      <td className="p-3">
+                        <Input
+                          type="number"
+                          value={item.area}
+                          onChange={(e) => handleItemChange(item.id, 'area', parseFloat(e.target.value) || 0)}
+                          className="w-24"
+                        />
+                      </td>
+                      <td className="p-3">
+                        <div className="font-medium text-foreground">
+                          ¥{item.totalPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={item.unitPrice}
+                          onChange={(e) => handleItemChange(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                          className="w-28"
+                        />
+                      </td>
+                      <td className="p-3">
+                        <Input
+                          value={item.notes}
+                          onChange={(e) => handleItemChange(item.id, 'notes', e.target.value)}
+                          placeholder="备注"
+                          className="min-w-32"
+                        />
+                      </td>
+                      <td className="p-3">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => removeItem(item.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          删除
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                  
+                  {/* 直接费合计 */}
+                  <tr className="border-b-2 border-primary bg-primary/5">
+                    <td className="p-3 text-sm font-medium">一</td>
+                    <td className="p-3 text-sm font-medium text-foreground">直接费合计</td>
+                    <td className="p-3"></td>
+                    <td className="p-3 text-sm font-medium">{calculation.totalArea}</td>
+                    <td className="p-3 text-lg font-bold text-foreground">
+                      ¥{directCostTotal.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="p-3 text-sm font-medium">
+                      {(directCostTotal / calculation.totalArea).toFixed(2)}
+                    </td>
+                    <td className="p-3"></td>
+                    <td className="p-3"></td>
+                  </tr>
+
+                  {/* 措施费 */}
+                  <tr className="border-b border-border">
+                    <td className="p-3 text-sm font-medium">二</td>
+                    <td className="p-3 text-sm font-medium text-foreground">措施费</td>
+                    <td className="p-3 text-sm text-muted-foreground">一*{calculation.constructionFeeRate}%</td>
+                    <td className="p-3"></td>
+                    <td className="p-3 text-sm font-medium text-foreground">
+                      ¥{constructionFee.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="p-3 text-sm font-medium">
+                      {(constructionFee / calculation.totalArea).toFixed(2)}
+                    </td>
+                    <td className="p-3">
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={calculation.constructionFeeRate}
+                        onChange={(e) => setCalculation(prev => ({ ...prev, constructionFeeRate: parseFloat(e.target.value) || 0 }))}
+                        className="w-20"
+                      />
+                      <span className="text-xs text-muted-foreground ml-1">%</span>
+                    </td>
+                    <td className="p-3"></td>
+                  </tr>
+
+                  {/* 管理费及利润 */}
+                  <tr className="border-b border-border">
+                    <td className="p-3 text-sm font-medium">三</td>
+                    <td className="p-3 text-sm font-medium text-foreground">管理费及利润</td>
+                    <td className="p-3 text-sm text-muted-foreground">(一+二)*{calculation.managementFeeRate}%</td>
+                    <td className="p-3"></td>
+                    <td className="p-3 text-sm font-medium text-foreground">
+                      ¥{managementFee.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="p-3 text-sm font-medium">
+                      {(managementFee / calculation.totalArea).toFixed(2)}
+                    </td>
+                    <td className="p-3">
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={calculation.managementFeeRate}
+                        onChange={(e) => setCalculation(prev => ({ ...prev, managementFeeRate: parseFloat(e.target.value) || 0 }))}
+                        className="w-20"
+                      />
+                      <span className="text-xs text-muted-foreground ml-1">%</span>
+                    </td>
+                    <td className="p-3"></td>
+                  </tr>
+
+                  {/* 设计费 */}
+                  <tr className="border-b border-border">
+                    <td className="p-3 text-sm font-medium">四</td>
+                    <td className="p-3 text-sm font-medium text-foreground">设计费</td>
+                    <td className="p-3 text-sm text-muted-foreground">施工图+平面图</td>
+                    <td className="p-3 text-sm font-medium">{calculation.totalArea}</td>
+                    <td className="p-3 text-sm font-medium text-foreground">
+                      ¥{designFee.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="p-3">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={calculation.designFeeRate}
+                        onChange={(e) => setCalculation(prev => ({ ...prev, designFeeRate: parseFloat(e.target.value) || 0 }))}
+                        className="w-20"
+                      />
+                    </td>
+                    <td className="p-3"></td>
+                    <td className="p-3"></td>
+                  </tr>
+
+                  {/* 税金 */}
+                  <tr className="border-b border-border">
+                    <td className="p-3 text-sm font-medium">五</td>
+                    <td className="p-3 text-sm font-medium text-foreground">税金</td>
+                    <td className="p-3 text-sm text-muted-foreground">(一+二+三+四)*{calculation.taxRate}%</td>
+                    <td className="p-3"></td>
+                    <td className="p-3 text-sm font-medium text-foreground">
+                      ¥{tax.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="p-3 text-sm font-medium">
+                      {(tax / calculation.totalArea).toFixed(2)}
+                    </td>
+                    <td className="p-3">
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={calculation.taxRate}
+                        onChange={(e) => setCalculation(prev => ({ ...prev, taxRate: parseFloat(e.target.value) || 0 }))}
+                        className="w-20"
+                      />
+                      <span className="text-xs text-muted-foreground ml-1">%</span>
+                    </td>
+                    <td className="p-3"></td>
+                  </tr>
+
+                  {/* 总计 */}
+                  <tr className="border-b-2 border-primary bg-primary/10">
+                    <td className="p-3 text-sm font-bold"></td>
+                    <td className="p-3 text-lg font-bold text-foreground">总计</td>
+                    <td className="p-3"></td>
+                    <td className="p-3 text-sm font-bold">{calculation.totalArea}</td>
+                    <td className="p-3 text-xl font-bold text-primary">
+                      ¥{grandTotal.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="p-3 text-lg font-bold text-foreground">
+                      {(grandTotal / calculation.totalArea).toFixed(2)}
+                    </td>
+                    <td className="p-3"></td>
+                    <td className="p-3"></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-          </div>
-          <div className="bg-card rounded-lg p-4 shadow-card border border-border/50">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">平均准确率</p>
-                <p className="text-2xl font-bold text-foreground">92%</p>
+          </CardContent>
+        </Card>
+
+        {/* 费用汇总 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">直接费用</p>
+                  <p className="text-xl font-bold text-foreground">¥{(directCostTotal / 10000).toFixed(1)}万</p>
+                </div>
+                <Wrench className="w-8 h-8 text-stat-blue" />
               </div>
-              <BarChart3 className="w-8 h-8 text-stat-purple" />
-            </div>
-          </div>
-          <div className="bg-card rounded-lg p-4 shadow-card border border-border/50">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">处理任务</p>
-                <p className="text-2xl font-bold text-foreground">1,456</p>
+              <div className="mt-2 text-xs text-muted-foreground">
+                占总价 {((directCostTotal / grandTotal) * 100).toFixed(1)}%
               </div>
-              <div className="w-8 h-8 bg-stat-orange/10 rounded-lg flex items-center justify-center">
-                <span className="text-stat-orange font-bold text-sm">任</span>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">措施费用</p>
+                  <p className="text-xl font-bold text-foreground">¥{(constructionFee / 10000).toFixed(1)}万</p>
+                </div>
+                <div className="w-8 h-8 bg-stat-green/10 rounded-lg flex items-center justify-center">
+                  <span className="text-stat-green font-bold text-sm">措</span>
+                </div>
               </div>
-            </div>
-          </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                占总价 {((constructionFee / grandTotal) * 100).toFixed(1)}%
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">管理费用</p>
+                  <p className="text-xl font-bold text-foreground">¥{(managementFee / 10000).toFixed(1)}万</p>
+                </div>
+                <div className="w-8 h-8 bg-stat-purple/10 rounded-lg flex items-center justify-center">
+                  <span className="text-stat-purple font-bold text-sm">管</span>
+                </div>
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                占总价 {((managementFee / grandTotal) * 100).toFixed(1)}%
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">项目总价</p>
+                  <p className="text-xl font-bold text-primary">¥{(grandTotal / 10000).toFixed(1)}万</p>
+                </div>
+                <Calculator className="w-8 h-8 text-primary" />
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                单价 ¥{(grandTotal / calculation.totalArea).toFixed(0)}/㎡
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* AI Features */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
-            <h3 className="text-lg font-semibold text-foreground mb-4">AI功能模块</h3>
-            <div className="space-y-4">
-              {aiFeatures.map((feature) => (
-                <div key={feature.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-10 h-10 bg-${feature.color}/10 rounded-lg flex items-center justify-center`}>
-                      <feature.icon className={`w-5 h-5 text-${feature.color}`} />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-foreground">{feature.title}</h4>
-                      <p className="text-sm text-muted-foreground">{feature.description}</p>
-                      <p className="text-xs text-muted-foreground mt-1">更新时间: {feature.lastUpdate}</p>
+        {/* 预算分析 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>预算分析</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-medium text-foreground">费用构成分析</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <span className="text-sm text-foreground">直接费用</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-16 h-2 bg-stat-blue rounded-full"></div>
+                      <span className="text-sm font-medium">{((directCostTotal / grandTotal) * 100).toFixed(1)}%</span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(feature.status)}`}>
-                      {feature.status}
-                    </span>
-                    <p className="text-sm text-foreground mt-1">准确率: {feature.accuracy}</p>
+                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <span className="text-sm text-foreground">措施费用</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-2 bg-stat-green rounded-full"></div>
+                      <span className="text-sm font-medium">{((constructionFee / grandTotal) * 100).toFixed(1)}%</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <span className="text-sm text-foreground">管理费用</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-2 bg-stat-purple rounded-full"></div>
+                      <span className="text-sm font-medium">{((managementFee / grandTotal) * 100).toFixed(1)}%</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <span className="text-sm text-foreground">设计费用</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-2 bg-stat-orange rounded-full"></div>
+                      <span className="text-sm font-medium">{((designFee / grandTotal) * 100).toFixed(1)}%</span>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
-            <h3 className="text-lg font-semibold text-foreground mb-4">AI智能洞察</h3>
-            <div className="space-y-4">
-              {aiInsights.map((insight, index) => (
-                <div key={index} className={`p-4 border-l-4 rounded-r-lg ${getInsightColor(insight.type)}`}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <h4 className="font-medium text-foreground">{insight.title}</h4>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(insight.priority)}`}>
-                          {insight.priority}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{insight.content}</p>
-                    </div>
+              <div className="space-y-4">
+                <h4 className="font-medium text-foreground">预算建议</h4>
+                <div className="space-y-3">
+                  <div className="p-3 bg-stat-green/10 border-l-4 border-stat-green rounded-r-lg">
+                    <p className="text-sm font-medium text-stat-green">成本控制良好</p>
+                    <p className="text-xs text-muted-foreground">直接费用占比合理，符合行业标准</p>
+                  </div>
+                  <div className="p-3 bg-stat-blue/10 border-l-4 border-stat-blue rounded-r-lg">
+                    <p className="text-sm font-medium text-stat-blue">单价水平</p>
+                    <p className="text-xs text-muted-foreground">
+                      单方造价 ¥{(grandTotal / calculation.totalArea).toFixed(0)}/㎡，属于{
+                        (grandTotal / calculation.totalArea) > 5000 ? "高端" :
+                        (grandTotal / calculation.totalArea) > 3000 ? "中高端" :
+                        (grandTotal / calculation.totalArea) > 2000 ? "中端" : "经济型"
+                      }装修标准
+                    </p>
+                  </div>
+                  <div className="p-3 bg-stat-orange/10 border-l-4 border-stat-orange rounded-r-lg">
+                    <p className="text-sm font-medium text-stat-orange">优化建议</p>
+                    <p className="text-xs text-muted-foreground">
+                      可考虑调整材料选择或施工工艺来优化成本结构
+                    </p>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* AI Performance Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
-            <h3 className="text-lg font-semibold text-foreground mb-4">AI模型性能趋势</h3>
-            <ChartContainer config={{
-              accuracy: { label: "准确率", color: "hsl(var(--primary))" },
-              efficiency: { label: "效率", color: "hsl(var(--secondary))" }
-            }} className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={[
-                  { month: "1月", accuracy: 89, efficiency: 85 },
-                  { month: "2月", accuracy: 91, efficiency: 88 },
-                  { month: "3月", accuracy: 93, efficiency: 90 },
-                  { month: "4月", accuracy: 92, efficiency: 92 },
-                  { month: "5月", accuracy: 94, efficiency: 94 },
-                  { month: "6月", accuracy: 96, efficiency: 96 }
-                ]}>
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} 
-                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
-                  <YAxis axisLine={false} tickLine={false} 
-                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                    domain={[80, 100]} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line type="monotone" dataKey="accuracy" stroke="hsl(var(--primary))" strokeWidth={2} />
-                  <Line type="monotone" dataKey="efficiency" stroke="hsl(var(--secondary))" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </div>
-          
-          <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
-            <h3 className="text-lg font-semibold text-foreground mb-4">任务处理统计</h3>
-            <ChartContainer config={{
-              tasks: { label: "处理任务", color: "hsl(var(--primary))" }
-            }} className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={[
-                  { day: "周一", tasks: 142 },
-                  { day: "周二", tasks: 158 },
-                  { day: "周三", tasks: 173 },
-                  { day: "周四", tasks: 189 },
-                  { day: "周五", tasks: 205 },
-                  { day: "周六", tasks: 167 },
-                  { day: "周日", tasks: 134 }
-                ]}>
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} 
-                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
-                  <YAxis axisLine={false} tickLine={false} 
-                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area type="monotone" dataKey="tasks" stroke="hsl(var(--primary))" 
-                    fill="hsl(var(--primary))" fillOpacity={0.3} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
