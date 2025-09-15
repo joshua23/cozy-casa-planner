@@ -85,7 +85,7 @@ export default function AdminPage() {
       // 获取所有用户的基本信息
       const { data: authUsers, error: authError } = await supabase
         .from('profiles')
-        .select('id, full_name');
+        .select('id, full_name, created_at');
 
       if (authError) throw authError;
 
@@ -96,22 +96,18 @@ export default function AdminPage() {
 
       if (rolesError) throw rolesError;
 
-      // 获取auth.users表中的邮箱信息（通过RPC函数）
-      const { data: authData, error: authDataError } = await supabase.rpc('get_all_users_info');
-
-      // 如果RPC函数不存在，我们需要创建一个简化版本
+      // 构建用户列表（暂时使用占位符邮箱）
       const usersWithRoles: UserWithRoles[] = [];
       
       for (const profile of authUsers || []) {
         // 获取这个用户的角色
         const roles = userRoles?.filter(ur => ur.user_id === profile.id).map(ur => ur.role) || [];
         
-        // 这里我们需要想办法获取邮箱，暂时使用占位符
         usersWithRoles.push({
           id: profile.id,
           email: `user-${profile.id.slice(0, 8)}@example.com`, // 占位符
           full_name: profile.full_name,
-          created_at: new Date().toISOString(),
+          created_at: profile.created_at || new Date().toISOString(),
           roles
         });
       }
@@ -140,6 +136,7 @@ export default function AdminPage() {
     }
 
     try {
+      // 这里暂时简化处理，只分配管理员角色
       const { error } = await supabase.rpc('assign_admin_role', {
         _email: assignEmail
       });
@@ -148,7 +145,7 @@ export default function AdminPage() {
 
       toast({
         title: "成功",
-        description: `已为 ${assignEmail} 分配 ${roleOptions.find(r => r.value === selectedRole)?.label} 角色`,
+        description: `已为 ${assignEmail} 分配管理员角色`,
       });
 
       setAssignEmail("");
@@ -170,7 +167,7 @@ export default function AdminPage() {
         .from('user_roles')
         .delete()
         .eq('user_id', userId)
-        .eq('role', role);
+        .eq('role', role as 'admin' | 'manager' | 'user');
 
       if (error) throw error;
 
@@ -194,9 +191,10 @@ export default function AdminPage() {
     try {
       const { error } = await supabase
         .from('user_roles')
-        .insert({ user_id: userId, role })
-        .select()
-        .single();
+        .insert({ 
+          user_id: userId, 
+          role: role as 'admin' | 'manager' | 'user'
+        });
 
       if (error) throw error;
 
