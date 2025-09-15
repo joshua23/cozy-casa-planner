@@ -8,8 +8,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { LogIn, UserPlus, Building2 } from "lucide-react";
+import { LogIn, UserPlus, Building2, KeyRound } from "lucide-react";
 import logo from "@/assets/logo.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LoginFormData {
   email: string;
@@ -24,6 +25,9 @@ interface SignupFormData {
   username: string;
 }
 
+interface ForgotPasswordFormData {
+  email: string;
+}
 export default function AuthPage() {
   const { signIn, signUp, user, loading } = useAuth();
   const navigate = useNavigate();
@@ -46,6 +50,9 @@ export default function AuthPage() {
     username: "",
   });
 
+  const [forgotPasswordForm, setForgotPasswordForm] = useState<ForgotPasswordFormData>({
+    email: "",
+  });
   // 如果用户已登录，重定向到主页
   useEffect(() => {
     if (user && !loading) {
@@ -53,6 +60,35 @@ export default function AuthPage() {
     }
   }, [user, loading, navigate]);
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    if (!forgotPasswordForm.email) {
+      setError("请输入邮箱地址");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordForm.email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+      
+      if (error) {
+        setError(error.message);
+      } else {
+        setSuccess("密码重置邮件已发送，请检查您的邮箱");
+        setForgotPasswordForm({ email: "" });
+      }
+    } catch (error) {
+      setError("发送重置邮件失败，请重试");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -164,7 +200,7 @@ export default function AuthPage() {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin" className="flex items-center space-x-2">
                 <LogIn className="w-4 h-4" />
                 <span>登录</span>
@@ -172,6 +208,10 @@ export default function AuthPage() {
               <TabsTrigger value="signup" className="flex items-center space-x-2">
                 <UserPlus className="w-4 h-4" />
                 <span>注册</span>
+              </TabsTrigger>
+              <TabsTrigger value="forgot" className="flex items-center space-x-2">
+                <KeyRound className="w-4 h-4" />
+                <span>忘记密码</span>
               </TabsTrigger>
             </TabsList>
 
@@ -214,6 +254,15 @@ export default function AuthPage() {
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "登录中..." : "登录"}
                 </Button>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("forgot")}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    忘记密码？
+                  </button>
+                </div>
               </form>
             </TabsContent>
 
@@ -277,6 +326,34 @@ export default function AuthPage() {
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "注册中..." : "注册"}
                 </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="forgot">
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="forgot-email">邮箱地址</Label>
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    placeholder="请输入注册时使用的邮箱"
+                    value={forgotPasswordForm.email}
+                    onChange={(e) => setForgotPasswordForm({ email: e.target.value })}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "发送中..." : "发送重置邮件"}
+                </Button>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("signin")}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    返回登录
+                  </button>
+                </div>
               </form>
             </TabsContent>
           </Tabs>
