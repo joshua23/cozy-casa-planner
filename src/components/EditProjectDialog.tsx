@@ -10,7 +10,7 @@ interface ProjectFormData {
   name: string;
   clientName: string;
   clientPhone: string;
-  clientEmail: string;
+  projectAddress: string;
   propertyType: string;
   decorationStyle: string;
   area: string;
@@ -43,7 +43,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
     name: project.name,
     clientName: project.client,
     clientPhone: "",
-    clientEmail: "",
+    projectAddress: "",
     propertyType: project.propertyType,
     decorationStyle: project.decorationStyle,
     area: project.area.toString(),
@@ -126,13 +126,12 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="clientEmail">邮箱地址</Label>
+              <Label htmlFor="projectAddress">项目地址</Label>
               <Input
-                id="clientEmail"
-                type="email"
-                value={formData.clientEmail}
-                onChange={(e) => handleInputChange("clientEmail", e.target.value)}
-                placeholder="请输入邮箱地址"
+                id="projectAddress"
+                value={formData.projectAddress}
+                onChange={(e) => handleInputChange("projectAddress", e.target.value)}
+                placeholder="请输入项目地址（小区名称、门牌号等）"
               />
             </div>
           </div>

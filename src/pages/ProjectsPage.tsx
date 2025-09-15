@@ -288,6 +288,10 @@ export default function ProjectsPage() {
                     <p className="font-medium text-foreground">¥{selectedProject.total_contract_amount?.toLocaleString()}</p>
                   </div>
                   <div>
+                    <p className="text-sm text-muted-foreground">项目地址</p>
+                    <p className="font-medium text-foreground">{selectedProject.project_address || "未设定"}</p>
+                  </div>
+                  <div>
                     <p className="text-sm text-muted-foreground">截止日期</p>
                     <p className="font-medium text-foreground">{selectedProject.end_date}</p>
                   </div>

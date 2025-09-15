@@ -13,7 +13,7 @@ interface ProjectFormData {
   name: string;
   clientName: string;
   clientPhone: string;
-  clientEmail: string;
+  projectAddress: string;
   propertyType: string;
   decorationStyle: string;
   area: string;
@@ -29,7 +29,7 @@ export function AddProjectDialog() {
     name: "",
     clientName: "",
     clientPhone: "",
-    clientEmail: "",
+    projectAddress: "",
     propertyType: "",
     decorationStyle: "",
     area: "",
@@ -60,7 +60,7 @@ export function AddProjectDialog() {
         name: formData.name,
         client_name: formData.clientName,
         client_phone: formData.clientPhone || null,
-        client_email: formData.clientEmail || null,
+        project_address: formData.projectAddress || null,
         property_type: formData.propertyType || null,
         decoration_style: formData.decorationStyle || null,
         area: formData.area ? parseFloat(formData.area) : null,
@@ -80,7 +80,7 @@ export function AddProjectDialog() {
         name: "",
         clientName: "",
         clientPhone: "",
-        clientEmail: "",
+        projectAddress: "",
         propertyType: "",
         decorationStyle: "",
         area: "",
@@ -148,13 +148,12 @@ export function AddProjectDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="clientEmail">客户邮箱</Label>
+              <Label htmlFor="projectAddress">项目地址</Label>
               <Input
-                id="clientEmail"
-                type="email"
-                value={formData.clientEmail}
-                onChange={(e) => handleInputChange("clientEmail", e.target.value)}
-                placeholder="请输入客户邮箱"
+                id="projectAddress"
+                value={formData.projectAddress}
+                onChange={(e) => handleInputChange("projectAddress", e.target.value)}
+                placeholder="请输入项目地址（小区名称、门牌号等）"
               />
             </div>
             <div className="space-y-2">

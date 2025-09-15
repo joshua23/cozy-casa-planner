@@ -364,6 +364,7 @@ export type Database = {
           end_date: string | null
           id: string
           name: string
+          project_address: string | null
           property_type: string | null
           start_date: string | null
           status: string
@@ -381,6 +382,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           name: string
+          project_address?: string | null
           property_type?: string | null
           start_date?: string | null
           status?: string
@@ -398,6 +400,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           name?: string
+          project_address?: string | null
           property_type?: string | null
           start_date?: string | null
           status?: string
