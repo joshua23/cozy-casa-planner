@@ -341,7 +341,7 @@ export default function ProjectsPage() {
                     <div className="w-full bg-muted rounded-full h-2 mb-4">
                       <div 
                         className="bg-gradient-primary h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${project.phases.filter(p => p.status === '已完成').length / project.phases.length * 100}%` }}
+                        style={{ width: `${project.phases.filter(p => p.status as string === '已完成').length / project.phases.length * 100}%` }}
                       ></div>
                     </div>
                   </div>
@@ -350,11 +350,24 @@ export default function ProjectsPage() {
                     <Button 
                       variant="outline"
                       size="sm"
-                      onClick={() => setSelectedProject(project)}
+                      onClick={() => {
+                        const dbProject = projects.find(p => p.id === project.id.toString());
+                        if (dbProject) setSelectedProject(dbProject);
+                      }}
                     >
                       查看详情
                     </Button>
-                    <EditProjectDialog project={project}>
+                    <EditProjectDialog project={{
+                      id: typeof project.id === 'string' ? parseInt(project.id) : project.id,
+                      name: project.name,
+                      status: project.status,
+                      client: project.client,
+                      deadline: project.deadline,
+                      contractAmount: project.contractAmount,
+                      propertyType: project.propertyType,
+                      decorationStyle: project.decorationStyle,
+                      area: project.area
+                    }}>
                       <Button size="sm">
                         编辑
                       </Button>

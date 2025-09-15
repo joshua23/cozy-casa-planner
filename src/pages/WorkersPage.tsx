@@ -197,7 +197,15 @@ export default function WorkersPage() {
                       >
                         联系
                       </Button>
-                      <WorkerAssignDialog worker={worker}>
+                      <WorkerAssignDialog worker={{
+                        id: parseInt(worker.id) || 0,
+                        name: worker.name,
+                        type: worker.worker_type,
+                        hourlyRate: worker.hourly_rate || 0,
+                        dailyRate: worker.daily_rate || 0,
+                        specialties: worker.specialties || [],
+                        status: worker.status
+                      }}>
                         <Button size="sm">
                           分配项目
                         </Button>
@@ -304,7 +312,18 @@ export default function WorkersPage() {
                       >
                         联系工长
                       </Button>
-                      <TeamAssignDialog team={team}>
+                      <TeamAssignDialog team={{
+                        id: parseInt(team.id) || 0,
+                        name: team.team_name,
+                        leader: team.team_leader,
+                        members: team.team_size,
+                        currentProjects: 0,
+                        completedProjects: 0,
+                        specialties: team.specialties || [],
+                        efficiency: team.efficiency_rating,
+                        status: team.status,
+                        rating: team.efficiency_rating
+                      }}>
                         <Button size="sm">
                           分配项目
                         </Button>
