@@ -1,9 +1,10 @@
-import { Users, Plus, Search, Mail, Phone, Calendar, Home, User, DollarSign } from "lucide-react";
+import { Users, Plus, Search, Mail, Phone, Calendar, Home, User, DollarSign, Edit } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AddCustomerDialog } from "@/components/AddCustomerDialog";
+import { EditCustomerDialog } from "@/components/EditCustomerDialog";
 import { ContactDialog } from "@/components/ContactDialog";
 import { useNavigate } from "react-router-dom";
 import { useCustomers } from "@/hooks/useCustomers";
@@ -163,8 +164,18 @@ export default function CustomersPage() {
                   </div>
 
                   <div className="flex items-center space-x-2 ml-4">
-                    <Button 
-                      variant="outline" 
+                    <EditCustomerDialog customer={customer}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center space-x-1"
+                      >
+                        <Edit className="w-4 h-4" />
+                        <span>编辑</span>
+                      </Button>
+                    </EditCustomerDialog>
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => {
                         setContactInfo({
@@ -177,7 +188,7 @@ export default function CustomersPage() {
                     >
                       联系客户
                     </Button>
-                    <Button 
+                    <Button
                       size="sm"
                       onClick={() => navigate('/projects')}
                     >
