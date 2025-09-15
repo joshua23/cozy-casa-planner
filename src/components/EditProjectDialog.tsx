@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -64,6 +64,43 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
   const { toast } = useToast();
   const { phases, loading, updatePhaseStatus, updatePhaseProgress, updatePhaseDates } = useProjectPhases(project.id);
   
+  const handleStatusChange = useCallback(async (phaseId: string, newStatus: string) => {
+    try {
+      await updatePhaseStatus(phaseId, newStatus);
+      toast({
+        title: "成功",
+        description: "阶段状态已更新",
+      });
+    } catch (error) {
+      toast({
+        title: "错误",
+        description: "更新阶段状态失败",
+        variant: "destructive",
+      });
+    }
+  }, [updatePhaseStatus, toast]);
+
+  const handleProgressChange = useCallback(async (phaseId: string, progress: string) => {
+    const progressValue = parseInt(progress);
+    if (isNaN(progressValue) || progressValue < 0 || progressValue > 100) {
+      return;
+    }
+    
+    try {
+      await updatePhaseProgress(phaseId, progressValue);
+      toast({
+        title: "成功",
+        description: "阶段进度已更新",
+      });
+    } catch (error) {
+      toast({
+        title: "错误",
+        description: "更新阶段进度失败",
+        variant: "destructive",
+      });
+    }
+  }, [updatePhaseProgress, toast]);
+
   const [formData, setFormData] = useState<ProjectFormData>({
     name: project.name,
     clientName: project.client,
