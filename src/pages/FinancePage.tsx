@@ -2,66 +2,148 @@ import { DollarSign, Plus, Search, TrendingUp, TrendingDown, BarChart3, PieChart
 import { AddFinanceDialog } from "@/components/AddFinanceDialog";
 import { FinanceDetailDialog } from "@/components/FinanceDetailDialog";
 import { EditFinanceDialog } from "@/components/EditFinanceDialog";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { useFinancialRecords } from "@/hooks/useFinancialRecords";
 
 export default function FinancePage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const transactions = [
-    { 
-      id: 1, 
-      type: "收入", 
-      amount: 125000, 
-      category: "项目款", 
-      project: "海景别墅装修", 
-      date: "2024-01-20", 
-      status: "已到账",
-      description: "第二期工程款"
-    },
-    { 
-      id: 2, 
-      type: "支出", 
-      amount: 35000, 
-      category: "材料采购", 
-      project: "现代公寓改造", 
-      date: "2024-01-18", 
-      status: "已支付",
-      description: "瓷砖和地板采购"
-    },
-    { 
-      id: 3, 
-      type: "支出", 
-      amount: 28000, 
-      category: "人工费", 
-      project: "办公室装修", 
-      date: "2024-01-15", 
-      status: "已支付",
-      description: "施工队工资结算"
-    },
-    { 
-      id: 4, 
-      type: "收入", 
-      amount: 89000, 
-      category: "设计费", 
-      project: "商业空间设计", 
-      date: "2024-01-12", 
-      status: "已到账",
-      description: "设计方案费用"
-    },
-    { 
-      id: 5, 
-      type: "支出", 
-      amount: 15000, 
-      category: "设备租赁", 
-      project: "海景别墅装修", 
-      date: "2024-01-10", 
-      status: "已支付",
-      description: "施工设备月租"
-    },
-  ];
+  const { records, loading, error } = useFinancialRecords();
+
+  // 计算统计数据
+  const statistics = useMemo(() => {
+    if (!records || records.length === 0) {
+      return {
+        monthlyIncome: 0,
+        monthlyExpense: 0,
+        netProfit: 0,
+        accountBalance: 0,
+        incomeGrowth: 0,
+        expenseGrowth: 0,
+        profitGrowth: 0
+      };
+    }
+
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    
+    const monthlyIncome = records
+      .filter(r => r.transaction_type === '收入' && 
+        new Date(r.transaction_date).getMonth() === currentMonth &&
+        new Date(r.transaction_date).getFullYear() === currentYear)
+      .reduce((sum, r) => sum + (r.amount || 0), 0);
+    
+    const monthlyExpense = records
+      .filter(r => r.transaction_type === '支出' && 
+        new Date(r.transaction_date).getMonth() === currentMonth &&
+        new Date(r.transaction_date).getFullYear() === currentYear)
+      .reduce((sum, r) => sum + (r.amount || 0), 0);
+    
+    const netProfit = monthlyIncome - monthlyExpense;
+    
+    // 计算账户余额（所有收入减去所有支出）
+    const totalIncome = records
+      .filter(r => r.transaction_type === '收入')
+      .reduce((sum, r) => sum + (r.amount || 0), 0);
+    
+    const totalExpense = records
+      .filter(r => r.transaction_type === '支出')
+      .reduce((sum, r) => sum + (r.amount || 0), 0);
+    
+    const accountBalance = totalIncome - totalExpense;
+
+    return {
+      monthlyIncome,
+      monthlyExpense,
+      netProfit,
+      accountBalance,
+      incomeGrowth: 12.5, // 模拟增长率
+      expenseGrowth: 8.3,
+      profitGrowth: 18.7
+    };
+  }, [records]);
+
+  // 生成图表数据
+  const chartData = useMemo(() => {
+    if (!records || records.length === 0) {
+      return {
+        monthlyData: [],
+        projectData: []
+      };
+    }
+
+    // 按月份统计收支
+    const monthlyStats: Record<string, { income: number; expense: number }> = {};
+    
+    records.forEach(record => {
+      const date = new Date(record.transaction_date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      
+      if (!monthlyStats[monthKey]) {
+        monthlyStats[monthKey] = { income: 0, expense: 0 };
+      }
+      
+      if (record.transaction_type === '收入') {
+        monthlyStats[monthKey].income += record.amount || 0;
+      } else {
+        monthlyStats[monthKey].expense += record.amount || 0;
+      }
+    });
+
+    const monthlyData = Object.entries(monthlyStats)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
+      .map(([month, data]) => ({
+        month: month.split('-')[1] + '月',
+        income: data.income,
+        expense: data.expense
+      }));
+
+    // 按项目统计收益（这里简化处理，按分类统计）
+    const projectStats: Record<string, number> = {};
+    records
+      .filter(r => r.transaction_type === '收入')
+      .forEach(record => {
+        const category = record.category || '其他';
+        projectStats[category] = (projectStats[category] || 0) + (record.amount || 0);
+      });
+
+    const projectData = Object.entries(projectStats)
+      .map(([name, value]) => ({ name, value }))
+      .slice(0, 4);
+
+    return { monthlyData, projectData };
+  }, [records]);
+
+  if (loading) {
+    return (
+      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">加载财务数据中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive mb-4">加载财务数据失败：{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+          >
+            重试
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const getTypeColor = (type: string) => {
     return type === "收入" ? "text-stat-green bg-stat-green/10" : "text-stat-red bg-stat-red/10";
@@ -69,11 +151,9 @@ export default function FinancePage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "已到账":
-      case "已支付": return "text-stat-green bg-stat-green/10";
-      case "待到账":
-      case "待支付": return "text-stat-orange bg-stat-orange/10";
-      case "逾期": return "text-stat-red bg-stat-red/10";
+      case "已完成": return "text-stat-green bg-stat-green/10";
+      case "待处理": return "text-stat-orange bg-stat-orange/10";
+      case "处理中": return "text-stat-blue bg-stat-blue/10";
       default: return "text-muted-foreground bg-muted";
     }
   };
@@ -117,7 +197,7 @@ export default function FinancePage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground">本月收入</p>
-                <p className="text-2xl font-bold text-stat-green">¥286,500</p>
+                <p className="text-2xl font-bold text-stat-green">¥{statistics.monthlyIncome.toLocaleString()}</p>
               </div>
               <div className="w-12 h-12 bg-stat-green/10 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-stat-green" />
@@ -125,7 +205,7 @@ export default function FinancePage() {
             </div>
             <div className="flex items-center space-x-1 text-sm">
               <TrendingUp className="w-4 h-4 text-stat-green" />
-              <span className="text-stat-green">+12.5%</span>
+              <span className="text-stat-green">+{statistics.incomeGrowth}%</span>
               <span className="text-muted-foreground">较上月</span>
             </div>
           </div>
@@ -134,7 +214,7 @@ export default function FinancePage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground">本月支出</p>
-                <p className="text-2xl font-bold text-stat-red">¥156,200</p>
+                <p className="text-2xl font-bold text-stat-red">¥{statistics.monthlyExpense.toLocaleString()}</p>
               </div>
               <div className="w-12 h-12 bg-stat-red/10 rounded-lg flex items-center justify-center">
                 <TrendingDown className="w-6 h-6 text-stat-red" />
@@ -142,7 +222,7 @@ export default function FinancePage() {
             </div>
             <div className="flex items-center space-x-1 text-sm">
               <TrendingDown className="w-4 h-4 text-stat-red" />
-              <span className="text-stat-red">+8.3%</span>
+              <span className="text-stat-red">+{statistics.expenseGrowth}%</span>
               <span className="text-muted-foreground">较上月</span>
             </div>
           </div>
@@ -151,7 +231,7 @@ export default function FinancePage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground">净利润</p>
-                <p className="text-2xl font-bold text-foreground">¥130,300</p>
+                <p className="text-2xl font-bold text-foreground">¥{statistics.netProfit.toLocaleString()}</p>
               </div>
               <div className="w-12 h-12 bg-stat-blue/10 rounded-lg flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-stat-blue" />
@@ -159,7 +239,7 @@ export default function FinancePage() {
             </div>
             <div className="flex items-center space-x-1 text-sm">
               <TrendingUp className="w-4 h-4 text-stat-green" />
-              <span className="text-stat-green">+18.7%</span>
+              <span className="text-stat-green">+{statistics.profitGrowth}%</span>
               <span className="text-muted-foreground">较上月</span>
             </div>
           </div>
@@ -168,7 +248,7 @@ export default function FinancePage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground">账户余额</p>
-                <p className="text-2xl font-bold text-foreground">¥458,900</p>
+                <p className="text-2xl font-bold text-foreground">¥{statistics.accountBalance.toLocaleString()}</p>
               </div>
               <div className="w-12 h-12 bg-stat-purple/10 rounded-lg flex items-center justify-center">
                 <CreditCard className="w-6 h-6 text-stat-purple" />
@@ -192,14 +272,7 @@ export default function FinancePage() {
               expense: { label: "支出", color: "hsl(var(--secondary))" }
             }} className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={[
-                  { month: "1月", income: 285000, expense: 178000 },
-                  { month: "2月", income: 321000, expense: 195000 },
-                  { month: "3月", income: 298000, expense: 162000 },
-                  { month: "4月", income: 356000, expense: 201000 },
-                  { month: "5月", income: 312000, expense: 189000 },
-                  { month: "6月", income: 398000, expense: 234000 }
-                ]}>
+                <BarChart data={chartData.monthlyData}>
                   <XAxis dataKey="month" axisLine={false} tickLine={false} 
                     tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
                   <YAxis axisLine={false} tickLine={false} 
@@ -226,12 +299,7 @@ export default function FinancePage() {
               <ResponsiveContainer width="100%" height="100%">
                  <RechartsPieChart>
                    <Pie
-                     data={[
-                       { name: "海景别墅", value: 1200000 },
-                       { name: "现代公寓", value: 450000 },
-                       { name: "办公室装修", value: 680000 },
-                       { name: "商铺装修", value: 320000 }
-                     ]}
+                     data={chartData.projectData}
                      cx="50%"
                      cy="50%"
                      outerRadius={80}
@@ -239,12 +307,7 @@ export default function FinancePage() {
                      label={({ name, value, percent }) => `${name}: ¥${(value / 10000).toFixed(0)}万 (${(percent * 100).toFixed(1)}%)`}
                      labelLine={false}
                    >
-                     {[
-                       { name: "海景别墅", value: 1200000 },
-                       { name: "现代公寓", value: 450000 },
-                       { name: "办公室装修", value: 680000 },
-                       { name: "商铺装修", value: 320000 }
-                     ].map((entry, index) => (
+                     {chartData.projectData.map((entry, index) => (
                        <Cell key={`cell-${index}`} fill={
                          ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted-foreground))'][index]
                        } />
@@ -281,42 +344,66 @@ export default function FinancePage() {
                 </tr>
               </thead>
             <tbody>
-              {transactions
+              {records.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-8 text-muted-foreground">
+                    暂无财务记录
+                  </td>
+                </tr>
+              ) : (
+                records
                 .filter(transaction => 
-                  transaction.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  transaction.transaction_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
                   transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  transaction.project.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
+                  (transaction.description && transaction.description.toLowerCase().includes(searchTerm.toLowerCase()))
                 )
                 .map((transaction) => (
                   <tr key={transaction.id} className="border-b border-border hover:bg-muted/20 transition-colors">
                     <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(transaction.type)}`}>
-                        {transaction.type}
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(transaction.transaction_type)}`}>
+                        {transaction.transaction_type}
                       </span>
                     </td>
                     <td className="p-4">
-                      <span className={`font-semibold ${transaction.type === '收入' ? 'text-stat-green' : 'text-stat-red'}`}>
-                        {transaction.type === '收入' ? '+' : '-'}{formatAmount(transaction.amount)}
+                      <span className={`font-semibold ${transaction.transaction_type === '收入' ? 'text-stat-green' : 'text-stat-red'}`}>
+                        {transaction.transaction_type === '收入' ? '+' : '-'}{formatAmount(transaction.amount)}
                       </span>
                     </td>
                     <td className="p-4 text-sm text-foreground">{transaction.category}</td>
-                    <td className="p-4 text-sm text-muted-foreground">{transaction.project}</td>
-                    <td className="p-4 text-sm text-muted-foreground">{transaction.date}</td>
+                    <td className="p-4 text-sm text-muted-foreground">{transaction.project_id || "无关联项目"}</td>
+                    <td className="p-4 text-sm text-muted-foreground">{transaction.transaction_date}</td>
                     <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
-                        {transaction.status}
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor("已完成")}`}>
+                        已完成
                       </span>
                     </td>
-                    <td className="p-4 text-sm text-muted-foreground">{transaction.description}</td>
+                    <td className="p-4 text-sm text-muted-foreground">{transaction.description || "无备注"}</td>
                     <td className="p-4">
                       <div className="flex items-center space-x-2">
-                        <FinanceDetailDialog transaction={transaction}>
+                        <FinanceDetailDialog transaction={{
+                          id: parseInt(transaction.id) || 0,
+                          type: transaction.transaction_type,
+                          amount: transaction.amount || 0,
+                          category: transaction.category,
+                          project: transaction.project_id || "无关联项目",
+                          date: transaction.transaction_date,
+                          status: "已完成",
+                          description: transaction.description || "无备注"
+                        }}>
                           <button className="px-3 py-1 text-xs border border-border rounded hover:bg-muted transition-colors">
                             详情
                           </button>
                         </FinanceDetailDialog>
-                        <EditFinanceDialog transaction={transaction}>
+                        <EditFinanceDialog transaction={{
+                          id: parseInt(transaction.id) || 0,
+                          type: transaction.transaction_type,
+                          amount: transaction.amount || 0,
+                          category: transaction.category,
+                          project: transaction.project_id || "无关联项目",
+                          date: transaction.transaction_date,
+                          status: "已完成",
+                          description: transaction.description || "无备注"
+                        }}>
                           <button className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors">
                             编辑
                           </button>
@@ -324,7 +411,8 @@ export default function FinancePage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                ))
+              )}
               </tbody>
             </table>
           </div>
