@@ -31,24 +31,24 @@ export default function MaterialsPage() {
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
-      <div className="bg-card border-b border-border p-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-card border-b border-border p-4 md:p-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <Package className="w-6 h-6 text-primary" />
+            <Package className="w-5 h-5 md:w-6 md:h-6 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">材料管理</h1>
-              <p className="text-muted-foreground">管理装修材料库存和供应商信息</p>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">材料管理</h1>
+              <p className="text-sm md:text-base text-muted-foreground">管理装修材料库存和供应商信息</p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <input 
-                type="text" 
-                placeholder="搜索材料..." 
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
+            <div className="relative w-full sm:w-auto">
+              <Search className="w-4 h-4 md:w-5 md:h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="搜索材料..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full sm:w-auto pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
             <AddMaterialDialog onMaterialAdded={fetchMaterials} />
@@ -57,52 +57,52 @@ export default function MaterialsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-card rounded-lg p-4 shadow-card border border-border/50">
+      <div className="p-4 md:p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-card rounded-lg p-4 md:p-6 shadow-card border border-border/50">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">总材料种类</p>
-                <p className="text-2xl font-bold text-foreground">248</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs md:text-sm text-muted-foreground">总材料种类</p>
+                <p className="text-xl md:text-2xl font-bold text-foreground truncate">248</p>
               </div>
-              <Package className="w-8 h-8 text-stat-blue" />
+              <Package className="w-6 h-6 md:w-8 md:h-8 text-stat-blue flex-shrink-0" />
             </div>
           </div>
-          <div className="bg-card rounded-lg p-4 shadow-card border border-border/50">
+          <div className="bg-card rounded-lg p-4 md:p-6 shadow-card border border-border/50">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">库存总值</p>
-                <p className="text-2xl font-bold text-foreground">¥1.2M</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs md:text-sm text-muted-foreground">库存总值</p>
+                <p className="text-xl md:text-2xl font-bold text-foreground truncate">¥1.2M</p>
               </div>
-              <TrendingUp className="w-8 h-8 text-stat-green" />
+              <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-stat-green flex-shrink-0" />
             </div>
           </div>
-          <div className="bg-card rounded-lg p-4 shadow-card border border-border/50">
+          <div className="bg-card rounded-lg p-4 md:p-6 shadow-card border border-border/50">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">供应商数量</p>
-                <p className="text-2xl font-bold text-foreground">32</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs md:text-sm text-muted-foreground">供应商数量</p>
+                <p className="text-xl md:text-2xl font-bold text-foreground truncate">32</p>
               </div>
-              <div className="w-8 h-8 bg-stat-purple/10 rounded-lg flex items-center justify-center">
-                <span className="text-stat-purple font-bold">供</span>
+              <div className="w-6 h-6 md:w-8 md:h-8 bg-stat-purple/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-stat-purple font-bold text-sm md:text-base">供</span>
               </div>
             </div>
           </div>
-          <div className="bg-card rounded-lg p-4 shadow-card border border-border/50">
+          <div className="bg-card rounded-lg p-4 md:p-6 shadow-card border border-border/50">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">库存预警</p>
-                <p className="text-2xl font-bold text-foreground">5</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs md:text-sm text-muted-foreground">库存预警</p>
+                <p className="text-xl md:text-2xl font-bold text-foreground truncate">5</p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-stat-orange" />
+              <AlertTriangle className="w-6 h-6 md:w-8 md:h-8 text-stat-orange flex-shrink-0" />
             </div>
           </div>
         </div>
 
         {/* Materials List */}
         <div className="bg-card rounded-lg shadow-card border border-border/50 overflow-hidden">
-          <div className="p-4 border-b border-border">
-            <h3 className="text-lg font-semibold text-foreground">材料库存列表</h3>
+          <div className="p-4 md:p-6 border-b border-border">
+            <h3 className="text-base md:text-lg font-semibold text-foreground">材料库存列表</h3>
           </div>
           {loading ? (
             <div className="flex items-center justify-center h-64">
@@ -139,17 +139,17 @@ export default function MaterialsPage() {
                     )
                     .map((material) => (
                   <tr key={material.id} className="border-b border-border hover:bg-muted/20 transition-colors">
-                    <td className="p-4">
-                      <div className="font-medium text-foreground">{material.name}</div>
+                    <td className="p-3 md:p-4">
+                      <div className="font-medium text-foreground text-sm md:text-base truncate">{material.name}</div>
                     </td>
-                    <td className="p-4 text-sm text-muted-foreground">{material.category}</td>
-                    <td className="p-4 text-sm text-foreground">
+                    <td className="p-3 md:p-4 text-xs md:text-sm text-muted-foreground truncate">{material.category}</td>
+                    <td className="p-3 md:p-4 text-xs md:text-sm text-foreground">
                       {material.current_stock || 0} {material.unit}
                     </td>
-                    <td className="p-4 text-sm text-foreground">¥{material.unit_price || 0}</td>
-                    <td className="p-4 text-sm text-muted-foreground">{material.supplier_name}</td>
-                    <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                    <td className="p-3 md:p-4 text-xs md:text-sm text-foreground">¥{material.unit_price || 0}</td>
+                    <td className="p-3 md:p-4 text-xs md:text-sm text-muted-foreground truncate">{material.supplier_name}</td>
+                    <td className="p-3 md:p-4">
+                      <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
                         (material.current_stock || 0) <= (material.min_stock_alert || 0) ? "库存不足" :
                         (material.current_stock || 0) <= (material.min_stock_alert || 0) * 2 ? "正常" : "充足"
                       )}`}>
@@ -157,15 +157,15 @@ export default function MaterialsPage() {
                          (material.current_stock || 0) <= (material.min_stock_alert || 0) * 2 ? "正常" : "充足"}
                       </span>
                     </td>
-                    <td className="p-4">
-                      <div className="flex items-center space-x-2">
+                    <td className="p-3 md:p-4">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
                         <EditMaterialDialog material={material}>
-                          <button className="px-3 py-1 text-xs border border-border rounded hover:bg-muted transition-colors">
+                          <button className="px-2 md:px-3 py-1 text-xs border border-border rounded hover:bg-muted transition-colors">
                             编辑
                           </button>
                         </EditMaterialDialog>
                         <RestockDialog material={material}>
-                          <button className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors">
+                          <button className="px-2 md:px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors">
                             补货
                           </button>
                         </RestockDialog>

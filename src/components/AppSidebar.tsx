@@ -63,19 +63,19 @@ export function AppSidebar() {
         className={collapsed ? "w-14" : "w-64"} 
         collapsible="icon"
       >
-        <SidebarHeader className="p-6 border-b border-sidebar-text/10">
+        <SidebarHeader className="p-4 md:p-6 border-b border-sidebar-text/10">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1">
-                <img 
-                  src={logo} 
-                  alt="YDYSBDD Logo" 
+            <div className="flex items-center space-x-2 md:space-x-3">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-lg flex items-center justify-center p-1">
+                <img
+                  src={logo}
+                  alt="YDYSBDD Logo"
                   className="w-full h-full object-contain rounded-md"
                 />
               </div>
               {!collapsed && (
                 <div className="text-sidebar-text">
-                  <h1 className="text-lg font-bold">云顶艺墅</h1>
+                  <h1 className="text-base md:text-lg font-bold">云顶艺墅</h1>
                   <p className="text-xs text-sidebar-text/70">装修管理系统</p>
                 </div>
               )}
@@ -103,13 +103,13 @@ export function AppSidebar() {
                         }
                       `}
                     >
-                      <NavLink 
-                        to={item.url} 
+                      <NavLink
+                        to={item.url}
                         end
-                        className="flex items-center space-x-3 px-3 py-2 rounded-lg"
+                        className="flex items-center space-x-2 md:space-x-3 px-2 md:px-3 py-2 rounded-lg"
                       >
-                        <item.icon className="w-5 h-5 flex-shrink-0" />
-                        {!collapsed && <span>{item.title}</span>}
+                        <item.icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                        {!collapsed && <span className="text-sm md:text-base truncate">{item.title}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -138,12 +138,12 @@ export function AppSidebar() {
                           }
                         `}
                       >
-                        <NavLink 
-                          to={item.url} 
-                          className="flex items-center space-x-3 px-3 py-2 rounded-lg"
+                        <NavLink
+                          to={item.url}
+                          className="flex items-center space-x-2 md:space-x-3 px-2 md:px-3 py-2 rounded-lg"
                         >
-                          <item.icon className="w-5 h-5 flex-shrink-0" />
-                          {!collapsed && <span>{item.title}</span>}
+                          <item.icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                          {!collapsed && <span className="text-sm md:text-base truncate">{item.title}</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

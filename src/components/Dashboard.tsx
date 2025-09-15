@@ -129,12 +129,12 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Dynamic News Banner */}
         <NewsTickerBanner />
 
         {/* Main Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           {mainStats.map((stat, index) => (
             <div
               key={index}
@@ -168,7 +168,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.secondaryStats.map((stat, index) => {
               const icons = [Zap, CheckCircle, Calendar, Users];
               return <StatCard key={index} {...stat} icon={icons[index] || Package} />;
@@ -178,9 +178,9 @@ export default function Dashboard() {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
+          <div className="bg-card rounded-lg p-4 md:p-6 shadow-card border border-border/50">
             <h3 className="text-lg font-semibold text-foreground mb-4">项目进度分布</h3>
-            <ChartContainer config={chartConfig} className="h-64">
+            <ChartContainer config={chartConfig} className="h-64 lg:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -214,16 +214,23 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
+          <div className="bg-card rounded-lg p-4 md:p-6 shadow-card border border-border/50">
             <h3 className="text-lg font-semibold text-foreground mb-4">财务概览</h3>
-            <ChartContainer config={chartConfig} className="h-64 md:h-80 lg:h-96">
+            <ChartContainer config={chartConfig} className="h-64 lg:h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.financeData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <BarChart
+                  data={stats.financeData}
+                  margin={{ top: 20, right: 30, left: 30, bottom: 50 }}
+                  barCategoryGap="20%"
+                >
                   <XAxis
                     dataKey="month"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                    interval={0}
+                    tickMargin={15}
+                    tickSize={0}
                   />
                   <YAxis
                     axisLine={false}
@@ -238,8 +245,8 @@ export default function Dashboard() {
                       name === 'income' ? '收入' : '支出'
                     ]}
                   />
-                  <Bar dataKey="income" fill="hsl(var(--stat-green))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="expense" fill="hsl(var(--stat-red))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="income" fill="hsl(var(--stat-green))" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                  <Bar dataKey="expense" fill="hsl(var(--stat-red))" radius={[4, 4, 0, 0]} maxBarSize={60} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>

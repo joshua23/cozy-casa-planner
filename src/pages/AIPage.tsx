@@ -110,13 +110,13 @@ export default function AIPage() {
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
-      <div className="bg-card border-b border-border p-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-card border-b border-border p-4 md:p-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <Calculator className="w-6 h-6 text-primary" />
+            <Calculator className="w-5 h-5 md:w-6 md:h-6 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">装修预算测算</h1>
-              <p className="text-muted-foreground">智能化装修费用预算计算，输入面积和户型即可快速测算</p>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">装修预算测算</h1>
+              <p className="text-sm md:text-base text-muted-foreground">智能化装修费用预算计算，输入面积和户型即可快速测算</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -136,7 +136,7 @@ export default function AIPage() {
         </div>
       </div>
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
         {/* 项目基本信息 */}
         <Card>
           <CardHeader>

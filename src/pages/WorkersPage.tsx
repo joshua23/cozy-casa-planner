@@ -37,7 +37,7 @@ export default function WorkersPage() {
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`w-4 h-4 ${
+            className={`w-3 h-3 md:w-4 md:h-4 ${
               star <= rating ? "text-yellow-400 fill-current" : "text-muted-foreground"
             }`}
           />
@@ -49,24 +49,24 @@ export default function WorkersPage() {
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
-      <div className="bg-card border-b border-border p-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-card border-b border-border p-4 md:p-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <Users className="w-6 h-6 text-primary" />
+            <Users className="w-5 h-5 md:w-6 md:h-6 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">工人管理</h1>
-              <p className="text-muted-foreground">管理零工信息和工作安排</p>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">工人管理</h1>
+              <p className="text-sm md:text-base text-muted-foreground">管理零工信息和工作安排</p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <input 
-                type="text" 
-                placeholder="搜索工人..." 
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
+            <div className="relative w-full sm:w-auto">
+              <Search className="w-4 h-4 md:w-5 md:h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="搜索工人..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full sm:w-auto pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
             <AddWorkerDialog />
@@ -75,7 +75,7 @@ export default function WorkersPage() {
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         {workersLoading ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-muted-foreground">加载中...</div>
@@ -87,13 +87,13 @@ export default function WorkersPage() {
         ) : workers.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-4">还没有工人，点击上方按钮添加第一个工人</p>
+              <Users className="w-8 h-8 md:w-12 md:h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-sm md:text-base text-muted-foreground mb-4">还没有工人，点击上方按钮添加第一个工人</p>
               <AddWorkerDialog />
             </div>
           </div>
         ) : (
-          <div className="grid gap-6">
+          <div className="grid gap-4 md:gap-6">
             {workers.filter(worker =>
               worker.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
               worker.worker_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -102,61 +102,66 @@ export default function WorkersPage() {
               worker.specialties?.some((specialty: string) => specialty.toLowerCase().includes(searchTerm.toLowerCase()))
             ).map((worker) => (
             <Card key={worker.id} className="hover:shadow-elevated transition-all duration-smooth">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
+              <CardContent className="p-4 md:p-6">
+                <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold">
+                      <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold text-sm md:text-base flex-shrink-0">
                         {worker.name.charAt(0)}
                       </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-foreground">{worker.name}</h3>
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-base md:text-lg font-semibold text-foreground truncate">{worker.name}</h3>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs md:text-sm text-muted-foreground">
                           <div className="flex items-center space-x-1">
-                            <Briefcase className="w-4 h-4" />
-                            <span>{worker.worker_type}</span>
+                            <Briefcase className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                            <span className="truncate">{worker.worker_type}</span>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <Phone className="w-4 h-4" />
-                            <span>{worker.phone}</span>
+                          <div className="flex items-center space-x-1 mt-1 sm:mt-0">
+                            <Phone className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                            <span className="truncate">{worker.phone}</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4">
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">技能评价</p>
+                        <p className="text-xs md:text-sm text-muted-foreground mb-1">技能评价</p>
                         {renderStars(worker.skill_rating || 0)}
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">日薪</p>
-                        <p className="font-medium text-foreground">￥{worker.daily_rate || 0}</p>
+                        <p className="text-xs md:text-sm text-muted-foreground mb-1">日薪</p>
+                        <p className="font-medium text-foreground text-sm md:text-base">￥{worker.daily_rate || 0}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">专长</p>
+                        <p className="text-xs md:text-sm text-muted-foreground mb-1">专长</p>
                         <div className="flex flex-wrap gap-1">
-                          {(worker.specialties || []).map((specialty, index) => (
+                          {(worker.specialties || []).slice(0, 2).map((specialty, index) => (
                             <Badge key={index} variant="secondary" className="text-xs">
                               {specialty}
                             </Badge>
                           ))}
+                          {(worker.specialties || []).length > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{(worker.specialties || []).length - 2}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">状态</p>
-                        <Badge className={getStatusColor(worker.status)}>
+                        <p className="text-xs md:text-sm text-muted-foreground mb-1">状态</p>
+                        <Badge className={`${getStatusColor(worker.status)} text-xs`}>
                           {worker.status}
                         </Badge>
                       </div>
                     </div>
-
                   </div>
 
-                  <div className="flex items-center space-x-2 ml-4">
-                    <Button 
-                      variant="outline" 
+                  <div className="flex flex-col sm:flex-row lg:flex-col items-stretch lg:items-center gap-2 lg:ml-4">
+                    <Button
+                      variant="outline"
                       size="sm"
+                      className="text-xs"
                       onClick={() => {
                         setContactInfo({
                           name: worker.name,
@@ -176,7 +181,7 @@ export default function WorkersPage() {
                       specialties: worker.specialties || [],
                       status: worker.status
                     }}>
-                      <Button size="sm">
+                      <Button size="sm" className="text-xs">
                         分配项目
                       </Button>
                     </WorkerAssignDialog>
