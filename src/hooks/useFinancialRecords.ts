@@ -8,19 +8,8 @@ export type FinancialRecord = Tables<'financial_records'>;
 export type FinancialRecordInsert = TablesInsert<'financial_records'>;
 export type FinancialRecordUpdate = TablesUpdate<'financial_records'>;
 
-export interface DetailedFinancialRecord extends FinancialRecord {
-  project_display_name?: string;
-  project_client_name?: string;
-  project_client_phone?: string;
-  project_address?: string;
-  customer_display_name?: string;
-  customer_phone?: string;
-  customer_email?: string;
-  customer_status?: string;
-}
-
 export function useFinancialRecords() {
-  const [records, setRecords] = useState<DetailedFinancialRecord[]>([]);
+  const [records, setRecords] = useState<FinancialRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { projects } = useProjects();
@@ -48,11 +37,7 @@ export function useFinancialRecords() {
     }
   };
 
-  const createRecord = async (recordData: FinancialRecordInsert & { 
-    customer_id?: string; 
-    customer_name?: string; 
-    project_name?: string;
-  }) => {
+  const createRecord = async (recordData: FinancialRecordInsert) => {
     try {
       // 获取当前用户ID
       const { data: { user } } = await supabase.auth.getUser();
@@ -63,19 +48,8 @@ export function useFinancialRecords() {
       const { data, error } = await supabase
         .from('financial_records')
         .insert({
+          ...recordData,
           user_id: user.id,
-          transaction_type: recordData.transaction_type,
-          amount: recordData.amount,
-          category: recordData.category,
-          project_id: recordData.project_id,
-          customer_id: recordData.customer_id,
-          customer_name: recordData.customer_name,
-          project_name: recordData.project_name,
-          description: recordData.description,
-          transaction_date: recordData.transaction_date,
-          payment_method: recordData.payment_method,
-          invoice_number: recordData.invoice_number,
-          payment_status: recordData.payment_status || '已完成'
         })
         .select()
         .single();
@@ -101,7 +75,6 @@ export function useFinancialRecords() {
 
       if (error) throw error;
       
-      // 重新获取记录以包含关联信息
       await fetchRecords();
       return data;
     } catch (err) {

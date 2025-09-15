@@ -171,23 +171,6 @@ export default function FinancePage() {
     );
   }
 
-  const getTypeColor = (type: string) => {
-    return type === "收入" ? "text-stat-green bg-stat-green/10" : "text-stat-red bg-stat-red/10";
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "已完成": return "text-stat-green bg-stat-green/10";
-      case "待处理": return "text-stat-orange bg-stat-orange/10";
-      case "处理中": return "text-stat-blue bg-stat-blue/10";
-      default: return "text-muted-foreground bg-muted";
-    }
-  };
-
-  const formatAmount = (amount: number) => {
-    return `¥${amount.toLocaleString()}`;
-  };
-
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
@@ -369,97 +352,81 @@ export default function FinancePage() {
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">操作</th>
                 </tr>
               </thead>
-            <tbody>
-              {records.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="text-center py-8 text-muted-foreground">
-                    暂无财务记录
-                  </td>
-                </tr>
-              ) : (
-                records
-                  .filter(transaction => 
-                    transaction.transaction_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    transaction.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    (transaction.description && transaction.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                    (transaction.project_display_name && transaction.project_display_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                    (transaction.customer_name && transaction.customer_name.toLowerCase().includes(searchTerm.toLowerCase()))
-                  )
-                  .map((transaction) => (
-                  <tr key={transaction.id} className="border-b border-border hover:bg-muted/20 transition-colors">
-                    <td className="p-4">
-                      <Badge className={getTypeColor(transaction.transaction_type || "")}>
-                        {transaction.transaction_type}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <span className={`font-semibold ${transaction.transaction_type === '收入' ? 'text-stat-green' : 'text-stat-red'}`}>
-                        {transaction.transaction_type === '收入' ? '+' : '-'}{formatAmount(transaction.amount || 0)}
-                      </span>
-                    </td>
-                    <td className="p-4 text-sm text-foreground">{transaction.category || "未分类"}</td>
-                    <td className="p-4 text-sm text-muted-foreground">
-                      {transaction.project_display_name || transaction.project_name || "无关联项目"}
-                      {(transaction.project_client_name || transaction.customer_name) && (
-                        <div className="text-xs text-muted-foreground/70">
-                          客户：{transaction.project_client_name || transaction.customer_name}
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-4 text-sm text-muted-foreground">{transaction.transaction_date || "未设定"}</td>
-                    <td className="p-4">
-                      <Badge className={getStatusColor(transaction.payment_status || "已完成")}>
-                        {transaction.payment_status || "已完成"}
-                      </Badge>
-                    </td>
-                    <td className="p-4 text-sm text-muted-foreground">
-                      {transaction.description || "无备注"}
-                      {transaction.customer_name && transaction.customer_name !== transaction.project_client_name && (
-                        <div className="text-xs text-muted-foreground/70">
-                          关联客户：{transaction.customer_name}
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center space-x-2">
-                        <FinanceDetailDialog transaction={{
-                          id: parseInt(transaction.id.toString()) || 0,
-                          type: transaction.transaction_type || "",
-                          amount: transaction.amount || 0,
-                          category: transaction.category || "",
-                          project: transaction.project_display_name || transaction.project_name || "无关联项目",
-                          date: transaction.transaction_date || "",
-                          status: transaction.payment_status || "已完成",
-                          description: transaction.description || "无备注",
-                          customerName: transaction.customer_name || undefined,
-                          projectClientName: transaction.project_client_name || undefined
-                        }}>
-                          <button className="px-3 py-1 text-xs border border-border rounded hover:bg-muted transition-colors">
-                            详情
-                          </button>
-                        </FinanceDetailDialog>
-                        <EditFinanceDialog transaction={{
-                          id: parseInt(transaction.id.toString()) || 0,
-                          type: transaction.transaction_type || "",
-                          amount: transaction.amount || 0,
-                          category: transaction.category || "",
-                          project: transaction.project_display_name || transaction.project_name || "无关联项目",
-                          date: transaction.transaction_date || "",
-                          status: transaction.payment_status || "已完成",
-                          description: transaction.description || "无备注",
-                          customerName: transaction.customer_name || undefined,
-                          projectClientName: transaction.project_client_name || undefined
-                        }}>
-                          <button className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors">
-                            编辑
-                          </button>
-                        </EditFinanceDialog>
-                      </div>
+              <tbody>
+                {records.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="text-center py-8 text-muted-foreground">
+                      暂无财务记录
                     </td>
                   </tr>
-                  ))
-              )}
-            </tbody>
+                ) : (
+                  records
+                    .filter(transaction => 
+                      transaction.transaction_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      transaction.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      (transaction.description && transaction.description.toLowerCase().includes(searchTerm.toLowerCase()))
+                    )
+                    .map((transaction) => (
+                    <tr key={transaction.id} className="border-b border-border hover:bg-muted/20 transition-colors">
+                      <td className="p-4">
+                        <Badge className={getTypeColor(transaction.transaction_type || "")}>
+                          {transaction.transaction_type}
+                        </Badge>
+                      </td>
+                      <td className="p-4">
+                        <span className={`font-semibold ${transaction.transaction_type === '收入' ? 'text-stat-green' : 'text-stat-red'}`}>
+                          {transaction.transaction_type === '收入' ? '+' : '-'}{formatAmount(transaction.amount || 0)}
+                        </span>
+                      </td>
+                      <td className="p-4 text-sm text-foreground">{transaction.category || "未分类"}</td>
+                      <td className="p-4 text-sm text-muted-foreground">
+                        {transaction.project_id ? "有关联项目" : "无关联项目"}
+                      </td>
+                      <td className="p-4 text-sm text-muted-foreground">{transaction.transaction_date || "未设定"}</td>
+                      <td className="p-4">
+                        <Badge className={getStatusColor("已完成")}>
+                          已完成
+                        </Badge>
+                      </td>
+                      <td className="p-4 text-sm text-muted-foreground">
+                        {transaction.description || "无备注"}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center space-x-2">
+                          <FinanceDetailDialog transaction={{
+                            id: parseInt(transaction.id.toString()) || 0,
+                            type: transaction.transaction_type || "",
+                            amount: transaction.amount || 0,
+                            category: transaction.category || "",
+                            project: transaction.project_id ? "关联项目" : "无关联项目",
+                            date: transaction.transaction_date || "",
+                            status: "已完成",
+                            description: transaction.description || "无备注"
+                          }}>
+                            <button className="px-3 py-1 text-xs border border-border rounded hover:bg-muted transition-colors">
+                              详情
+                            </button>
+                          </FinanceDetailDialog>
+                          <EditFinanceDialog transaction={{
+                            id: parseInt(transaction.id.toString()) || 0,
+                            type: transaction.transaction_type || "",
+                            amount: transaction.amount || 0,
+                            category: transaction.category || "",
+                            project: transaction.project_id ? "关联项目" : "无关联项目",
+                            date: transaction.transaction_date || "",
+                            status: "已完成",
+                            description: transaction.description || "无备注"
+                          }}>
+                            <button className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors">
+                              编辑
+                            </button>
+                          </EditFinanceDialog>
+                        </div>
+                      </td>
+                    </tr>
+                    ))
+                )}
+              </tbody>
             </table>
           </div>
         </div>

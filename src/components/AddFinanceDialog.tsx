@@ -14,8 +14,6 @@ interface FinanceFormData {
   amount: string;
   category: string;
   projectId: string;
-  customerId: string;
-  customerName: string;
   description: string;
   transactionDate: string;
   paymentMethod: string;
@@ -29,8 +27,6 @@ export function AddFinanceDialog() {
     amount: "",
     category: "",
     projectId: "",
-    customerId: "",
-    customerName: "",
     description: "",
     transactionDate: new Date().toISOString().split('T')[0],
     paymentMethod: "",
@@ -38,7 +34,7 @@ export function AddFinanceDialog() {
   });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { createRecord, getProjectOptions, getCustomerOptions, projects, customers } = useFinancialRecords();
+  const { createRecord, getProjectOptions, projects } = useFinancialRecords();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,20 +50,18 @@ export function AddFinanceDialog() {
 
     setLoading(true);
     try {
-      await createRecord({
+      const recordData = {
         transaction_type: formData.transactionType,
         amount: parseFloat(formData.amount),
         category: formData.category,
         project_id: formData.projectId || null,
-        customer_id: formData.customerId || null,
-        customer_name: formData.customerName || null,
-        project_name: formData.projectId ? projects.find(p => p.id === formData.projectId)?.name : null,
         description: formData.description,
         transaction_date: formData.transactionDate,
         payment_method: formData.paymentMethod,
         invoice_number: formData.invoiceNumber,
-        payment_status: '已完成'
-      });
+      };
+
+      await createRecord(recordData);
 
       toast({
         title: "成功",
@@ -79,8 +73,6 @@ export function AddFinanceDialog() {
         amount: "",
         category: "",
         projectId: "",
-        customerId: "",
-        customerName: "",
         description: "",
         transactionDate: new Date().toISOString().split('T')[0],
         paymentMethod: "",
@@ -101,29 +93,6 @@ export function AddFinanceDialog() {
 
   const handleInputChange = (field: keyof FinanceFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  // 当选择项目时，自动填充客户信息
-  const handleProjectChange = (projectId: string) => {
-    handleInputChange("projectId", projectId);
-    
-    if (projectId) {
-      const selectedProject = projects.find(p => p.id === projectId);
-      if (selectedProject) {
-        handleInputChange("customerName", selectedProject.client_name);
-        // 尝试找到对应的客户记录
-        const matchingCustomer = customers.find(c => 
-          c.name === selectedProject.client_name || 
-          c.phone === selectedProject.client_phone
-        );
-        if (matchingCustomer) {
-          handleInputChange("customerId", matchingCustomer.id);
-        }
-      }
-    } else {
-      handleInputChange("customerName", "");
-      handleInputChange("customerId", "");
-    }
   };
 
   return (
@@ -189,7 +158,7 @@ export function AddFinanceDialog() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="projectId">关联项目</Label>
-              <Select value={formData.projectId} onValueChange={handleProjectChange}>
+              <Select value={formData.projectId} onValueChange={(value) => handleInputChange("projectId", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="选择关联项目" />
                 </SelectTrigger>
@@ -202,17 +171,6 @@ export function AddFinanceDialog() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="customerName">客户姓名</Label>
-              <Input
-                id="customerName"
-                value={formData.customerName}
-                onChange={(e) => handleInputChange("customerName", e.target.value)}
-                placeholder="客户姓名（选择项目后自动填充）"
-                readOnly={!!formData.projectId}
-                className={formData.projectId ? "bg-muted" : ""}
-              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="transactionDate">交易日期</Label>
@@ -261,36 +219,21 @@ export function AddFinanceDialog() {
             />
           </div>
 
-          {/* 显示关联信息预览 */}
-          {(formData.projectId || formData.customerName) && (
+          {/* 显示关联项目预览 */}
+          {formData.projectId && (
             <div className="bg-primary/10 p-4 rounded-lg space-y-2">
               <h4 className="font-medium text-foreground">关联信息预览</h4>
-              {formData.projectId && (
-                <p className="text-sm text-muted-foreground">
-                  项目：{projects.find(p => p.id === formData.projectId)?.name}
-                </p>
-              )}
-              {formData.customerName && (
-                <p className="text-sm text-muted-foreground">
-                  客户：{formData.customerName}
-                </p>
-              )}
+              <p className="text-sm text-muted-foreground">
+                项目：{projects.find(p => p.id === formData.projectId)?.name}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                客户：{projects.find(p => p.id === formData.projectId)?.client_name}
+              </p>
               <p className="text-sm text-muted-foreground">
                 金额：{formData.transactionType} ¥{formData.amount ? parseFloat(formData.amount).toLocaleString() : '0'}
               </p>
             </div>
           )}
-          
-          <div className="space-y-2">
-            <Label htmlFor="description">备注说明</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
-              placeholder="请输入备注说明"
-              rows={3}
-            />
-          </div>
           
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
