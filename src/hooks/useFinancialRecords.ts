@@ -22,7 +22,14 @@ export function useFinancialRecords() {
       
       const { data, error } = await supabase
         .from('financial_records')
-        .select('*')
+        .select(`
+          *,
+          projects (
+            id,
+            name,
+            client_name
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

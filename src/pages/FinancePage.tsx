@@ -380,7 +380,11 @@ export default function FinancePage() {
                       </td>
                       <td className="p-4 text-sm text-foreground">{transaction.category || "未分类"}</td>
                       <td className="p-4 text-sm text-muted-foreground">
-                        {transaction.project_id ? "有关联项目" : "无关联项目"}
+                        {(() => {
+                          if (!transaction.project_id) return "无关联项目";
+                          const project = projects.find(p => p.id === transaction.project_id);
+                          return project ? `${project.name} (${project.client_name})` : "项目已删除";
+                        })()}
                       </td>
                       <td className="p-4 text-sm text-muted-foreground">{transaction.transaction_date || "未设定"}</td>
                       <td className="p-4">
