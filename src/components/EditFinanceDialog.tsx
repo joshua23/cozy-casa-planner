@@ -12,7 +12,7 @@ interface FinanceFormData {
   transactionType: string;
   amount: string;
   category: string;
-  project: string;
+  projectId: string;
   transactionDate: string;
   paymentMethod: string;
   invoiceNumber: string;
@@ -40,31 +40,17 @@ interface EditFinanceDialogProps {
 export function EditFinanceDialog({ transaction, children }: EditFinanceDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const { updateRecord, getProjectOptions } = useFinancialRecords();
+  const { updateRecord, projects } = useFinancialRecords();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FinanceFormData>({
     transactionType: transaction.type,
     amount: transaction.amount.toString(),
     category: transaction.category,
-    project: "", // 将在useEffect中设置
+    projectId: "none",
     transactionDate: transaction.date,
     paymentMethod: "银行转账",
     invoiceNumber: "",
     description: transaction.description,
-  });
-
-  // 获取项目选项
-  const projectOptions = getProjectOptions();
-
-  // 设置初始项目值
-  useState(() => {
-    if (transaction.project && transaction.project !== "无关联项目") {
-      // 尝试从项目名称匹配项目ID
-      const matchedProject = projectOptions.find(p => p.name === transaction.project);
-      if (matchedProject) {
-        setFormData(prev => ({ ...prev, project: matchedProject.id }));
-      }
-    }
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,64 +125,52 @@ export function EditFinanceDialog({ transaction, children }: EditFinanceDialogPr
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="category">分类 *</Label>
-              <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="选择分类" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="项目收款">项目收款</SelectItem>
-                  <SelectItem value="材料采购">材料采购</SelectItem>
-                  <SelectItem value="人工费用">人工费用</SelectItem>
-                  <SelectItem value="设备租赁">设备租赁</SelectItem>
-                  <SelectItem value="运营费用">运营费用</SelectItem>
-                  <SelectItem value="其他收入">其他收入</SelectItem>
-                  <SelectItem value="其他支出">其他支出</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="project">关联项目</Label>
-              <Input
-                id="project"
-                value={formData.project}
-                onChange={(e) => handleInputChange("project", e.target.value)}
-                placeholder="关联项目"
-                readOnly
-                className="bg-muted"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="category">分类 *</Label>
+            <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="选择分类" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="项目收款">项目收款</SelectItem>
+                <SelectItem value="材料采购">材料采购</SelectItem>
+                <SelectItem value="人工费用">人工费用</SelectItem>
+                <SelectItem value="设备租赁">设备租赁</SelectItem>
+                <SelectItem value="运营费用">运营费用</SelectItem>
+                <SelectItem value="其他收入">其他收入</SelectItem>
+                <SelectItem value="其他支出">其他支出</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="project">关联项目</Label>
-            <Select value={formData.project} onValueChange={(value) => handleInputChange("project", value)}>
+            <Label htmlFor="projectId">关联项目</Label>
+            <Select value={formData.projectId} onValueChange={(value) => handleInputChange("projectId", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="选择关联项目" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">无关联项目</SelectItem>
-                {projectOptions.map((project) => (
+                {projects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
-                    {project.label}
+                    {project.name} ({project.client_name})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* 显示选中项目的客户信息 */}
-          {formData.project && (
+          {/* 显示选中项目的详细信息 */}
+          {formData.projectId && formData.projectId !== "none" && (
             <div className="bg-primary/10 p-3 rounded-lg">
               <p className="text-sm font-medium text-foreground">关联项目信息</p>
               {(() => {
-                const selectedProject = projectOptions.find(p => p.id === formData.project);
+                const selectedProject = projects.find(p => p.id === formData.projectId);
                 return selectedProject ? (
                   <>
                     <p className="text-sm text-muted-foreground">项目：{selectedProject.name}</p>
-                    <p className="text-sm text-muted-foreground">客户：{selectedProject.client}</p>
+                    <p className="text-sm text-muted-foreground">客户：{selectedProject.client_name}</p>
+                    <p className="text-sm text-muted-foreground">合同金额：¥{selectedProject.total_contract_amount?.toLocaleString()}</p>
                   </>
                 ) : null;
               })()}
