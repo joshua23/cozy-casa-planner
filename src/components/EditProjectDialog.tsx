@@ -4,11 +4,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, XCircle, PlayCircle, PauseCircle, Clock, Calendar } from "lucide-react";
+import { CheckCircle, XCircle, PlayCircle, PauseCircle, Clock, Calendar, Edit, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProjectPhases } from "@/hooks/useProjectPhases";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,6 +47,20 @@ interface EditProjectDialogProps {
 export function EditProjectDialog({ project, children }: EditProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("info");
+  const [editingPhase, setEditingPhase] = useState<string | null>(null);
+  const [phaseEditData, setPhaseEditData] = useState<{
+    phase_name: string;
+    description: string;
+    estimated_duration: number;
+    start_date: string;
+    end_date: string;
+  }>({
+    phase_name: "",
+    description: "",
+    estimated_duration: 0,
+    start_date: "",
+    end_date: ""
+  });
   const { toast } = useToast();
   const { phases, loading, updatePhaseStatus, updatePhaseProgress, updatePhaseDates } = useProjectPhases(project.id);
   
@@ -112,6 +127,62 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
       case "暂停": return <PauseCircle className="w-4 h-4 text-stat-orange" />;
       case "未开始": return <XCircle className="w-4 h-4 text-muted-foreground" />;
       default: return <XCircle className="w-4 h-4 text-muted-foreground" />;
+    }
+  };
+
+  const startEditingPhase = (phase: any) => {
+    setEditingPhase(phase.id);
+    setPhaseEditData({
+      phase_name: phase.phase_name,
+      description: phase.description || "",
+      estimated_duration: phase.estimated_duration || 7,
+      start_date: phase.start_date || "",
+      end_date: phase.end_date || ""
+    });
+  };
+
+  const cancelEditingPhase = () => {
+    setEditingPhase(null);
+    setPhaseEditData({
+      phase_name: "",
+      description: "",
+      estimated_duration: 0,
+      start_date: "",
+      end_date: ""
+    });
+  };
+
+  const savePhaseEdit = async (phaseId: string) => {
+    try {
+      const { error } = await supabase
+        .from('project_phases')
+        .update({
+          phase_name: phaseEditData.phase_name,
+          description: phaseEditData.description,
+          estimated_duration: phaseEditData.estimated_duration,
+          start_date: phaseEditData.start_date || null,
+          end_date: phaseEditData.end_date || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', phaseId);
+
+      if (error) throw error;
+
+      toast({
+        title: "成功",
+        description: "阶段信息已更新",
+      });
+
+      setEditingPhase(null);
+      // Refresh phases data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating phase:', error);
+      toast({
+        title: "错误",
+        description: "更新阶段信息失败",
+        variant: "destructive",
+      });
     }
   };
 
@@ -280,29 +351,160 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg">
-                    项目阶段管理功能已移至项目详情页面的甘特图中，在那里可以更直观地查看和编辑项目进度。
-                  </div>
                   {phases.map((phase, index) => (
-                    <div key={phase.id} className="border rounded-lg p-4 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          {getStatusIcon(phase.status)}
-                          <div>
-                            <h4 className="font-medium">{phase.phase_name}</h4>
-                            <p className="text-sm text-muted-foreground">{phase.description}</p>
+                    <div key={phase.id} className="border rounded-lg p-4 space-y-3">
+                      {editingPhase === phase.id ? (
+                        // 编辑模式
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>阶段名称</Label>
+                              <Input
+                                value={phaseEditData.phase_name}
+                                onChange={(e) => setPhaseEditData(prev => ({ ...prev, phase_name: e.target.value }))}
+                                placeholder="请输入阶段名称"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>预计工期 (天)</Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={phaseEditData.estimated_duration}
+                                onChange={(e) => setPhaseEditData(prev => ({ ...prev, estimated_duration: parseInt(e.target.value) || 1 }))}
+                                placeholder="请输入预计工期"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>开始日期</Label>
+                              <Input
+                                type="date"
+                                value={phaseEditData.start_date}
+                                onChange={(e) => setPhaseEditData(prev => ({ ...prev, start_date: e.target.value }))}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>结束日期</Label>
+                              <Input
+                                type="date"
+                                value={phaseEditData.end_date}
+                                onChange={(e) => setPhaseEditData(prev => ({ ...prev, end_date: e.target.value }))}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>阶段描述</Label>
+                            <Textarea
+                              value={phaseEditData.description}
+                              onChange={(e) => setPhaseEditData(prev => ({ ...prev, description: e.target.value }))}
+                              placeholder="请输入阶段描述"
+                              rows={3}
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button size="sm" onClick={() => savePhaseEdit(phase.id)}>
+                              <Save className="w-4 h-4 mr-1" />
+                              保存
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={cancelEditingPhase}>
+                              <X className="w-4 h-4 mr-1" />
+                              取消
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge className={getStatusColor(phase.status)}>
-                            {phase.status}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">
-                            {Math.round(phase.progress)}%
-                          </span>
-                        </div>
-                      </div>
-                      <Progress value={phase.progress} className="h-2" />
+                      ) : (
+                        // 查看模式
+                        <>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {getStatusIcon(phase.status)}
+                              <div>
+                                <h4 className="font-medium">{phase.phase_name}</h4>
+                                <p className="text-sm text-muted-foreground">{phase.description}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => startEditingPhase(phase)}
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                编辑
+                              </Button>
+                              <Badge className={getStatusColor(phase.status)}>
+                                {phase.status}
+                              </Badge>
+                              <span className="text-sm text-muted-foreground">
+                                {Math.round(phase.progress)}%
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* 进度条 */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">进度</span>
+                              <span className="font-medium">{Math.round(phase.progress)}%</span>
+                            </div>
+                            <Progress value={phase.progress} className="h-2" />
+                          </div>
+
+                          {/* 阶段信息 */}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <p className="text-muted-foreground">预计工期</p>
+                              <p className="font-medium">{phase.estimated_duration || 0} 天</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">开始日期</p>
+                              <p className="font-medium">{phase.start_date || "未设定"}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">结束日期</p>
+                              <p className="font-medium">{phase.end_date || "未设定"}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">实际开始</p>
+                              <p className="font-medium">{phase.actual_start_date || "未开始"}</p>
+                            </div>
+                          </div>
+
+                          {/* 操作区域 */}
+                          <div className="flex items-center gap-4 pt-2">
+                            <div className="flex items-center gap-2">
+                              <label className="text-sm text-muted-foreground">状态：</label>
+                              <Select
+                                value={phase.status}
+                                onValueChange={(value) => handleStatusChange(phase.id, value)}
+                              >
+                                <SelectTrigger className="w-24">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="未开始">未开始</SelectItem>
+                                  <SelectItem value="进行中">进行中</SelectItem>
+                                  <SelectItem value="已完成">已完成</SelectItem>
+                                  <SelectItem value="暂停">暂停</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <label className="text-sm text-muted-foreground">进度：</label>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={Math.round(phase.progress)}
+                                onChange={(e) => handleProgressChange(phase.id, e.target.value)}
+                                className="w-20"
+                              />
+                              <span className="text-sm text-muted-foreground">%</span>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
