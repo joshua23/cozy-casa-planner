@@ -30,7 +30,7 @@ const chartConfig = {
     color: "hsl(var(--stat-green))",
   },
   expense: {
-    label: "支出", 
+    label: "支出",
     color: "hsl(var(--stat-red))",
   },
 };
@@ -129,15 +129,15 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Dynamic News Banner */}
         <NewsTickerBanner />
-        
+
         {/* Main Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           {mainStats.map((stat, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               onClick={() => {
                 if (stat.title === "完成项目") navigate('/projects');
                 else if (stat.title === "活跃客户") navigate('/customers');
@@ -156,7 +156,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">项目状态分析</h2>
             <div className="flex items-center space-x-2">
-              <select 
+              <select
                 className="text-sm border border-border rounded-lg px-3 py-1 bg-card text-foreground"
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value as TimeFilter)}
@@ -167,8 +167,7 @@ export default function Dashboard() {
               </select>
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.secondaryStats.map((stat, index) => {
               const icons = [Zap, CheckCircle, Calendar, Users];
               return <StatCard key={index} {...stat} icon={icons[index] || Package} />;
@@ -178,9 +177,9 @@ export default function Dashboard() {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
+          <div className="bg-card rounded-lg p-4 md:p-6 shadow-card border border-border/50">
             <h3 className="text-lg font-semibold text-foreground mb-4">项目进度分布</h3>
-            <ChartContainer config={chartConfig} className="h-64">
+            <ChartContainer config={chartConfig} className="h-64 lg:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -202,8 +201,8 @@ export default function Dashboard() {
               {stats.projectDistribution.map((item, index) => (
                 <div key={item.name} className="flex items-center justify-between text-sm">
                   <div className="flex items-center space-x-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
+                    <div
+                      className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: COLORS[index % COLORS.length] }}
                     />
                     <span className="text-foreground">{item.name}</span>
@@ -213,33 +212,40 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-          
-          <div className="bg-card rounded-lg p-6 shadow-card border border-border/50">
+
+          <div className="bg-card rounded-lg p-4 md:p-6 shadow-card border border-border/50">
             <h3 className="text-lg font-semibold text-foreground mb-4">财务概览</h3>
-            <ChartContainer config={chartConfig} className="h-64 md:h-80 lg:h-96">
+            <ChartContainer config={chartConfig} className="h-64 lg:h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.financeData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <XAxis 
-                    dataKey="month" 
+                <BarChart
+                  data={stats.financeData}
+                  margin={{ top: 20, right: 30, left: 30, bottom: 50 }}
+                  barCategoryGap="20%"
+                >
+                  <XAxis
+                    dataKey="month"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                    interval={0}
+                    tickMargin={15}
+                    tickSize={0}
                   />
-                  <YAxis 
+                  <YAxis
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                     tickFormatter={(value) => `¥${(value/10000).toFixed(0)}万`}
                   />
-                  <ChartTooltip 
+                  <ChartTooltip
                     content={<ChartTooltipContent />}
                     formatter={(value: number, name: string) => [
                       `¥${(value/10000).toFixed(1)}万`,
                       name === 'income' ? '收入' : '支出'
                     ]}
                   />
-                  <Bar dataKey="income" fill="hsl(var(--stat-green))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="expense" fill="hsl(var(--stat-red))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="income" fill="hsl(var(--stat-green))" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                  <Bar dataKey="expense" fill="hsl(var(--stat-red))" radius={[4, 4, 0, 0]} maxBarSize={60} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>

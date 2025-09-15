@@ -175,12 +175,12 @@ export default function FinancePage() {
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
-      <div className="bg-card border-b border-border p-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-card border-b border-border p-4 md:p-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <Calculator className="w-6 h-6 text-primary" />
+            <Calculator className="w-5 h-5 md:w-6 md:h-6 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">财务管理</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">财务管理</h1>
               <p className="text-muted-foreground">管理项目财务和资金流水</p>
             </div>
           </div>

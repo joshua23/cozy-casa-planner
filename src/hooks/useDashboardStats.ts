@@ -312,10 +312,10 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
         const emptyData = [];
         if (filter === 'month') {
           emptyData.push(
-            { month: '第1周', income: 0, expense: 0 },
-            { month: '第2周', income: 0, expense: 0 },
-            { month: '第3周', income: 0, expense: 0 },
-            { month: '第4周', income: 0, expense: 0 }
+            { month: 'W1', income: 0, expense: 0 },
+            { month: 'W2', income: 0, expense: 0 },
+            { month: 'W3', income: 0, expense: 0 },
+            { month: 'W4', income: 0, expense: 0 }
           );
         } else if (filter === 'quarter') {
           emptyData.push(
@@ -361,7 +361,7 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
 
       if (filter === 'month') {
         // 按周分组
-        const weeks = ['第1周', '第2周', '第3周', '第4周'];
+        const weeks = ['W1', 'W2', 'W3', 'W4'];
         weeks.forEach((week, index) => {
           const weekStart = new Date(timeRange.start);
           weekStart.setDate(weekStart.getDate() + index * 7);

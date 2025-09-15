@@ -94,11 +94,11 @@ export default function SettingsPage() {
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
-      <div className="bg-card border-b border-border p-6">
+      <div className="bg-card border-b border-border p-4 md:p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">设置</h1>
-            <p className="text-muted-foreground">管理您的账户设置和偏好</p>
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">设置</h1>
+            <p className="text-sm md:text-base text-muted-foreground">管理您的账户设置和偏好</p>
           </div>
         </div>
       </div>

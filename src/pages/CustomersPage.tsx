@@ -30,24 +30,24 @@ export default function CustomersPage() {
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
-      <div className="bg-card border-b border-border p-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-card border-b border-border p-4 md:p-6">
+        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           <div className="flex items-center space-x-3">
-            <Users className="w-6 h-6 text-primary" />
+            <Users className="w-5 h-5 md:w-6 md:h-6 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">客户管理</h1>
-              <p className="text-muted-foreground">管理客户信息和沟通记录</p>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">客户管理</h1>
+              <p className="text-sm text-muted-foreground">管理客户信息和沟通记录</p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
             <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <input 
-                type="text" 
-                placeholder="搜索客户..." 
+              <Search className="w-4 h-4 md:w-5 md:h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="搜索客户..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full sm:w-auto pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
             <AddCustomerDialog />
@@ -56,7 +56,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-muted-foreground">加载中...</div>
@@ -78,25 +78,25 @@ export default function CustomersPage() {
               customer.status?.toLowerCase().includes(searchTerm.toLowerCase())
             ).map((customer) => (
             <Card key={customer.id} className="hover:shadow-elevated transition-all duration-smooth">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
+              <CardContent className="p-4 md:p-6">
+                <div className="flex flex-col space-y-4 md:flex-row md:items-start md:justify-between md:space-y-0">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold">
+                      <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold">
                         {customer.name.charAt(0)}
                       </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-foreground">{customer.name}</h3>
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base md:text-lg font-semibold text-foreground truncate">{customer.name}</h3>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-sm text-muted-foreground mt-1">
                           <div className="flex items-center space-x-1">
                             <Phone className="w-4 h-4" />
-                            <span>{customer.phone}</span>
+                            <span className="truncate">{customer.phone}</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4">
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">客户状态</p>
                         <Badge className={getStatusColor(customer.status)}>

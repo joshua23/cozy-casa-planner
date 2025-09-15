@@ -137,17 +137,17 @@ export default function ProfilePage() {
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
-      <div className="bg-card border-b border-border p-6">
+      <div className="bg-card border-b border-border p-4 md:p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">个人资料</h1>
-            <p className="text-muted-foreground">管理您的账户信息和设置</p>
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">个人资料</h1>
+            <p className="text-sm md:text-base text-muted-foreground">管理您的账户信息和设置</p>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-4 md:space-y-6">
         {/* Profile Overview */}
         <Card>
           <CardHeader>

@@ -56,24 +56,24 @@ export default function SuppliersPage() {
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
-      <div className="bg-card border-b border-border p-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-card border-b border-border p-4 md:p-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <Store className="w-6 h-6 text-primary" />
+            <Store className="w-5 h-5 md:w-6 md:h-6 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">供应商管理</h1>
-              <p className="text-muted-foreground">管理材料供应商信息和合作状态</p>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">供应商管理</h1>
+              <p className="text-sm md:text-base text-muted-foreground">管理材料供应商信息和合作状态</p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <input 
-                type="text" 
-                placeholder="搜索供应商..." 
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
+            <div className="relative w-full sm:w-auto">
+              <Search className="w-4 h-4 md:w-5 md:h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="搜索供应商..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full sm:w-auto pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
             <AddSupplierDialog />
@@ -82,63 +82,63 @@ export default function SuppliersPage() {
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         {filteredSuppliers.length === 0 ? (
           <div className="text-center py-12">
-            <Store className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-4">
+            <Store className="w-8 h-8 md:w-12 md:h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-sm md:text-base text-muted-foreground mb-4">
               {suppliers.length === 0 ? "还没有供应商，点击上方按钮添加第一个供应商" : "没有找到匹配的供应商"}
             </p>
             {suppliers.length === 0 && <AddSupplierDialog />}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {filteredSuppliers.map((supplier) => (
               <Card key={supplier.id} className="shadow-card border border-border/50 hover:shadow-elevated transition-all duration-smooth">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{supplier.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">{supplier.supplier_type}</p>
+                <CardHeader className="p-4 md:p-6">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-base md:text-lg truncate">{supplier.name}</CardTitle>
+                      <p className="text-xs md:text-sm text-muted-foreground mt-1 truncate">{supplier.supplier_type}</p>
                     </div>
-                    <Badge className={getStatusColor(supplier.status)}>
+                    <Badge className={`${getStatusColor(supplier.status)} flex-shrink-0 text-xs`}>
                       {supplier.status}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4">
                   {supplier.location && (
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      <span>{supplier.location}</span>
+                    <div className="flex items-center space-x-2 text-xs md:text-sm text-muted-foreground">
+                      <MapPin className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                      <span className="truncate">{supplier.location}</span>
                     </div>
                   )}
-                  
+
                   {supplier.contact_person && (
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <span>联系人：{supplier.contact_person}</span>
+                    <div className="flex items-center space-x-2 text-xs md:text-sm text-muted-foreground">
+                      <span className="truncate">联系人：{supplier.contact_person}</span>
                     </div>
                   )}
 
                   {supplier.phone && (
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <Phone className="w-4 h-4" />
-                      <span>{supplier.phone}</span>
+                    <div className="flex items-center space-x-2 text-xs md:text-sm text-muted-foreground">
+                      <Phone className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                      <span className="truncate">{supplier.phone}</span>
                     </div>
                   )}
-
 
                   {supplier.notes && (
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-xs md:text-sm text-muted-foreground">
                       <p className="font-medium mb-1">备注：</p>
-                      <p className="text-xs">{supplier.notes}</p>
+                      <p className="text-xs line-clamp-2">{supplier.notes}</p>
                     </div>
                   )}
 
-                  <div className="flex items-center space-x-2 pt-2">
-                    <Button 
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 pt-2">
+                    <Button
                       variant="outline"
                       size="sm"
+                      className="text-xs"
                       onClick={() => {
                         setContactInfo({
                           name: supplier.contact_person || supplier.name,
@@ -150,7 +150,7 @@ export default function SuppliersPage() {
                       联系
                     </Button>
                     <EditSupplierDialog supplier={supplier}>
-                      <Button size="sm">
+                      <Button size="sm" className="text-xs">
                         编辑
                       </Button>
                     </EditSupplierDialog>
