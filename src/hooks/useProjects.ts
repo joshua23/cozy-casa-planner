@@ -30,9 +30,18 @@ export function useProjects() {
 
   const createProject = async (projectData: ProjectInsert) => {
     try {
+      // 获取当前用户ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('用户未登录');
+      }
+
       const { data, error } = await supabase
         .from('projects')
-        .insert(projectData)
+        .insert({
+          ...projectData,
+          user_id: user.id, // 确保设置user_id
+        })
         .select()
         .single();
 
