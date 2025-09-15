@@ -37,6 +37,8 @@ export function useTeams() {
         .single();
 
       if (error) throw error;
+      if (!data) throw new Error('No data returned from database insert');
+
       setTeams(prev => [data, ...prev]);
       return data;
     } catch (err) {

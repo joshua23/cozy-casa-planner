@@ -18,6 +18,7 @@ interface CustomerFormData {
   propertyType: string;
   designerInCharge: string;
   responsiblePerson: string;
+  acquisitionSource: string;
   notes: string;
 }
 
@@ -33,6 +34,7 @@ export function AddCustomerDialog() {
     propertyType: "",
     designerInCharge: "",
     responsiblePerson: "",
+    acquisitionSource: "",
     notes: "",
   });
   const { toast } = useToast();
@@ -62,6 +64,7 @@ export function AddCustomerDialog() {
         property_type: formData.propertyType || null,
         designer_in_charge: formData.designerInCharge || null,
         responsible_person: formData.responsiblePerson || null,
+        acquisition_source: formData.acquisitionSource || null,
         notes: formData.notes || null,
         status: "潜在",
         last_contact_date: new Date().toISOString().split('T')[0],
@@ -81,6 +84,7 @@ export function AddCustomerDialog() {
         propertyType: "",
         designerInCharge: "",
         responsiblePerson: "",
+        acquisitionSource: "",
         notes: "",
       });
       setOpen(false);
@@ -195,8 +199,26 @@ export function AddCustomerDialog() {
                 placeholder="请输入跟踪负责人"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="acquisitionSource">获客来源</Label>
+              <Select value={formData.acquisitionSource} onValueChange={(value) => handleInputChange("acquisitionSource", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="选择获客来源" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="线上推广">线上推广</SelectItem>
+                  <SelectItem value="朋友推荐">朋友推荐</SelectItem>
+                  <SelectItem value="老客户介绍">老客户介绍</SelectItem>
+                  <SelectItem value="展会活动">展会活动</SelectItem>
+                  <SelectItem value="门店咨询">门店咨询</SelectItem>
+                  <SelectItem value="电话销售">电话销售</SelectItem>
+                  <SelectItem value="社交媒体">社交媒体</SelectItem>
+                  <SelectItem value="其他渠道">其他渠道</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="notes">备注信息</Label>
             <Textarea

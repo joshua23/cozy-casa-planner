@@ -11,7 +11,15 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-  }
+    persistSession: false, // Disable session persistence since we don't have auth
+    autoRefreshToken: false,
+  },
+  db: {
+    schema: 'public',
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'supabase-js-web',
+    },
+  },
 });

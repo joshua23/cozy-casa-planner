@@ -26,6 +26,17 @@ export default function WorkersPage() {
   const { workers, loading: workersLoading, error: workersError } = useWorkers();
   const { teams, loading: teamsLoading, error: teamsError } = useTeams();
 
+  // Debug logging
+  console.log('WorkersPage state:', {
+    selectedType,
+    workersLoading,
+    workersError,
+    workersCount: workers.length,
+    teamsLoading,
+    teamsError,
+    teamsCount: teams.length
+  });
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "工作中": return "text-stat-blue bg-stat-blue/10";

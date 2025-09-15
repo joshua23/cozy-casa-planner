@@ -14,14 +14,18 @@ export function useWorkers() {
   const fetchWorkers = async () => {
     try {
       setLoading(true);
+      console.log('Fetching workers from database...');
       const { data, error } = await supabase
         .from('workers')
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log('Workers fetch result:', { data, error });
       if (error) throw error;
       setWorkers(data || []);
+      console.log('Workers loaded:', data?.length || 0);
     } catch (err) {
+      console.error('Workers fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch workers');
     } finally {
       setLoading(false);

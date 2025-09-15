@@ -1,4 +1,4 @@
-import { Users, Plus, Search, Mail, Phone, Calendar, Home, User, DollarSign, Edit } from "lucide-react";
+import { Users, Plus, Search, Mail, Phone, Calendar, Home, User, DollarSign, Edit, Target } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -129,7 +129,7 @@ export default function CustomersPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                       {customer.designer_in_charge && (
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">负责设计师</p>
@@ -144,6 +144,13 @@ export default function CustomersPage() {
                         <div className="flex items-center space-x-1">
                           <User className="w-4 h-4" />
                           <span className="text-sm text-foreground">{customer.responsible_person}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">获客来源</p>
+                        <div className="flex items-center space-x-1">
+                          <Target className="w-4 h-4" />
+                          <span className="text-sm text-foreground">{(customer as any).acquisition_source || "未设置"}</span>
                         </div>
                       </div>
                       <div>

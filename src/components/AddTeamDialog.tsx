@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTeams } from "@/hooks/useTeams";
 import { supabase } from "@/integrations/supabase/client";
 
 interface TeamFormData {
@@ -27,14 +28,15 @@ export function AddTeamDialog() {
     teamSize: "",
     specialties: [],
     pricingModel: "",
-    efficiencyRating: "0",
+    efficiencyRating: "1",
   });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { createTeam } = useTeams();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.teamName || !formData.teamLeader) {
       toast({
         title: "错误",
@@ -45,21 +47,35 @@ export function AddTeamDialog() {
     }
 
     setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('construction_teams')
-        .insert({
-          team_name: formData.teamName,
-          team_leader: formData.teamLeader,
-          team_leader_phone: formData.teamLeaderPhone,
-          team_size: formData.teamSize ? parseInt(formData.teamSize) : 0,
-          specialties: formData.specialties,
-          pricing_model: formData.pricingModel,
-          efficiency_rating: parseInt(formData.efficiencyRating),
-          status: '空闲'
-        });
 
-      if (error) throw error;
+    // Create complete team data object
+    const teamData: any = {
+      team_name: formData.teamName.trim(),
+      team_leader: formData.teamLeader.trim(),
+      status: '空闲',
+      efficiency_rating: parseInt(formData.efficiencyRating) || 1
+    };
+
+    // Add optional fields if they have valid values
+    if (formData.teamLeaderPhone && formData.teamLeaderPhone.trim()) {
+      teamData.team_leader_phone = formData.teamLeaderPhone.trim();
+    }
+
+    if (formData.teamSize && !isNaN(parseInt(formData.teamSize))) {
+      teamData.team_size = parseInt(formData.teamSize);
+    }
+
+    if (formData.specialties && formData.specialties.length > 0) {
+      teamData.specialties = formData.specialties;
+    }
+
+    if (formData.pricingModel && ['包工包料', '包工不包料', '按天计价', '按项目计价'].includes(formData.pricingModel)) {
+      teamData.pricing_model = formData.pricingModel;
+    }
+
+
+    try {
+      await createTeam(teamData);
 
       toast({
         title: "成功",
@@ -73,14 +89,13 @@ export function AddTeamDialog() {
         teamSize: "",
         specialties: [],
         pricingModel: "",
-        efficiencyRating: "0",
+        efficiencyRating: "1",
       });
       setOpen(false);
     } catch (error) {
-      console.error('Error adding team:', error);
       toast({
         title: "错误",
-        description: "添加施工团队失败，请重试",
+        description: error instanceof Error ? error.message : "添加施工团队失败，请重试",
         variant: "destructive",
       });
     } finally {
