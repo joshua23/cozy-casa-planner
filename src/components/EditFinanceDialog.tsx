@@ -24,7 +24,7 @@ interface Transaction {
   type: string;
   amount: number;
   category: string;
-  project: string;
+  project: string | null;
   date: string;
   status: string;
   description: string;
@@ -177,7 +177,7 @@ export function EditFinanceDialog({ transaction, children }: EditFinanceDialogPr
                 <SelectValue placeholder="选择关联项目" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">无关联项目</SelectItem>
+                <SelectItem value="none">无关联项目</SelectItem>
                 {projectOptions.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
                     {project.label}

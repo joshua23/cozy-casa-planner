@@ -54,7 +54,7 @@ export function AddFinanceDialog() {
         transaction_type: formData.transactionType,
         amount: parseFloat(formData.amount),
         category: formData.category,
-        project_id: formData.projectId || null,
+        project_id: formData.projectId === "none" ? null : formData.projectId || null,
         description: formData.description,
         transaction_date: formData.transactionDate,
         payment_method: formData.paymentMethod,
@@ -163,7 +163,7 @@ export function AddFinanceDialog() {
                   <SelectValue placeholder="选择关联项目" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">无关联项目</SelectItem>
+                  <SelectItem value="none">无关联项目</SelectItem>
                   {getProjectOptions().map((project) => (
                     <SelectItem key={project.id} value={project.id}>
                       {project.label}
