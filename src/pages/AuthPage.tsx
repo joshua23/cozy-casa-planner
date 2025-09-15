@@ -158,7 +158,7 @@ export default function AuthPage() {
           setError(error.message);
         }
       } else {
-        setSuccess("注册成功！请检查您的邮箱进行验证。");
+        setSuccess("注册成功！正在为您登录...");
         setSignupForm({
           email: "",
           password: "",
@@ -166,6 +166,15 @@ export default function AuthPage() {
           fullName: "",
           username: "",
         });
+        
+        // 注册成功后自动登录
+        setTimeout(async () => {
+          const { error: signInError } = await signIn(signupForm.email, signupForm.password);
+          if (signInError) {
+            setError("注册成功但自动登录失败，请手动登录");
+            setActiveTab("signin");
+          }
+        }, 1000);
       }
     } catch (error) {
       setError("注册失败，请重试");
