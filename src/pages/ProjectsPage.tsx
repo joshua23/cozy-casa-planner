@@ -11,8 +11,8 @@ import { ProjectGanttChart } from "@/components/ProjectGanttChart";
 import { PaymentNodesManager } from "@/components/PaymentNodesManager";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { useProjects, type Project as DBProject } from "@/hooks/useProjects";
-import { useProjectPhases, ProjectPhase } from "@/hooks/useProjectPhases";
+import { useProjectsWithDetailsQuery, type ProjectWithDetails } from "@/hooks/useProjectsWithDetailsQuery";
+import { useSearchDebounce } from "@/hooks/useDebounce";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PaymentNode {
@@ -43,106 +43,26 @@ interface Project {
 }
 
 export default function ProjectsPage() {
-  const [selectedProject, setSelectedProject] = useState<DBProject | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectWithDetails | null>(null);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { projects, loading, error } = useProjects();
-  
-  // 为每个项目获取阶段数据
-  const [projectPhases, setProjectPhases] = useState<Record<string, ProjectPhase[]>>({});
-  const [phasesLoading, setPhasesLoading] = useState<Record<string, boolean>>({});
 
-  // 为每个项目获取付款节点数据
-  const [projectPayments, setProjectPayments] = useState<Record<string, any[]>>({});
-  const [paymentsLoading, setPaymentsLoading] = useState<Record<string, boolean>>({});
+  // 使用React Query优化的hook，一次性获取所有数据
+  const { projects, loading, error, refreshProject } = useProjectsWithDetailsQuery();
 
-  // 获取所有项目的阶段数据
-  useEffect(() => {
-    const fetchAllPhases = async () => {
-      for (const project of projects) {
-        if (!projectPhases[project.id] && !phasesLoading[project.id]) {
-          setPhasesLoading(prev => ({ ...prev, [project.id]: true }));
-          
-          try {
-            const { data, error } = await supabase
-              .from('project_phases')
-              .select('*')
-              .eq('project_id', project.id)
-              .order('phase_order', { ascending: true });
+  // 使用防抖搜索优化性能
+  const { debouncedSearchTerm, isSearching } = useSearchDebounce(searchTerm, 300);
 
-            if (error) throw error;
-            
-            setProjectPhases(prev => ({ ...prev, [project.id]: data || [] }));
-          } catch (err) {
-            console.error('Error fetching phases for project', project.id, err);
-          } finally {
-            setPhasesLoading(prev => ({ ...prev, [project.id]: false }));
-          }
-        }
-      }
-    };
 
-    if (projects.length > 0) {
-      fetchAllPhases();
-    }
-  }, [projects]);
-
-  // 获取所有项目的付款节点数据
-  useEffect(() => {
-    const fetchAllPayments = async () => {
-      for (const project of projects) {
-        if (!projectPayments[project.id] && !paymentsLoading[project.id]) {
-          setPaymentsLoading(prev => ({ ...prev, [project.id]: true }));
-
-          try {
-            const { data, error } = await supabase
-              .from('payment_nodes')
-              .select('*')
-              .eq('project_id', project.id)
-              .order('created_at', { ascending: true });
-
-            if (error) throw error;
-
-            setProjectPayments(prev => ({ ...prev, [project.id]: data || [] }));
-          } catch (err) {
-            console.error('Error fetching payments for project', project.id, err);
-          } finally {
-            setPaymentsLoading(prev => ({ ...prev, [project.id]: false }));
-          }
-        }
-      }
-    };
-
-    if (projects.length > 0) {
-      fetchAllPayments();
-    }
-  }, [projects]);
-
-  // 单项目付款节点刷新函数
-  const refreshProjectPayments = async (projectId: string) => {
-    try {
-      setPaymentsLoading(prev => ({ ...prev, [projectId]: true }));
-      const { data, error } = await supabase
-        .from('payment_nodes')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: true });
-      if (error) throw error;
-      setProjectPayments(prev => ({ ...prev, [projectId]: data || [] }));
-    } catch (err) {
-      console.error('Error refreshing payments for project', projectId, err);
-    } finally {
-      setPaymentsLoading(prev => ({ ...prev, [projectId]: false }));
-    }
-  };
-
-  // 订阅付款节点变更，实时刷新列表摘要
+  // 优化的实时更新机制
   useEffect(() => {
     if (projects.length === 0) return;
-    const channel = supabase
+
+    // 监听付款节点变更
+    const paymentChannel = supabase
       .channel('payment_nodes_realtime')
       .on(
         'postgres_changes',
@@ -150,8 +70,23 @@ export default function ProjectsPage() {
         (payload: any) => {
           const projectId = payload?.new?.project_id || payload?.old?.project_id;
           if (projectId) {
-            // 仅刷新相关项目的付款节点
-            refreshProjectPayments(projectId);
+            // 仅刷新相关项目的完整数据
+            refreshProject(projectId);
+          }
+        }
+      )
+      .subscribe();
+
+    // 监听项目阶段变更
+    const phaseChannel = supabase
+      .channel('project_phases_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'project_phases' },
+        (payload: any) => {
+          const projectId = payload?.new?.project_id || payload?.old?.project_id;
+          if (projectId) {
+            refreshProject(projectId);
           }
         }
       )
@@ -159,13 +94,14 @@ export default function ProjectsPage() {
 
     return () => {
       // @ts-ignore removeChannel is available on supabase client
-      supabase.removeChannel(channel);
+      supabase.removeChannel(paymentChannel);
+      supabase.removeChannel(phaseChannel);
     };
   }, [projects]);
 
-  // 计算付款汇总
-  const calcPaymentStats = (nodes: any[] | undefined) => {
-    const list = nodes || [];
+  // 计算付款汇总（适配新的数据结构）
+  const calcPaymentStats = (paymentNodes: any[] | undefined) => {
+    const list = paymentNodes || [];
     const totalAmount = list.reduce((sum: number, n: any) => sum + (Number(n.amount) || 0), 0);
     const totalPaid = list.reduce((sum: number, n: any) => sum + (Number(n.paid_amount) || 0), 0);
     const progress = totalAmount > 0 ? Math.min(100, Math.round((totalPaid / totalAmount) * 100)) : 0;
@@ -232,30 +168,6 @@ export default function ProjectsPage() {
     },
   ];
 
-  // 转换数据库项目为显示格式
-  const displayProjects = projects.map(project => ({
-    id: project.id,
-    name: project.name,
-    status: project.status,
-    client: project.client_name,
-    deadline: project.end_date || "未设定",
-    contractAmount: project.total_contract_amount || 0,
-    propertyType: project.property_type || "未知",
-    decorationStyle: project.decoration_style || "未设定",
-    area: project.area || 0,
-    paymentNodes: [
-      { type: "合同总价", amount: project.total_contract_amount || 0, paid: 0, status: "未付" as const },
-    ],
-    phases: [
-      { name: "拆除阶段", status: "未开始" as const, progress: 0 },
-      { name: "水电阶段", status: "未开始" as const, progress: 0 },
-      { name: "泥工阶段", status: "未开始" as const, progress: 0 },
-      { name: "木工阶段", status: "未开始" as const, progress: 0 },
-      { name: "油漆阶段", status: "未开始" as const, progress: 0 },
-      { name: "保洁阶段", status: "未开始" as const, progress: 0 },
-      { name: "收尾阶段", status: "未开始" as const, progress: 0 },
-    ]
-  }));
 
   if (loading) {
     return (
@@ -323,13 +235,18 @@ export default function ProjectsPage() {
           <div className="flex items-center space-x-4">
             <div className="relative">
               <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <input 
-                type="text" 
-                placeholder="搜索项目..." 
+              <input
+                type="text"
+                placeholder="搜索项目..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
+              {isSearching && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                </div>
+              )}
             </div>
             <AddProjectDialog />
           </div>
@@ -416,17 +333,17 @@ export default function ProjectsPage() {
         ) : (
           // 项目列表视图
           <div className="grid gap-6">
-            {displayProjects.length === 0 ? (
+            {projects.length === 0 ? (
               <div className="text-center py-12">
                 <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground mb-4">还没有项目，点击上方按钮创建第一个项目</p>
                 <AddProjectDialog />
               </div>
             ) : (
-              displayProjects.filter(project =>
-                project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                project.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                project.status.toLowerCase().includes(searchTerm.toLowerCase())
+              projects.filter(project =>
+                project.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                project.client_name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                project.status.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
               ).map((project) => (
               <div key={project.id} className="bg-card rounded-lg p-6 shadow-card border border-border/50 hover:shadow-elevated transition-all duration-smooth">
                 <div className="flex items-start justify-between">
@@ -441,17 +358,17 @@ export default function ProjectsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                         <Users className="w-4 h-4" />
-                        <span>客户：{project.client}</span>
+                        <span>客户：{project.client_name}</span>
                       </div>
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                         <Calendar className="w-4 h-4" />
-                        <span>截止：{project.deadline}</span>
+                        <span>截止：{project.end_date || '未设定'}</span>
                       </div>
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <span>户型：{project.propertyType}</span>
+                        <span>户型：{project.property_type || '未知'}</span>
                       </div>
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <span>合同：￥{(project.contractAmount / 10000).toFixed(0)}万</span>
+                        <span>合同：￥{((project.total_contract_amount || 0) / 10000).toFixed(0)}万</span>
                       </div>
                     </div>
 
@@ -463,12 +380,9 @@ export default function ProjectsPage() {
                           <h4 className="text-sm font-medium text-foreground flex items-center space-x-2">
                             <Wrench className="w-4 h-4 text-muted-foreground" />
                             <span>项目进度</span>
-                            {phasesLoading[project.id] && (
-                              <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                            )}
                           </h4>
                           <span className="text-xs text-muted-foreground">
-                            {projectPhases[project.id]?.filter(p => p.status === '已完成').length || 0} / {projectPhases[project.id]?.length || 0}
+                            {project.project_phases?.filter(p => p.status === '已完成').length || 0} / {project.project_phases?.length || 0}
                           </span>
                         </div>
 
@@ -476,14 +390,14 @@ export default function ProjectsPage() {
                         <div className="w-full bg-muted rounded-full h-2">
                           <div
                             className="bg-gradient-primary h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${projectPhases[project.id]?.filter(p => p.status === '已完成').length / (projectPhases[project.id]?.length || 1) * 100 || 0}%` }}
+                            style={{ width: `${(project.project_phases?.filter(p => p.status === '已完成').length || 0) / (project.project_phases?.length || 1) * 100}%` }}
                           ></div>
                         </div>
 
                         {/* 项目阶段列表 */}
-                        {projectPhases[project.id] && projectPhases[project.id].length > 0 ? (
+                        {project.project_phases && project.project_phases.length > 0 ? (
                           <div className="space-y-2 max-h-40 md:max-h-48 lg:max-h-56 overflow-y-auto">
-                            {projectPhases[project.id].map((phase) => (
+                            {project.project_phases.map((phase) => (
                               <div key={phase.id} className="bg-muted/30 rounded-lg p-2 md:p-3">
                                 <div className="flex items-center justify-between mb-1 md:mb-2">
                                   <div className="flex items-center space-x-2">
@@ -508,7 +422,7 @@ export default function ProjectsPage() {
                           </div>
                         ) : (
                           <div className="text-sm text-muted-foreground bg-muted/30 rounded-lg p-3 text-center">
-                            {phasesLoading[project.id] ? "加载阶段数据中..." : "暂无阶段数据"}
+                            暂无阶段数据
                           </div>
                         )}
                       </div>
@@ -519,12 +433,9 @@ export default function ProjectsPage() {
                           <div className="flex items-center space-x-2 text-sm">
                             <CreditCard className="w-4 h-4 text-muted-foreground" />
                             <span className="text-foreground">付款节点</span>
-                            {paymentsLoading[project.id] && (
-                              <span className="text-xs text-muted-foreground">加载中...</span>
-                            )}
                           </div>
                           {(() => {
-                            const stats = calcPaymentStats(projectPayments[project.id]);
+                            const stats = calcPaymentStats(project.payment_nodes);
                             return (
                               <span className="text-xs text-muted-foreground">
                                 ￥{(stats.totalPaid/10000).toFixed(1)}万 / ￥{(stats.totalAmount/10000).toFixed(1)}万
@@ -535,7 +446,7 @@ export default function ProjectsPage() {
 
                         {/* 付款总体进度条 */}
                         {(() => {
-                          const stats = calcPaymentStats(projectPayments[project.id]);
+                          const stats = calcPaymentStats(project.payment_nodes);
                           return (
                             <div className="w-full bg-muted rounded-full h-2">
                               <div
@@ -548,30 +459,31 @@ export default function ProjectsPage() {
 
                         {/* 付款节点列表 */}
                         <div className="space-y-2 max-h-40 md:max-h-48 lg:max-h-56 overflow-y-auto">
-                          {(projectPayments[project.id] || []).map((node: any) => (
-                            <div key={node.id} className="bg-muted/30 rounded-lg p-2 md:p-3">
-                              <div className="flex items-center justify-between mb-1 md:mb-2">
-                                <div className="flex items-center space-x-1 md:space-x-2 flex-1 min-w-0">
-                                  <span className="text-xs md:text-sm font-medium text-foreground truncate">{node.node_type}</span>
-                                  <Badge className={`${getPaymentStatusColor(node.status)} text-xs flex-shrink-0`}>{node.status}</Badge>
+                          {project.payment_nodes && project.payment_nodes.length > 0 ? (
+                            project.payment_nodes.map((node: any) => (
+                              <div key={node.id} className="bg-muted/30 rounded-lg p-2 md:p-3">
+                                <div className="flex items-center justify-between mb-1 md:mb-2">
+                                  <div className="flex items-center space-x-1 md:space-x-2 flex-1 min-w-0">
+                                    <span className="text-xs md:text-sm font-medium text-foreground truncate">{node.node_type}</span>
+                                    <Badge className={`${getPaymentStatusColor(node.status)} text-xs flex-shrink-0`}>{node.status}</Badge>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+                                    {Math.round((Number(node.paid_amount||0) / Number(node.amount||1)) * 100)}%
+                                  </span>
                                 </div>
-                                <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
-                                  {Math.round((Number(node.paid_amount||0) / Number(node.amount||1)) * 100)}%
-                                </span>
+                                <div className="w-full bg-background rounded-full h-1.5 mb-2">
+                                  <div
+                                    className="bg-gradient-to-r from-green-500 to-green-600 h-1.5 rounded-full transition-all duration-300"
+                                    style={{ width: `${Math.round((Number(node.paid_amount||0) / Number(node.amount||1)) * 100)}%` }}
+                                  ></div>
+                                </div>
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-muted-foreground space-y-1 sm:space-y-0">
+                                  <span>已付：￥{(Number(node.paid_amount||0)/10000).toFixed(1)}万</span>
+                                  <span>总额：￥{(Number(node.amount||0)/10000).toFixed(1)}万</span>
+                                </div>
                               </div>
-                              <div className="w-full bg-background rounded-full h-1.5 mb-2">
-                                <div
-                                  className="bg-gradient-to-r from-green-500 to-green-600 h-1.5 rounded-full transition-all duration-300"
-                                  style={{ width: `${Math.round((Number(node.paid_amount||0) / Number(node.amount||1)) * 100)}%` }}
-                                ></div>
-                              </div>
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-muted-foreground space-y-1 sm:space-y-0">
-                                <span>已付：￥{(Number(node.paid_amount||0)/10000).toFixed(1)}万</span>
-                                <span>总额：￥{(Number(node.amount||0)/10000).toFixed(1)}万</span>
-                              </div>
-                            </div>
-                          ))}
-                          {!paymentsLoading[project.id] && (!projectPayments[project.id] || projectPayments[project.id].length === 0) && (
+                            ))
+                          ) : (
                             <div className="text-sm text-muted-foreground bg-muted/30 rounded-lg p-3 text-center">
                               暂无付款节点
                             </div>
@@ -583,15 +495,15 @@ export default function ProjectsPage() {
 
                   <div className="flex items-center space-x-2 ml-4">
                     <EditProjectDialog project={{
-                      id: project.id.toString(), // 确保传递string类型的ID
+                      id: project.id,
                       name: project.name,
                       status: project.status,
-                      client: project.client,
-                      deadline: project.deadline,
-                      contractAmount: project.contractAmount,
-                      propertyType: project.propertyType,
-                      decorationStyle: project.decorationStyle,
-                      area: project.area
+                      client: project.client_name || '',
+                      deadline: project.end_date || '',
+                      contractAmount: project.total_contract_amount || 0,
+                      propertyType: project.property_type || '',
+                      decorationStyle: project.decoration_style || '',
+                      area: project.area || 0
                     }}>
                       <Button size="sm">
                         编辑

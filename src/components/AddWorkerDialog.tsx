@@ -98,7 +98,7 @@ export function AddWorkerDialog() {
     }));
   };
 
-  const availableSpecialties = ["泥工", "木工", "电工", "水工", "油漆工", "瓦工", "架子工", "杂工"];
+  const availableSpecialties = ["泥瓦工", "木工", "水电工", "油漆工", "架子工", "杂工"];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -140,12 +140,10 @@ export function AddWorkerDialog() {
                   <SelectValue placeholder="选择工种" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="泥工">泥工</SelectItem>
+                  <SelectItem value="泥瓦工">泥瓦工</SelectItem>
                   <SelectItem value="木工">木工</SelectItem>
-                  <SelectItem value="电工">电工</SelectItem>
-                  <SelectItem value="水工">水工</SelectItem>
+                  <SelectItem value="水电工">水电工</SelectItem>
                   <SelectItem value="油漆工">油漆工</SelectItem>
-                  <SelectItem value="瓦工">瓦工</SelectItem>
                   <SelectItem value="架子工">架子工</SelectItem>
                   <SelectItem value="杂工">杂工</SelectItem>
                 </SelectContent>

@@ -24,7 +24,32 @@ import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // 数据缓存5分钟
+      staleTime: 5 * 60 * 1000,
+      // 缓存保留10分钟
+      gcTime: 10 * 60 * 1000,
+      // 重试配置
+      retry: (failureCount, error) => {
+        // 认证错误不重试
+        if (error?.message?.includes('未登录') || error?.message?.includes('身份验证')) {
+          return false;
+        }
+        // 其他错误重试2次
+        return failureCount < 2;
+      },
+      // 网络重连时重新获取
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      // 变更失败重试1次
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

@@ -1,5 +1,5 @@
-import { Users, Plus, Search, Star, Phone, Briefcase } from "lucide-react";
-import { useState } from "react";
+import { Users, Plus, Search, Star, Phone, Briefcase, FolderOpen } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { AddWorkerDialog } from "@/components/AddWorkerDialog";
 import { useWorkers } from "@/hooks/useWorkers";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function WorkersPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,6 +21,50 @@ export default function WorkersPage() {
   const navigate = useNavigate();
 
   const { workers, loading: workersLoading, error: workersError } = useWorkers();
+
+  // 工人分配项目数据
+  const [workerAssignments, setWorkerAssignments] = useState<Record<string, any[]>>({});
+  const [assignmentsLoading, setAssignmentsLoading] = useState<Record<string, boolean>>({});
+
+  // 获取工人的分配项目
+  const fetchWorkerAssignments = async (workerId: string) => {
+    if (assignmentsLoading[workerId]) return;
+
+    try {
+      setAssignmentsLoading(prev => ({ ...prev, [workerId]: true }));
+      const { data, error } = await supabase
+        .from('worker_assignments')
+        .select(`
+          *,
+          projects (
+            id,
+            name,
+            status,
+            client_name,
+            end_date
+          )
+        `)
+        .eq('worker_id', workerId)
+        .eq('status', '分配中');
+
+      if (error) throw error;
+
+      setWorkerAssignments(prev => ({ ...prev, [workerId]: data || [] }));
+    } catch (err) {
+      console.error('获取工人分配项目失败:', err);
+    } finally {
+      setAssignmentsLoading(prev => ({ ...prev, [workerId]: false }));
+    }
+  };
+
+  // 获取所有工人的分配项目
+  useEffect(() => {
+    workers.forEach(worker => {
+      if (!workerAssignments[worker.id] && !assignmentsLoading[worker.id]) {
+        fetchWorkerAssignments(worker.id);
+      }
+    });
+  }, [workers]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -155,6 +200,45 @@ export default function WorkersPage() {
                         </Badge>
                       </div>
                     </div>
+
+                    {/* 分配项目显示 */}
+                    <div className="border-t border-border pt-4">
+                      <div className="flex items-center space-x-2 mb-3">
+                        <FolderOpen className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-xs md:text-sm font-medium text-foreground">分配项目</span>
+                        {assignmentsLoading[worker.id] && (
+                          <div className="w-3 h-3 animate-spin rounded-full border border-primary border-t-transparent"></div>
+                        )}
+                      </div>
+
+                      {workerAssignments[worker.id] && workerAssignments[worker.id].length > 0 ? (
+                        <div className="space-y-2">
+                          {workerAssignments[worker.id].map((assignment) => (
+                            <div key={assignment.id} className="bg-muted/30 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <h5 className="text-sm font-medium text-foreground truncate">
+                                  {assignment.projects?.name || '未知项目'}
+                                </h5>
+                                <Badge className={getStatusColor(assignment.projects?.status || 'unknown')} variant="outline">
+                                  {assignment.projects?.status || '未知'}
+                                </Badge>
+                              </div>
+                              <div className="text-xs text-muted-foreground space-y-1">
+                                <p>客户: {assignment.projects?.client_name || '未知'}</p>
+                                <p>工作: {assignment.work_description}</p>
+                                {assignment.estimated_amount && (
+                                  <p>预估: ¥{assignment.estimated_amount.toLocaleString()}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-xs text-muted-foreground bg-muted/30 rounded-lg p-3 text-center">
+                          {assignmentsLoading[worker.id] ? '加载中...' : '暂无分配项目'}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex flex-col sm:flex-row lg:flex-col items-stretch lg:items-center gap-2 lg:ml-4">
@@ -172,15 +256,18 @@ export default function WorkersPage() {
                     >
                       联系
                     </Button>
-                    <WorkerAssignDialog worker={{
-                      id: parseInt(worker.id) || 0,
-                      name: worker.name,
-                      type: worker.worker_type,
-                      hourlyRate: worker.hourly_rate || 0,
-                      dailyRate: worker.daily_rate || 0,
-                      specialties: worker.specialties || [],
-                      status: worker.status
-                    }}>
+                    <WorkerAssignDialog
+                      worker={{
+                        id: parseInt(worker.id) || 0,
+                        name: worker.name,
+                        type: worker.worker_type,
+                        hourlyRate: worker.hourly_rate || 0,
+                        dailyRate: worker.daily_rate || 0,
+                        specialties: worker.specialties || [],
+                        status: worker.status
+                      }}
+                      onAssignmentCreated={() => fetchWorkerAssignments(worker.id)}
+                    >
                       <Button size="sm" className="text-xs">
                         分配项目
                       </Button>

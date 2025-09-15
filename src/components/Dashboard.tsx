@@ -18,7 +18,7 @@ import { NewsTickerBanner } from "./NewsTickerBanner";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line } from "recharts";
 import { useNavigate } from "react-router-dom";
-import { useDashboardStats, type TimeFilter } from "@/hooks/useDashboardStats";
+import { useDashboardStatsQuery, type TimeFilter } from "@/hooks/useDashboardStatsQuery";
 
 
 // 图表颜色配置
@@ -42,7 +42,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('month');
 
-  const { stats, loading, error } = useDashboardStats(timeFilter);
+  const { data: stats, isLoading: loading, error, isFetching } = useDashboardStatsQuery(timeFilter);
 
   // 如果正在加载，显示加载状态
   if (loading) {
@@ -62,7 +62,7 @@ export default function Dashboard() {
       <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500 text-lg mb-4">数据加载失败</p>
-          <p className="text-muted-foreground">{error}</p>
+          <p className="text-muted-foreground">{error?.message || '未知错误'}</p>
         </div>
       </div>
     );
