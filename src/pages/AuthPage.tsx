@@ -304,9 +304,8 @@ export default function AuthPage() {
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="请输入邮箱"
-                    value={signupForm.email}
-                    placeholder="邮箱"
+                      placeholder="请输入邮箱"
+                      value={signupForm.email}
                     required
                   />
                 </div>
