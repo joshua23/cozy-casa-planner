@@ -18,6 +18,7 @@ import TeamsPage from "./pages/TeamsPage";
 import TalentsPage from "./pages/TalentsPage";
 import FinancePage from "./pages/FinancePage";
 import AIPage from "./pages/AIPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="talents" element={<TalentsPage />} />
               <Route path="finance" element={<FinancePage />} />
               <Route path="ai" element={<AIPage />} />
+              <Route path="profile" element={<ProfilePage />} />
             </Route>
             {/* 404页面 */}
             <Route path="*" element={<NotFound />} />
