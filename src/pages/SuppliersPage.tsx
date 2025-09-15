@@ -142,8 +142,7 @@ export default function SuppliersPage() {
                       onClick={() => {
                         setContactInfo({
                           name: supplier.contact_person || supplier.name,
-                          phone: supplier.phone || "",
-                          email: supplier.email || ""
+                          phone: supplier.phone || ""
                         });
                         setContactDialogOpen(true);
                       }}

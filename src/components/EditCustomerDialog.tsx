@@ -61,7 +61,6 @@ export function EditCustomerDialog({ customer, children }: EditCustomerDialogPro
       await updateCustomer(customer.id, {
         name: formData.name,
         phone: formData.phone,
-        email: formData.email || null,
         preliminary_budget: formData.preliminaryBudget ? parseFloat(formData.preliminaryBudget) : null,
         decoration_style: formData.decorationStyle || null,
         property_type: formData.propertyType || null,

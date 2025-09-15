@@ -217,8 +217,7 @@ export default function TalentsPage() {
                       onClick={() => {
                         setContactInfo({
                           name: talent.name,
-                          phone: talent.phone || "",
-                          email: talent.email || ""
+                          phone: talent.phone || ""
                         });
                         setContactDialogOpen(true);
                       }}

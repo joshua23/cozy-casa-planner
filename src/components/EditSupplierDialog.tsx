@@ -59,7 +59,6 @@ export function EditSupplierDialog({ supplier, children }: EditSupplierDialogPro
         supplier_type: formData.supplierType,
         contact_person: formData.contactPerson,
         phone: formData.phone,
-        email: formData.email,
         location: formData.location,
         status: formData.status,
         notes: formData.notes,

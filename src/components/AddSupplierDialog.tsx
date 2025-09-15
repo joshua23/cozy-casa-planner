@@ -84,7 +84,6 @@ export function AddSupplierDialog() {
         supplierType: "",
         contactPerson: "",
         phone: "",
-        email: "",
         location: "",
         status: "潜在",
         notes: "",

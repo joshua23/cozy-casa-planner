@@ -160,8 +160,7 @@ export default function WorkersPage() {
                       onClick={() => {
                         setContactInfo({
                           name: worker.name,
-                          phone: worker.phone,
-                          email: ""
+                          phone: worker.phone
                         });
                         setContactDialogOpen(true);
                       }}

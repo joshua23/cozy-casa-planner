@@ -163,16 +163,6 @@ export function AddTalentDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">邮箱</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                placeholder="邮箱"
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="experienceYears">工作经验 (年)</Label>
               <Input
                 id="experienceYears"

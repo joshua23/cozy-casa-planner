@@ -93,11 +93,9 @@ export function ContactDialog({ open, onOpenChange, contactInfo }: ContactDialog
             <Button onClick={handleCall} className="w-full">
               拨打电话
             </Button>
-            {contactInfo.email && (
-              <Button variant="outline" onClick={handleEmailContact} className="w-full">
-                发送邮件
-              </Button>
-            )}
+            <Button variant="outline" onClick={handleEmailContact} className="w-full" disabled>
+              发送邮件
+            </Button>
           </div>
           
           <div className="space-y-2">

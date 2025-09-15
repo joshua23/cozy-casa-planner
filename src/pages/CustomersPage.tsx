@@ -176,8 +176,7 @@ export default function CustomersPage() {
                       onClick={() => {
                         setContactInfo({
                           name: customer.name,
-                          phone: customer.phone,
-                          email: customer.email
+                          phone: customer.phone || ""
                         });
                         setContactDialogOpen(true);
                       }}
