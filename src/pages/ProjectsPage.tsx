@@ -8,6 +8,7 @@ import { AddProjectDialog } from "@/components/AddProjectDialog";
 import { EditProjectDialog } from "@/components/EditProjectDialog";
 import { ContactDialog } from "@/components/ContactDialog";
 import { ProjectGanttChart } from "@/components/ProjectGanttChart";
+import { PaymentNodesManager } from "@/components/PaymentNodesManager";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useProjects, type Project as DBProject } from "@/hooks/useProjects";
@@ -316,17 +317,11 @@ export default function ProjectsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* 付款节点 */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <CreditCard className="w-5 h-5" />
-                    <span>付款节点</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground">暂无付款节点数据</p>
-                </CardContent>
-              </Card>
+              <PaymentNodesManager 
+                projectId={selectedProject.id}
+                projectName={selectedProject.name}
+                totalContractAmount={selectedProject.total_contract_amount || 0}
+              />
 
               {/* 项目进度节点 */}
               <ProjectGanttChart projectId={selectedProject.id} />

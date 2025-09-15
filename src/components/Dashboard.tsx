@@ -18,8 +18,77 @@ import { NewsTickerBanner } from "./NewsTickerBanner";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line } from "recharts";
 import { useNavigate } from "react-router-dom";
-import { useDashboardStats, type TimeFilter } from "@/hooks/useDashboardStats";
 
+// 项目进度数据 - 按时间过滤
+const getAllProjectData = () => ({
+  month: [
+    { name: "设计阶段", value: 8, percentage: 32 },
+    { name: "施工准备", value: 5, percentage: 20 },
+    { name: "装修中", value: 7, percentage: 28 },
+    { name: "验收", value: 3, percentage: 12 },
+    { name: "完工", value: 2, percentage: 8 }
+  ],
+  quarter: [
+    { name: "设计阶段", value: 25, percentage: 31 },
+    { name: "施工准备", value: 18, percentage: 22 },
+    { name: "装修中", value: 22, percentage: 27 },
+    { name: "验收", value: 10, percentage: 12 },
+    { name: "完工", value: 6, percentage: 8 }
+  ],
+  year: [
+    { name: "设计阶段", value: 96, percentage: 30 },
+    { name: "施工准备", value: 71, percentage: 22 },
+    { name: "装修中", value: 89, percentage: 28 },
+    { name: "验收", value: 38, percentage: 12 },
+    { name: "完工", value: 26, percentage: 8 }
+  ]
+});
+
+// 财务数据 - 按时间过滤
+const getAllFinanceData = () => ({
+  month: [
+    { month: "1月", income: 85000, expense: 52000 },
+    { month: "2月", income: 92000, expense: 58000 },
+    { month: "3月", income: 78000, expense: 48000 },
+    { month: "4月", income: 105000, expense: 65000 },
+    { month: "5月", income: 98000, expense: 61000 },
+    { month: "6月", income: 112000, expense: 70000 }
+  ],
+  quarter: [
+    { month: "Q1", income: 255000, expense: 158000 },
+    { month: "Q2", income: 315000, expense: 193000 },
+    { month: "Q3", income: 289000, expense: 175000 },
+    { month: "Q4", income: 338000, expense: 208000 }
+  ],
+  year: [
+    { month: "2021", income: 956000, expense: 582000 },
+    { month: "2022", income: 1124000, expense: 695000 },
+    { month: "2023", income: 1289000, expense: 758000 },
+    { month: "2024", income: 1197000, expense: 734000 }
+  ]
+});
+
+// 二级统计数据 - 按时间过滤
+const getAllSecondaryStats = () => ({
+  month: [
+    { title: "在建项目", value: "12", subtitle: "进行中项目", icon: Zap, color: "yellow" as const },
+    { title: "已完项目", value: "8", subtitle: "本月完成", icon: CheckCircle, color: "green" as const },
+    { title: "未开项目", value: "4", subtitle: "待开工项目", icon: Calendar, color: "red" as const },
+    { title: "立项上周", value: "6", subtitle: "新增项目", icon: Package, color: "blue" as const }
+  ],
+  quarter: [
+    { title: "在建项目", value: "35", subtitle: "进行中项目", icon: Zap, color: "yellow" as const },
+    { title: "已完项目", value: "24", subtitle: "本季完成", icon: CheckCircle, color: "green" as const },
+    { title: "未开项目", value: "12", subtitle: "待开工项目", icon: Calendar, color: "red" as const },
+    { title: "立项本季", value: "18", subtitle: "新增项目", icon: Package, color: "blue" as const }
+  ],
+  year: [
+    { title: "在建项目", value: "89", subtitle: "进行中项目", icon: Zap, color: "yellow" as const },
+    { title: "已完项目", value: "156", subtitle: "本年完成", icon: CheckCircle, color: "green" as const },
+    { title: "未开项目", value: "23", subtitle: "待开工项目", icon: Calendar, color: "red" as const },
+    { title: "立项本年", value: "64", subtitle: "新增项目", icon: Package, color: "blue" as const }
+  ]
+});
 
 // 图表颜色配置
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', 'hsl(var(--destructive))'];
@@ -35,95 +104,49 @@ const chartConfig = {
   },
 };
 
+const mainStats = [
+  {
+    title: "项目完成率",
+    value: "78%",
+    subtitle: "本月项目进度",
+    icon: TrendingUp,
+    color: "blue" as const,
+    trend: { value: "12%", isPositive: true }
+  },
+  {
+    title: "营业收入",
+    value: "￥286,500",
+    subtitle: "本月收入统计",
+    icon: DollarSign,
+    color: "green" as const,
+    trend: { value: "8.2%", isPositive: true }
+  },
+  {
+    title: "活跃客户",
+    value: "1,245",
+    subtitle: "当前活跃客户数",
+    icon: Users,
+    color: "purple" as const,
+    trend: { value: "15%", isPositive: true }
+  },
+  {
+    title: "工人数量",
+    value: "42",
+    subtitle: "在职工人统计",
+    icon: User,
+    color: "orange" as const,
+    trend: { value: "3", isPositive: true }
+  }
+];
+
+
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>('month');
+  const [timeFilter, setTimeFilter] = useState<'month' | 'quarter' | 'year'>('month');
   
-  // 使用真实数据
-  const { stats, loading, error } = useDashboardStats(timeFilter);
-
-  // 加载中状态
-  if (loading) {
-    return (
-      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">正在加载统计数据...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // 错误状态
-  if (error) {
-    return (
-      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-destructive mb-4">加载统计数据失败: {error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-          >
-            重新加载
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // 没有数据时的默认状态
-  if (!stats) {
-    return (
-      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">暂无统计数据</p>
-      </div>
-    );
-  }
-
-  // 构建主要统计数据
-  const mainStats = [
-    {
-      title: "项目完成率",
-      value: `${stats.mainStats.projectCompletionRate.toFixed(1)}%`,
-      subtitle: "项目完成情况",
-      icon: TrendingUp,
-      color: "blue" as const,
-      trend: { value: `${stats.mainStats.projectCompletionRate.toFixed(1)}%`, isPositive: stats.mainStats.projectCompletionRate > 50 }
-    },
-    {
-      title: "营业收入",
-      value: `￥${(stats.mainStats.monthlyRevenue / 10000).toFixed(1)}万`,
-      subtitle: "当期收入统计",
-      icon: DollarSign,
-      color: "green" as const,
-      trend: { value: "实时数据", isPositive: true }
-    },
-    {
-      title: "活跃客户",
-      value: stats.mainStats.activeCustomers.toString(),
-      subtitle: "当前活跃客户数",
-      icon: Users,
-      color: "purple" as const,
-      trend: { value: `${stats.mainStats.activeCustomers}位`, isPositive: true }
-    },
-    {
-      title: "工人数量",
-      value: stats.mainStats.workerCount.toString(),
-      subtitle: "在职工人统计",
-      icon: User,
-      color: "orange" as const,
-      trend: { value: `${stats.mainStats.workerCount}人`, isPositive: true }
-    }
-  ];
-
-  // 为二级统计数据添加图标
-  const secondaryStatsWithIcons = stats.secondaryStats.map((stat, index) => {
-    const icons = [Zap, CheckCircle, Calendar, Users];
-    return {
-      ...stat,
-      icon: icons[index] || Package
-    };
-  });
+  const projectProgressData = getAllProjectData()[timeFilter];
+  const financeData = getAllFinanceData()[timeFilter];
+  const secondaryStats = getAllSecondaryStats()[timeFilter];
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
@@ -173,7 +196,7 @@ export default function Dashboard() {
               <select 
                 className="text-sm border border-border rounded-lg px-3 py-1 bg-card text-foreground"
                 value={timeFilter}
-                onChange={(e) => setTimeFilter(e.target.value as TimeFilter)}
+                onChange={(e) => setTimeFilter(e.target.value as 'month' | 'quarter' | 'year')}
               >
                 <option value="month">本月</option>
                 <option value="quarter">本季度</option>
@@ -183,7 +206,7 @@ export default function Dashboard() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {secondaryStatsWithIcons.map((stat, index) => (
+            {secondaryStats.map((stat, index) => (
               <StatCard key={index} {...stat} />
             ))}
           </div>
@@ -197,13 +220,13 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={stats.projectDistribution}
+                    data={projectProgressData}
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
                     dataKey="value"
                   >
-                    {stats.projectDistribution.map((entry, index) => (
+                    {projectProgressData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -212,7 +235,7 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </ChartContainer>
             <div className="mt-4 space-y-2">
-              {stats.projectDistribution.map((item, index) => (
+              {projectProgressData.map((item, index) => (
                 <div key={item.name} className="flex items-center justify-between text-sm">
                   <div className="flex items-center space-x-2">
                     <div 
@@ -231,7 +254,7 @@ export default function Dashboard() {
             <h3 className="text-lg font-semibold text-foreground mb-4">财务概览</h3>
             <ChartContainer config={chartConfig} className="h-64 md:h-80 lg:h-96">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.financeData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={financeData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <XAxis 
                     dataKey="month" 
                     axisLine={false}

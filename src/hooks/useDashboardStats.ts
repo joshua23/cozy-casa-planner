@@ -11,7 +11,7 @@ export interface DashboardStats {
   mainStats: {
     projectCompletionRate: number;
     monthlyRevenue: number;
-    activeCustomers: number;
+    activeClients: number;
     workerCount: number;
   };
   
@@ -92,10 +92,17 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
         };
       }
 
-      // 获取当前用户的所有项目
+      // 获取项目数据及其阶段信息
       const { data: projects, error: projectsError } = await supabase
         .from('projects')
-        .select('*')
+        .select(`
+          *,
+          project_phases (
+            phase_name,
+            status,
+            completion_percentage
+          )
+        `)
         .eq('user_id', user.id);
 
       if (projectsError) {
@@ -103,19 +110,70 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
         throw projectsError;
       }
 
-      console.log('获取到的项目数据:', projects);
+      console.log('获取到的项目数据（含阶段）:', projects);
 
       // 计算项目完成率
       const totalProjects = projects?.length || 0;
-      const completedProjects = projects?.filter(p => p.status === '已完成').length || 0;
-      const completionRate = totalProjects > 0 ? (completedProjects / totalProjects) * 100 : 0;
 
-      // 获取项目状态分布
-      const statusCounts = projects?.reduce((acc, project) => {
-        const status = project.status || '未设置';
+      // 智能分析项目实际状态（基于项目阶段进度）
+      const projectsWithRealStatus = projects?.map(project => {
+        let realStatus = project.status || '未设置';
+        
+        // 如果有项目阶段数据，根据阶段进度分析实际状态
+        if (project.project_phases && project.project_phases.length > 0) {
+          const phases = project.project_phases;
+          
+          // 检查是否有进行中的阶段
+          const activePhase = phases.find(phase => phase.status === '进行中');
+          if (activePhase) {
+            // 根据具体阶段名称确定更精确的状态
+            switch (activePhase.phase_name) {
+              case '拆除阶段':
+                realStatus = '拆除中';
+                break;
+              case '水电阶段':
+                realStatus = '水电改造中';
+                break;
+              case '泥工阶段':
+                realStatus = '泥瓦施工中';
+                break;
+              case '木工阶段':
+                realStatus = '木工施工中';
+                break;
+              case '油漆阶段':
+                realStatus = '油漆施工中';
+                break;
+              default:
+                realStatus = '施工中';
+            }
+          } else {
+            // 检查最高进度的阶段
+            const maxProgressPhase = phases.reduce((max, phase) => 
+              phase.completion_percentage > max.completion_percentage ? phase : max
+            );
+            
+            if (maxProgressPhase.completion_percentage > 0) {
+              realStatus = maxProgressPhase.phase_name;
+            }
+          }
+        }
+        
+        return { ...project, realStatus };
+      }) || [];
+
+      console.log('项目实际状态分析:', projectsWithRealStatus.map(p => ({
+        name: p.name,
+        originalStatus: p.status,
+        realStatus: p.realStatus,
+        phases: p.project_phases
+      })));
+
+      // 获取项目状态分布（基于实际状态）
+      const statusCounts = projectsWithRealStatus.reduce((acc, project) => {
+        const status = project.realStatus;
         acc[status] = (acc[status] || 0) + 1;
         return acc;
-      }, {} as Record<string, number>) || {};
+      }, {} as Record<string, number>);
 
       const projectDistribution = Object.entries(statusCounts).map(([name, value]) => ({
         name,
@@ -123,13 +181,54 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
         percentage: totalProjects > 0 ? Math.round((value / totalProjects) * 100) : 0
       }));
 
+      // 定义项目状态映射（基于实际状态）
+      const statusMapping = {
+        completed: ['已完成', '完成', '竣工', '验收完成'],
+        inProgress: [
+          '进行中', '施工中', '装修中', '在建',
+          '拆除中', '拆除阶段', 
+          '水电改造中', '水电阶段',
+          '泥瓦施工中', '泥工阶段',
+          '木工施工中', '木工阶段', 
+          '油漆施工中', '油漆阶段'
+        ],
+        pending: ['待开始', '未开始', '待施工', '设计中', '设计阶段', '等待开工'],
+        paused: ['暂停', '停工', '延期']
+      };
+
+      const completedProjectsCount = projectsWithRealStatus.filter(p => 
+        statusMapping.completed.includes(p.realStatus)
+      ).length;
+
+      const inProgressProjectsCount = projectsWithRealStatus.filter(p => 
+        statusMapping.inProgress.includes(p.realStatus)
+      ).length;
+
+      const pendingProjectsCount = projectsWithRealStatus.filter(p => 
+        statusMapping.pending.includes(p.realStatus)
+      ).length;
+
+      const completionRate = totalProjects > 0 ? (completedProjectsCount / totalProjects) * 100 : 0;
+
+      console.log('项目状态分析:', {
+        总项目数: totalProjects,
+        已完成: completedProjectsCount,
+        进行中: inProgressProjectsCount,
+        待开始: pendingProjectsCount,
+        项目详情: projectsWithRealStatus.map(p => ({ 
+          name: p.name, 
+          originalStatus: p.status,
+          realStatus: p.realStatus 
+        }))
+      });
+
       return {
         completionRate,
         projectDistribution,
         totalProjects,
-        completedProjects,
-        inProgressProjects: projects?.filter(p => p.status === '进行中').length || 0,
-        pendingProjects: projects?.filter(p => p.status === '待开始' || p.status === '未开始').length || 0
+        completedProjects: completedProjectsCount,
+        inProgressProjects: inProgressProjectsCount,
+        pendingProjects: pendingProjectsCount
       };
     } catch (error) {
       console.error('获取项目统计失败:', error);
@@ -159,7 +258,8 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
       }
 
       // 获取财务记录（包含关联的项目信息）
-      const { data: records, error } = await supabase
+      // 首先尝试通过user_id获取，如果为空则获取所有记录（处理历史数据）
+      let { data: records, error } = await supabase
         .from('financial_records')
         .select(`
           *,
@@ -172,6 +272,33 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
         `)
         .eq('user_id', user.id)
         .order('transaction_date', { ascending: true });
+
+      // 如果通过user_id查询为空，尝试获取所有财务记录并过滤
+      if (!records || records.length === 0) {
+        console.log('通过user_id查询财务记录为空，尝试获取所有记录...');
+        const { data: allRecords, error: allError } = await supabase
+          .from('financial_records')
+          .select(`
+            *,
+            projects (
+              id,
+              name,
+              client_name,
+              user_id
+            )
+          `)
+          .order('transaction_date', { ascending: true });
+        
+        if (allError) {
+          error = allError;
+        } else {
+          // 过滤属于当前用户的记录（通过项目关联或无user_id的历史记录）
+          records = allRecords?.filter(record => {
+            return !record.user_id || record.user_id === user.id || 
+                   (record.projects && record.projects.user_id === user.id);
+          }) || [];
+        }
+      }
 
       if (error) {
         console.error('获取财务记录失败:', error);
@@ -331,42 +458,89 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
     }
   };
 
-  // 获取客户统计数据
-  const getCustomerStats = async () => {
+  // 获取客户统计数据（基于projects表的client信息）
+  const getClientStats = async () => {
     try {
       // 获取当前用户
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log('用户未登录，返回默认客户统计');
         return {
-          activeCustomers: 0,
-          totalCustomers: 0
+          activeClients: 0,
+          totalClients: 0,
+          potentialCustomers: 0
         };
       }
 
-      const { data: customers, error } = await supabase
+      // 获取正式客户（来自projects表）
+      const { data: projects, error: projectsError } = await supabase
+        .from('projects')
+        .select('client_name, client_phone, client_email, status')
+        .eq('user_id', user.id)
+        .not('client_name', 'is', null);
+
+      if (projectsError) {
+        console.error('获取项目客户失败:', projectsError);
+      }
+
+      // 获取潜在客户（来自customers表，未转化的）
+      const { data: potentialCustomers, error: customersError } = await supabase
         .from('customers')
         .select('*')
         .eq('user_id', user.id);
 
-      if (error) {
-        console.error('获取客户数据失败:', error);
-        throw error;
+      if (customersError) {
+        console.error('获取潜在客户失败:', customersError);
       }
 
-      console.log('获取到的客户数据:', customers);
+      console.log('获取到的项目客户数据:', projects);
+      console.log('获取到的潜在客户数据:', potentialCustomers);
 
-      const activeCustomers = customers?.filter(c => c.status === 'active' || c.status === '活跃').length || 0;
-      
+      // 统计唯一客户（基于姓名和电话去重）
+      const uniqueClients = new Map();
+      projects?.forEach(project => {
+        const key = `${project.client_name}-${project.client_phone || 'no-phone'}`;
+        if (!uniqueClients.has(key)) {
+          uniqueClients.set(key, {
+            name: project.client_name,
+            phone: project.client_phone,
+            email: project.client_email,
+            status: '已签约', // 项目表中的客户都是已签约客户
+            hasActiveProject: project.status === '设计中' || project.status === '进行中'
+          });
+        } else {
+          // 更新活跃状态
+          const existing = uniqueClients.get(key);
+          if (project.status === '设计中' || project.status === '进行中') {
+            existing.hasActiveProject = true;
+          }
+        }
+      });
+
+      const totalClients = uniqueClients.size;
+      const activeClients = Array.from(uniqueClients.values()).filter(client => 
+        client.hasActiveProject
+      ).length;
+      const potentialCount = potentialCustomers?.length || 0;
+
+      console.log('客户统计结果:', {
+        totalClients,
+        activeClients,
+        potentialCount,
+        uniqueClients: Array.from(uniqueClients.values())
+      });
+
       return {
-        activeCustomers,
-        totalCustomers: customers?.length || 0
+        activeClients,
+        totalClients,
+        potentialCustomers: potentialCount
       };
     } catch (error) {
       console.error('获取客户统计失败:', error);
       return {
-        activeCustomers: 0,
-        totalCustomers: 0
+        activeClients: 0,
+        totalClients: 0,
+        potentialCustomers: 0
       };
     }
   };
@@ -384,10 +558,28 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
         };
       }
 
-      const { data: workers, error } = await supabase
+      // 尝试获取工人数据，处理user_id为null的情况
+      let { data: workers, error } = await supabase
         .from('workers')
         .select('*')
         .eq('user_id', user.id);
+
+      // 如果为空，尝试获取所有工人数据（处理历史数据）
+      if (!workers || workers.length === 0) {
+        console.log('通过user_id查询工人为空，尝试获取所有工人...');
+        const { data: allWorkers, error: allError } = await supabase
+          .from('workers')
+          .select('*');
+        
+        if (allError) {
+          error = allError;
+        } else {
+          // 过滤属于当前用户的工人或无user_id的历史记录
+          workers = allWorkers?.filter(worker => {
+            return !worker.user_id || worker.user_id === user.id;
+          }) || [];
+        }
+      }
 
       if (error) {
         console.error('获取工人数据失败:', error);
@@ -417,23 +609,32 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
       setLoading(true);
       setError(null);
 
+      console.log('开始获取Dashboard统计数据...');
+      console.log('当前时间过滤器:', timeFilter);
+
       const [
         projectStats,
         financeStats,
-        customerStats,
+        clientStats,
         workerStats
       ] = await Promise.all([
         getProjectStats(),
         getFinanceStats(timeFilter),
-        getCustomerStats(),
+        getClientStats(),
         getWorkerStats()
       ]);
+
+      console.log('获取的统计数据:');
+      console.log('- 项目统计:', projectStats);
+      console.log('- 财务统计:', financeStats);
+      console.log('- 客户统计:', clientStats);
+      console.log('- 工人统计:', workerStats);
 
       // 组装主要统计数据
       const mainStats = {
         projectCompletionRate: projectStats.completionRate,
         monthlyRevenue: financeStats.totalIncome,
-        activeCustomers: customerStats.activeCustomers,
+        activeClients: clientStats.activeClients,
         workerCount: workerStats.workerCount
       };
 
@@ -461,9 +662,9 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
           color: "red" as const
         },
         {
-          title: "总客户数",
-          value: customerStats.totalCustomers.toString(),
-          subtitle: "客户总数",
+          title: "正式客户",
+          value: clientStats.totalClients.toString(),
+          subtitle: "已签约客户",
           icon: null,
           color: "blue" as const
         }
