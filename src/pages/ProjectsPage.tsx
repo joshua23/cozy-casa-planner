@@ -13,7 +13,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useProjects, type Project as DBProject } from "@/hooks/useProjects";
 import { useProjectPhases, ProjectPhase } from "@/hooks/useProjectPhases";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
 
 interface PaymentNode {
   type: string;
