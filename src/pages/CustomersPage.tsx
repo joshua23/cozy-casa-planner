@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AddCustomerDialog } from "@/components/AddCustomerDialog";
 import { ContactDialog } from "@/components/ContactDialog";
 import { useNavigate } from "react-router-dom";
+import { useCustomers, type Customer as DBCustomer } from "@/hooks/useCustomers";
 
 interface Customer {
   id: number;
@@ -27,7 +28,10 @@ export default function CustomersPage() {
   const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
-  const customers: Customer[] = [
+  const { customers, loading, error } = useCustomers();
+
+  // 示例数据，用于演示UI结构
+  const sampleCustomers: Customer[] = [
     { 
       id: 1, 
       name: "张先生", 
@@ -85,6 +89,44 @@ export default function CustomersPage() {
     },
   ];
 
+  // 转换数据库客户数据为显示格式
+  const displayCustomers = customers.map(customer => ({
+    id: customer.id,
+    name: customer.name,
+    phone: customer.phone || "未提供",
+    email: customer.email || "未提供",
+    status: customer.status as "潜在" | "洽谈中" | "已签约" | "已完成" | "流失",
+    preliminaryBudget: customer.preliminary_budget,
+    decorationStyle: customer.decoration_style,
+    propertyType: customer.property_type,
+    designerInCharge: customer.designer_in_charge,
+    responsiblePerson: customer.responsible_person,
+    lastContactDate: customer.last_contact_date || "未记录",
+    notes: customer.notes,
+  }));
+
+  if (loading) {
+    return (
+      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">加载客户数据中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive mb-4">加载客户数据失败：{error}</p>
+          <Button onClick={() => window.location.reload()}>重试</Button>
+        </div>
+      </div>
+    );
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "已签约": return "text-stat-green bg-stat-green/10";
@@ -127,12 +169,19 @@ export default function CustomersPage() {
       {/* Content */}
       <div className="p-6">
         <div className="grid gap-6">
-          {customers.filter(customer => 
-            customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            customer.phone.includes(searchTerm) ||
-            customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            customer.status.toLowerCase().includes(searchTerm.toLowerCase())
-          ).map((customer) => (
+          {displayCustomers.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground mb-4">还没有客户记录，点击上方按钮添加第一个客户</p>
+              <AddCustomerDialog />
+            </div>
+          ) : (
+            displayCustomers.filter(customer =>
+              customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              customer.phone.includes(searchTerm) ||
+              customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              customer.status.toLowerCase().includes(searchTerm.toLowerCase())
+            ).map((customer) => (
             <Card key={customer.id} className="hover:shadow-elevated transition-all duration-smooth">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
@@ -244,7 +293,8 @@ export default function CustomersPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
       

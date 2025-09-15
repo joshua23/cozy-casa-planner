@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { AddWorkerDialog } from "@/components/AddWorkerDialog";
 import { AddTeamDialog } from "@/components/AddTeamDialog";
+import { useWorkers, type Worker as DBWorker } from "@/hooks/useWorkers";
 
 interface Worker {
   id: number;
@@ -36,8 +37,7 @@ export default function WorkersPage() {
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
-  
-  console.log("SearchTerm state:", searchTerm); // Debug log
+  const { workers, loading, error } = useWorkers();
 
   const workers: Worker[] = [
     {

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useWorkers } from "@/hooks/useWorkers";
 
 interface WorkerFormData {
   name: string;
@@ -31,6 +31,7 @@ export function AddWorkerDialog() {
   });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { createWorker } = useWorkers();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,31 +47,16 @@ export function AddWorkerDialog() {
 
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "错误",
-          description: "请先登录",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { error } = await supabase
-        .from('workers')
-        .insert({
-          name: formData.name,
-          phone: formData.phone,
-          worker_type: formData.workerType,
-          specialties: formData.specialties,
-          hourly_rate: formData.hourlyRate ? parseFloat(formData.hourlyRate) : null,
-          daily_rate: formData.dailyRate ? parseFloat(formData.dailyRate) : null,
-          skill_rating: parseInt(formData.skillRating),
-          user_id: user.id,
-          status: '空闲'
-        });
-
-      if (error) throw error;
+      await createWorker({
+        name: formData.name,
+        phone: formData.phone || null,
+        worker_type: formData.workerType,
+        specialties: formData.specialties,
+        hourly_rate: formData.hourlyRate ? parseFloat(formData.hourlyRate) : null,
+        daily_rate: formData.dailyRate ? parseFloat(formData.dailyRate) : null,
+        skill_rating: parseInt(formData.skillRating),
+        status: '空闲'
+      });
 
       toast({
         title: "成功",

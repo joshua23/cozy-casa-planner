@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useCustomers } from "@/hooks/useCustomers";
 
 interface CustomerFormData {
   name: string;
@@ -22,6 +23,7 @@ interface CustomerFormData {
 
 export function AddCustomerDialog() {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CustomerFormData>({
     name: "",
     phone: "",
@@ -34,10 +36,11 @@ export function AddCustomerDialog() {
     notes: "",
   });
   const { toast } = useToast();
+  const { createCustomer } = useCustomers();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.phone) {
       toast({
         title: "错误",
@@ -47,25 +50,49 @@ export function AddCustomerDialog() {
       return;
     }
 
-    console.log("新增客户:", formData);
-    
-    toast({
-      title: "成功",
-      description: "客户信息添加成功！",
-    });
+    setLoading(true);
 
-    setFormData({
-      name: "",
-      phone: "",
-      email: "",
-      preliminaryBudget: "",
-      decorationStyle: "",
-      propertyType: "",
-      designerInCharge: "",
-      responsiblePerson: "",
-      notes: "",
-    });
-    setOpen(false);
+    try {
+      await createCustomer({
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email || null,
+        preliminary_budget: formData.preliminaryBudget ? parseFloat(formData.preliminaryBudget) : null,
+        decoration_style: formData.decorationStyle || null,
+        property_type: formData.propertyType || null,
+        designer_in_charge: formData.designerInCharge || null,
+        responsible_person: formData.responsiblePerson || null,
+        notes: formData.notes || null,
+        status: "潜在",
+        last_contact_date: new Date().toISOString().split('T')[0],
+      });
+
+      toast({
+        title: "成功",
+        description: "客户信息添加成功！",
+      });
+
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        preliminaryBudget: "",
+        decorationStyle: "",
+        propertyType: "",
+        designerInCharge: "",
+        responsiblePerson: "",
+        notes: "",
+      });
+      setOpen(false);
+    } catch (error) {
+      toast({
+        title: "错误",
+        description: error instanceof Error ? error.message : "添加客户失败",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (field: keyof CustomerFormData, value: string) => {
@@ -185,8 +212,8 @@ export function AddCustomerDialog() {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               取消
             </Button>
-            <Button type="submit">
-              添加客户
+            <Button type="submit" disabled={loading}>
+              {loading ? "添加中..." : "添加客户"}
             </Button>
           </div>
         </form>
