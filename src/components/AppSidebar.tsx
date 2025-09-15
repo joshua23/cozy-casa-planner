@@ -9,7 +9,8 @@ import {
   UserCheck, 
   Calculator,
   Bot,
-  Building2
+  Building2,
+  Shield
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/sidebar";
 import ThemeToggle from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.jpg";
 
 const menuItems = [
@@ -42,8 +44,13 @@ const menuItems = [
   { title: "AI自动管理", url: "/ai", icon: Bot },
 ];
 
+const adminItems = [
+  { title: "系统管理", url: "/admin", icon: Shield },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
+  const { hasRole } = useAuth();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
@@ -110,6 +117,41 @@ export function AppSidebar() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+
+          {/* 管理员菜单 - 只对管理员显示 */}
+          {hasRole('admin') && (
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-sidebar-text/80 font-medium">
+                管理设置
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {adminItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton 
+                        asChild 
+                        className={`
+                          transition-all duration-smooth
+                          ${isActive(item.url) 
+                            ? 'bg-sidebar-primary text-sidebar-primary-foreground font-medium shadow-sm' 
+                            : 'text-sidebar-text/90 hover:bg-sidebar-accent hover:text-sidebar-text'
+                          }
+                        `}
+                      >
+                        <NavLink 
+                          to={item.url} 
+                          className="flex items-center space-x-3 px-3 py-2 rounded-lg"
+                        >
+                          <item.icon className="w-5 h-5 flex-shrink-0" />
+                          {!collapsed && <span>{item.title}</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
         </SidebarContent>
         
         {/* Footer */}
