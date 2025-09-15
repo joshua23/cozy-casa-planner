@@ -26,7 +26,7 @@ interface ProjectFormData {
 }
 
 interface Project {
-  id: number;
+  id: string; // 改为string类型以匹配数据库ID
   name: string;
   status: string;
   client: string;
@@ -46,7 +46,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("info");
   const { toast } = useToast();
-  const { phases, loading, updatePhaseStatus, updatePhaseProgress, updatePhaseDates } = useProjectPhases(project.id.toString());
+  const { phases, loading, updatePhaseStatus, updatePhaseProgress, updatePhaseDates } = useProjectPhases(project.id);
   
   const [formData, setFormData] = useState<ProjectFormData>({
     name: project.name,

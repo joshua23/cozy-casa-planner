@@ -364,7 +364,7 @@ export default function ProjectsPage() {
                       查看详情
                     </Button>
                     <EditProjectDialog project={{
-                      id: typeof project.id === 'string' ? parseInt(project.id) : project.id,
+                      id: project.id.toString(), // 确保传递string类型的ID
                       name: project.name,
                       status: project.status,
                       client: project.client,
