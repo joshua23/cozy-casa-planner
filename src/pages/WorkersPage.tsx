@@ -10,23 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { AddWorkerDialog } from "@/components/AddWorkerDialog";
 import { AddTeamDialog } from "@/components/AddTeamDialog";
-import { useWorkers, type Worker as DBWorker } from "@/hooks/useWorkers";
-
-interface Worker {
-  id: number;
-  name: string;
-  workerType: string;
-  phone: string;
-  skillRating: number;
-  hourlyRate?: number;
-  dailyRate?: number;
-  status: "空闲" | "工作中" | "休假" | "离职";
-  specialties: string[];
-  currentProject?: string;
-  estimatedAmount?: number;
-  paidAmount?: number;
-  unpaidAmount?: number;
-}
+import { useWorkers } from "@/hooks/useWorkers";
+import { useTeams } from "@/hooks/useTeams";
 
 export default function WorkersPage() {
   const [selectedType, setSelectedType] = useState<"零工" | "施工队">("零工");
@@ -34,79 +19,12 @@ export default function WorkersPage() {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState({ name: "", phone: "", email: "" });
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
-  const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
+  const [selectedWorker, setSelectedWorker] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { workers, loading, error } = useWorkers();
 
-  const workers: Worker[] = [
-    {
-      id: 1,
-      name: "李师傅",
-      workerType: "拆除工",
-      phone: "138****1234",
-      skillRating: 5,
-      dailyRate: 300,
-      status: "工作中",
-      specialties: ["拆除", "清理"],
-      currentProject: "海景别墅装修",
-      estimatedAmount: 3000,
-      paidAmount: 1500,
-      unpaidAmount: 1500,
-    },
-    {
-      id: 2,
-      name: "王电工",
-      workerType: "水电工",
-      phone: "139****5678",
-      skillRating: 4,
-      dailyRate: 350,
-      status: "空闲",
-      specialties: ["水电安装", "线路维修"],
-    },
-    {
-      id: 3,
-      name: "张木工",
-      workerType: "木工",
-      phone: "137****9012",
-      skillRating: 5,
-      dailyRate: 400,
-      status: "工作中",
-      specialties: ["家具制作", "装修木工"],
-      currentProject: "现代公寓改造",
-      estimatedAmount: 8000,
-      paidAmount: 4000,
-      unpaidAmount: 4000,
-    },
-  ];
-
-  const teams = [
-    {
-      id: 1,
-      teamName: "精装施工队",
-      teamLeader: "刘工长",
-      teamLeaderPhone: "138****1111",
-      teamSize: 8,
-      specialties: ["水电", "泥工", "木工", "油漆"],
-      efficiencyRating: 5,
-      pricingModel: "包工包料",
-      status: "工作中",
-      currentProject: "海景别墅装修",
-      contractAmount: 180000,
-      paidAmount: 90000,
-    },
-    {
-      id: 2,
-      teamName: "快装施工队",
-      teamLeader: "陈工长",
-      teamLeaderPhone: "139****2222",
-      teamSize: 6,
-      specialties: ["水电", "泥工"],
-      efficiencyRating: 4,
-      pricingModel: "包工",
-      status: "空闲",
-    },
-  ];
+  const { workers, loading: workersLoading, error: workersError } = useWorkers();
+  const { teams, loading: teamsLoading, error: teamsError } = useTeams();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -191,14 +109,27 @@ export default function WorkersPage() {
       <div className="p-6">
         {selectedType === "零工" ? (
           // 零工管理
-          <div className="grid gap-6">
-            {workers.filter(worker => 
-              worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              worker.workerType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              worker.phone.includes(searchTerm) ||
-              worker.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              worker.specialties.some(specialty => specialty.toLowerCase().includes(searchTerm.toLowerCase()))
-            ).map((worker) => (
+          workersLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-muted-foreground">加载中...</div>
+            </div>
+          ) : workersError ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-destructive">加载失败: {workersError}</div>
+            </div>
+          ) : workers.length === 0 ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-muted-foreground">暂无工人数据</div>
+            </div>
+          ) : (
+            <div className="grid gap-6">
+              {workers.filter(worker =>
+                worker.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                worker.worker_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                worker.phone?.includes(searchTerm) ||
+                worker.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                worker.specialties?.some((specialty: string) => specialty.toLowerCase().includes(searchTerm.toLowerCase()))
+              ).map((worker) => (
               <Card key={worker.id} className="hover:shadow-elevated transition-all duration-smooth">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
@@ -212,7 +143,7 @@ export default function WorkersPage() {
                           <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                             <div className="flex items-center space-x-1">
                               <Briefcase className="w-4 h-4" />
-                              <span>{worker.workerType}</span>
+                              <span>{worker.worker_type}</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <Phone className="w-4 h-4" />
@@ -225,16 +156,16 @@ export default function WorkersPage() {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">技能评价</p>
-                          {renderStars(worker.skillRating)}
+                          {renderStars(worker.skill_rating || 0)}
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">日薪</p>
-                          <p className="font-medium text-foreground">¥{worker.dailyRate || 0}</p>
+                          <p className="font-medium text-foreground">¥{worker.daily_rate || 0}</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">专长</p>
                           <div className="flex flex-wrap gap-1">
-                            {worker.specialties.map((specialty, index) => (
+                            {(worker.specialties || []).map((specialty, index) => (
                               <Badge key={index} variant="secondary" className="text-xs">
                                 {specialty}
                               </Badge>
@@ -249,24 +180,24 @@ export default function WorkersPage() {
                         </div>
                       </div>
 
-                      {worker.currentProject && (
+                      {worker.current_project && (
                         <div className="bg-muted/50 rounded-lg p-4">
                           <div className="flex items-center space-x-2 mb-2">
                             <Clock className="w-4 h-4 text-primary" />
-                            <span className="font-medium text-foreground">当前项目: {worker.currentProject}</span>
+                            <span className="font-medium text-foreground">当前项目: {worker.current_project}</span>
                           </div>
                           <div className="grid grid-cols-3 gap-4 text-sm">
                             <div>
                               <p className="text-muted-foreground">估价金额</p>
-                              <p className="font-medium text-foreground">¥{worker.estimatedAmount?.toLocaleString()}</p>
+                              <p className="font-medium text-foreground">¥{worker.estimated_amount?.toLocaleString()}</p>
                             </div>
                             <div>
                               <p className="text-muted-foreground">已付金额</p>
-                              <p className="font-medium text-stat-green">¥{worker.paidAmount?.toLocaleString()}</p>
+                              <p className="font-medium text-stat-green">¥{worker.paid_amount?.toLocaleString()}</p>
                             </div>
                             <div>
                               <p className="text-muted-foreground">未付金额</p>
-                              <p className="font-medium text-stat-orange">¥{worker.unpaidAmount?.toLocaleString()}</p>
+                              <p className="font-medium text-stat-orange">¥{worker.unpaid_amount?.toLocaleString()}</p>
                             </div>
                           </div>
                         </div>
@@ -290,10 +221,10 @@ export default function WorkersPage() {
                       </Button>
                       <WorkerAssignDialog worker={{
                         ...worker,
-                        type: worker.workerType,
+                        type: worker.worker_type,
                         specialties: worker.specialties || [],
-                        hourlyRate: worker.hourlyRate || 0,
-                        dailyRate: worker.dailyRate || 0
+                        hourlyRate: worker.hourly_rate || 0,
+                        dailyRate: worker.daily_rate || 0
                       }}>
                         <Button size="sm">
                           分配项目
@@ -303,18 +234,32 @@ export default function WorkersPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          )
         ) : (
           // 施工队管理
-          <div className="grid gap-6">
-            {teams.filter(team => 
-              team.teamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              team.teamLeader.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              team.teamLeaderPhone.includes(searchTerm) ||
-              team.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              team.specialties.some(specialty => specialty.toLowerCase().includes(searchTerm.toLowerCase()))
-            ).map((team) => (
+          teamsLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-muted-foreground">加载中...</div>
+            </div>
+          ) : teamsError ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-destructive">加载失败: {teamsError}</div>
+            </div>
+          ) : teams.length === 0 ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-muted-foreground">暂无施工队数据</div>
+            </div>
+          ) : (
+            <div className="grid gap-6">
+              {teams.filter(team =>
+                team.team_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                team.team_leader?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                team.team_leader_phone?.includes(searchTerm) ||
+                team.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                team.specialties?.some((specialty: string) => specialty.toLowerCase().includes(searchTerm.toLowerCase()))
+              ).map((team) => (
               <Card key={team.id} className="hover:shadow-elevated transition-all duration-smooth">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
@@ -324,15 +269,15 @@ export default function WorkersPage() {
                           队
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-foreground">{team.teamName}</h3>
+                          <h3 className="text-lg font-semibold text-foreground">{team.team_name}</h3>
                           <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                             <div className="flex items-center space-x-1">
                               <Users className="w-4 h-4" />
-                              <span>工长: {team.teamLeader}</span>
+                              <span>工长: {team.team_leader}</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <Phone className="w-4 h-4" />
-                              <span>{team.teamLeaderPhone}</span>
+                              <span>{team.team_leader_phone}</span>
                             </div>
                           </div>
                         </div>
@@ -341,15 +286,15 @@ export default function WorkersPage() {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">团队人数</p>
-                          <p className="font-medium text-foreground">{team.teamSize}人</p>
+                          <p className="font-medium text-foreground">{team.team_size}人</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">效率评价</p>
-                          {renderStars(team.efficiencyRating)}
+                          {renderStars(team.efficiency_rating || 0)}
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">定价模式</p>
-                          <Badge variant="secondary">{team.pricingModel}</Badge>
+                          <Badge variant="secondary">{team.pricing_model}</Badge>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">状态</p>
@@ -370,20 +315,20 @@ export default function WorkersPage() {
                         </div>
                       </div>
 
-                      {team.currentProject && (
+                      {team.current_project && (
                         <div className="bg-muted/50 rounded-lg p-4">
                           <div className="flex items-center space-x-2 mb-2">
                             <Clock className="w-4 h-4 text-primary" />
-                            <span className="font-medium text-foreground">当前项目: {team.currentProject}</span>
+                            <span className="font-medium text-foreground">当前项目: {team.current_project}</span>
                           </div>
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
                               <p className="text-muted-foreground">合同金额</p>
-                              <p className="font-medium text-foreground">¥{team.contractAmount?.toLocaleString()}</p>
+                              <p className="font-medium text-foreground">¥{team.contract_amount?.toLocaleString()}</p>
                             </div>
                             <div>
                               <p className="text-muted-foreground">已付金额</p>
-                              <p className="font-medium text-stat-green">¥{team.paidAmount?.toLocaleString()}</p>
+                              <p className="font-medium text-stat-green">¥{team.paid_amount?.toLocaleString()}</p>
                             </div>
                           </div>
                         </div>
@@ -396,8 +341,8 @@ export default function WorkersPage() {
                         size="sm"
                         onClick={() => {
                           setContactInfo({
-                            name: team.teamLeader,
-                            phone: team.teamLeaderPhone,
+                            name: team.team_leader,
+                            phone: team.team_leader_phone,
                             email: ""
                           });
                           setContactDialogOpen(true);
@@ -407,12 +352,12 @@ export default function WorkersPage() {
                       </Button>
                       <TeamAssignDialog team={{
                         ...team,
-                        name: team.teamName,
-                        leader: team.teamLeader,
-                        members: team.teamSize,
+                        name: team.team_name,
+                        leader: team.team_leader,
+                        members: team.team_size,
                         currentProjects: 0,
                         completedProjects: 0,
-                        efficiency: team.efficiencyRating,
+                        efficiency: team.efficiency_rating,
                         rating: 4.5
                       }}>
                         <Button size="sm">
@@ -423,8 +368,9 @@ export default function WorkersPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          )
         )}
       </div>
       

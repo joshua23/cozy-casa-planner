@@ -4,67 +4,12 @@ import { EditMaterialDialog } from "@/components/EditMaterialDialog";
 import { RestockDialog } from "@/components/RestockDialog";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useMaterials } from "@/hooks/useMaterials";
 
 export default function MaterialsPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const materials = [
-    { 
-      id: 1, 
-      name: "瓷砖", 
-      category: "地面材料", 
-      stock: 1200, 
-      unit: "㎡", 
-      price: 89.5, 
-      supplier: "东鹏瓷砖", 
-      status: "充足",
-      trend: "up"
-    },
-    { 
-      id: 2, 
-      name: "乳胶漆", 
-      category: "墙面材料", 
-      stock: 45, 
-      unit: "桶", 
-      price: 268.0, 
-      supplier: "立邦漆业", 
-      status: "正常",
-      trend: "stable"
-    },
-    { 
-      id: 3, 
-      name: "实木地板", 
-      category: "地面材料", 
-      stock: 8, 
-      unit: "㎡", 
-      price: 298.5, 
-      supplier: "大自然地板", 
-      status: "库存不足",
-      trend: "down"
-    },
-    { 
-      id: 4, 
-      name: "LED灯具", 
-      category: "电器设备", 
-      stock: 156, 
-      unit: "个", 
-      price: 125.0, 
-      supplier: "飞利浦照明", 
-      status: "充足",
-      trend: "up"
-    },
-    { 
-      id: 5, 
-      name: "水泥", 
-      category: "基础材料", 
-      stock: 25, 
-      unit: "吨", 
-      price: 420.0, 
-      supplier: "海螺水泥", 
-      status: "正常",
-      trend: "stable"
-    },
-  ];
+  const { materials, loading, error, fetchMaterials } = useMaterials();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -106,7 +51,7 @@ export default function MaterialsPage() {
                 className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            <AddMaterialDialog />
+            <AddMaterialDialog onMaterialAdded={fetchMaterials} />
           </div>
         </div>
       </div>
@@ -159,45 +104,58 @@ export default function MaterialsPage() {
           <div className="p-4 border-b border-border">
             <h3 className="text-lg font-semibold text-foreground">材料库存列表</h3>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">材料名称</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">分类</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">库存</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">单价</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">供应商</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">状态</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">趋势</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {materials
-                  .filter(material => 
-                    material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    material.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    material.supplier.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
-                  .map((material) => (
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-muted-foreground">加载中...</div>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-destructive">加载失败: {error}</div>
+            </div>
+          ) : materials.length === 0 ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-muted-foreground">暂无材料数据</div>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">材料名称</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">分类</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">库存</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">单价</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">供应商</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">状态</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {materials
+                    .filter(material =>
+                      material.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      material.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      material.supplier_name?.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map((material) => (
                   <tr key={material.id} className="border-b border-border hover:bg-muted/20 transition-colors">
                     <td className="p-4">
                       <div className="font-medium text-foreground">{material.name}</div>
                     </td>
                     <td className="p-4 text-sm text-muted-foreground">{material.category}</td>
                     <td className="p-4 text-sm text-foreground">
-                      {material.stock} {material.unit}
+                      {material.current_stock || 0} {material.unit}
                     </td>
-                    <td className="p-4 text-sm text-foreground">¥{material.price}</td>
-                    <td className="p-4 text-sm text-muted-foreground">{material.supplier}</td>
+                    <td className="p-4 text-sm text-foreground">¥{material.unit_price || 0}</td>
+                    <td className="p-4 text-sm text-muted-foreground">{material.supplier_name}</td>
                     <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(material.status)}`}>
-                        {material.status}
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        (material.current_stock || 0) <= (material.min_stock_alert || 0) ? "库存不足" :
+                        (material.current_stock || 0) <= (material.min_stock_alert || 0) * 2 ? "正常" : "充足"
+                      )}`}>
+                        {(material.current_stock || 0) <= (material.min_stock_alert || 0) ? "库存不足" :
+                         (material.current_stock || 0) <= (material.min_stock_alert || 0) * 2 ? "正常" : "充足"}
                       </span>
-                    </td>
-                    <td className="p-4">
-                      {getTrendIcon(material.trend)}
                     </td>
                     <td className="p-4">
                       <div className="flex items-center space-x-2">
@@ -214,10 +172,11 @@ export default function MaterialsPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -15,15 +15,14 @@ interface RestockFormData {
 }
 
 interface Material {
-  id: number;
+  id: string;
   name: string;
   category: string;
-  stock: number;
+  current_stock: number | null;
   unit: string;
-  price: number;
-  supplier: string;
-  status: string;
-  trend: string;
+  unit_price: number | null;
+  supplier_name: string | null;
+  min_stock_alert: number | null;
 }
 
 interface RestockDialogProps {
@@ -36,8 +35,8 @@ export function RestockDialog({ material, children }: RestockDialogProps) {
   const { toast } = useToast();
   const [formData, setRestockData] = useState<RestockFormData>({
     quantity: "",
-    unitPrice: material.price.toString(),
-    supplier: material.supplier,
+    unitPrice: (material.unit_price || 0).toString(),
+    supplier: material.supplier_name || "",
     deliveryDate: "",
     notes: "",
   });
@@ -85,8 +84,8 @@ export function RestockDialog({ material, children }: RestockDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="bg-muted/30 p-3 rounded-lg">
-            <p className="text-sm text-muted-foreground">当前库存: {material.stock} {material.unit}</p>
-            <p className="text-sm text-muted-foreground">当前单价: ¥{material.price}</p>
+            <p className="text-sm text-muted-foreground">当前库存: {material.current_stock || 0} {material.unit}</p>
+            <p className="text-sm text-muted-foreground">当前单价: ¥{material.unit_price || 0}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

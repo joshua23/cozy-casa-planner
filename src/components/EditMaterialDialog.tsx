@@ -9,22 +9,22 @@ import { useToast } from "@/hooks/use-toast";
 interface MaterialFormData {
   name: string;
   category: string;
-  stock: string;
+  current_stock: string;
   unit: string;
-  price: string;
-  supplier: string;
+  unit_price: string;
+  supplier_name: string;
+  min_stock_alert: string;
 }
 
 interface Material {
-  id: number;
+  id: string;
   name: string;
   category: string;
-  stock: number;
+  current_stock: number | null;
   unit: string;
-  price: number;
-  supplier: string;
-  status: string;
-  trend: string;
+  unit_price: number | null;
+  supplier_name: string | null;
+  min_stock_alert: number | null;
 }
 
 interface EditMaterialDialogProps {
@@ -38,16 +38,17 @@ export function EditMaterialDialog({ material, children }: EditMaterialDialogPro
   const [formData, setFormData] = useState<MaterialFormData>({
     name: material.name,
     category: material.category,
-    stock: material.stock.toString(),
+    current_stock: (material.current_stock || 0).toString(),
     unit: material.unit,
-    price: material.price.toString(),
-    supplier: material.supplier,
+    unit_price: (material.unit_price || 0).toString(),
+    supplier_name: material.supplier_name || "",
+    min_stock_alert: (material.min_stock_alert || 0).toString(),
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.category || !formData.stock || !formData.price) {
+    if (!formData.name || !formData.category || !formData.current_stock || !formData.unit_price) {
       toast({
         title: "错误",
         description: "请填写所有必填字段",
@@ -134,36 +135,48 @@ export function EditMaterialDialog({ material, children }: EditMaterialDialogPro
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="stock">库存数量 *</Label>
+              <Label htmlFor="current_stock">库存数量 *</Label>
               <Input
-                id="stock"
+                id="current_stock"
                 type="number"
-                value={formData.stock}
-                onChange={(e) => handleInputChange("stock", e.target.value)}
+                value={formData.current_stock}
+                onChange={(e) => handleInputChange("current_stock", e.target.value)}
                 placeholder="请输入库存数量"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">单价 (元) *</Label>
+              <Label htmlFor="unit_price">单价 (元) *</Label>
               <Input
-                id="price"
+                id="unit_price"
                 type="number"
                 step="0.01"
-                value={formData.price}
-                onChange={(e) => handleInputChange("price", e.target.value)}
+                value={formData.unit_price}
+                onChange={(e) => handleInputChange("unit_price", e.target.value)}
                 placeholder="请输入单价"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="supplier">供应商</Label>
-            <Input
-              id="supplier"
-              value={formData.supplier}
-              onChange={(e) => handleInputChange("supplier", e.target.value)}
-              placeholder="请输入供应商名称"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="supplier_name">供应商</Label>
+              <Input
+                id="supplier_name"
+                value={formData.supplier_name}
+                onChange={(e) => handleInputChange("supplier_name", e.target.value)}
+                placeholder="请输入供应商名称"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="min_stock_alert">库存预警值</Label>
+              <Input
+                id="min_stock_alert"
+                type="number"
+                value={formData.min_stock_alert}
+                onChange={(e) => handleInputChange("min_stock_alert", e.target.value)}
+                placeholder="请输入库存预警值"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end space-x-2">

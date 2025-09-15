@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useMaterials } from "@/hooks/useMaterials";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MaterialFormData {
   name: string;
@@ -19,9 +19,12 @@ interface MaterialFormData {
   supplierContact: string;
 }
 
-export function AddMaterialDialog() {
+interface AddMaterialDialogProps {
+  onMaterialAdded?: () => void;
+}
+
+export function AddMaterialDialog({ onMaterialAdded }: AddMaterialDialogProps) {
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<MaterialFormData>({
     name: "",
     category: "",
@@ -33,11 +36,10 @@ export function AddMaterialDialog() {
     supplierContact: "",
   });
   const { toast } = useToast();
-  const { createMaterial } = useMaterials();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!formData.name || !formData.category || !formData.unit) {
       toast({
         title: "错误",
@@ -47,54 +49,7 @@ export function AddMaterialDialog() {
       return;
     }
 
-    setLoading(true);
-
     try {
-      await createMaterial({
-        name: formData.name,
-        category: formData.category,
-        unit: formData.unit,
-        unit_price: formData.unitPrice ? parseFloat(formData.unitPrice) : null,
-        current_stock: formData.currentStock ? parseFloat(formData.currentStock) : null,
-        min_stock_alert: formData.minStockAlert ? parseFloat(formData.minStockAlert) : null,
-        supplier_name: formData.supplierName || null,
-        supplier_contact: formData.supplierContact || null,
-      });
-
-      toast({
-        title: "成功",
-        description: "材料添加成功！",
-      });
-
-      setFormData({
-        name: "",
-        category: "",
-        unit: "",
-        unitPrice: "",
-        currentStock: "",
-        minStockAlert: "",
-        supplierName: "",
-        supplierContact: "",
-      });
-      setOpen(false);
-    } catch (error) {
-      toast({
-        title: "错误",
-        description: error instanceof Error ? error.message : "添加材料失败",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-        toast({
-          title: "错误",
-          description: "请先登录",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { error } = await supabase
         .from('materials')
         .insert({
@@ -105,8 +60,7 @@ export function AddMaterialDialog() {
           current_stock: formData.currentStock ? parseFloat(formData.currentStock) : 0,
           min_stock_alert: formData.minStockAlert ? parseFloat(formData.minStockAlert) : 0,
           supplier_name: formData.supplierName,
-          supplier_contact: formData.supplierContact,
-          user_id: user.id
+          supplier_contact: formData.supplierContact
         });
 
       if (error) throw error;
@@ -127,6 +81,11 @@ export function AddMaterialDialog() {
         supplierContact: "",
       });
       setOpen(false);
+
+      // Trigger refresh in parent component
+      if (onMaterialAdded) {
+        onMaterialAdded();
+      }
     } catch (error) {
       console.error('Error adding material:', error);
       toast({

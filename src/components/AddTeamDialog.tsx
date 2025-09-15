@@ -46,16 +46,6 @@ export function AddTeamDialog() {
 
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "错误",
-          description: "请先登录",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { error } = await supabase
         .from('construction_teams')
         .insert({
@@ -66,7 +56,6 @@ export function AddTeamDialog() {
           specialties: formData.specialties,
           pricing_model: formData.pricingModel,
           efficiency_rating: parseInt(formData.efficiencyRating),
-          user_id: user.id,
           status: '空闲'
         });
 

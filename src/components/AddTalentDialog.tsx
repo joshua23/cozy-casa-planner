@@ -51,16 +51,6 @@ export function AddTalentDialog() {
 
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "错误",
-          description: "请先登录",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { error } = await supabase
         .from('talents')
         .insert({
@@ -73,7 +63,6 @@ export function AddTalentDialog() {
           skill_rating: parseInt(formData.skillRating),
           notes: formData.notes,
           status: formData.status,
-          user_id: user.id,
           last_contact_date: new Date().toISOString().split('T')[0]
         });
 

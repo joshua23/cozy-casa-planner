@@ -39,16 +39,6 @@ export function ContactDialog({ open, onOpenChange, contactInfo }: ContactDialog
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "错误",
-          description: "请先登录",
-          variant: "destructive",
-        });
-        return;
-      }
-
       // Update customer contact information in database
       if (contactInfo.phone || contactInfo.email) {
         const { error } = await supabase
@@ -58,8 +48,7 @@ export function ContactDialog({ open, onOpenChange, contactInfo }: ContactDialog
             email: contactInfo.email,
             last_contact_date: new Date().toISOString().split('T')[0]
           })
-          .eq('name', contactInfo.name)
-          .eq('user_id', user.id);
+          .eq('name', contactInfo.name);
 
         if (error) {
           console.error('Error updating customer contact:', error);

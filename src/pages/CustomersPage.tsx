@@ -6,22 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AddCustomerDialog } from "@/components/AddCustomerDialog";
 import { ContactDialog } from "@/components/ContactDialog";
 import { useNavigate } from "react-router-dom";
-import { useCustomers, type Customer as DBCustomer } from "@/hooks/useCustomers";
-
-interface Customer {
-  id: number;
-  name: string;
-  phone: string;
-  email: string;
-  status: "潜在" | "洽谈中" | "已签约" | "已完成" | "流失";
-  preliminaryBudget?: number;
-  decorationStyle?: string;
-  propertyType?: string;
-  designerInCharge?: string;
-  responsiblePerson?: string;
-  lastContactDate: string;
-  notes?: string;
-}
+import { useCustomers } from "@/hooks/useCustomers";
 
 export default function CustomersPage() {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
@@ -29,103 +14,6 @@ export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const { customers, loading, error } = useCustomers();
-
-  // 示例数据，用于演示UI结构
-  const sampleCustomers: Customer[] = [
-    { 
-      id: 1, 
-      name: "张先生", 
-      phone: "138****8888", 
-      email: "zhang@email.com", 
-      status: "已签约",
-      preliminaryBudget: 1200000,
-      decorationStyle: "现代简约",
-      propertyType: "别墅",
-      designerInCharge: "陈设计师",
-      responsiblePerson: "李经理",
-      lastContactDate: "2024-01-15",
-      notes: "对设计方案很满意，已确定合作"
-    },
-    { 
-      id: 2, 
-      name: "李女士", 
-      phone: "139****9999", 
-      email: "li@email.com", 
-      status: "洽谈中",
-      preliminaryBudget: 450000,
-      decorationStyle: "北欧风",
-      propertyType: "平层",
-      designerInCharge: "王设计师",
-      responsiblePerson: "张经理",
-      lastContactDate: "2024-01-20",
-      notes: "正在比较不同装修公司的方案"
-    },
-    { 
-      id: 3, 
-      name: "王总", 
-      phone: "137****7777", 
-      email: "wang@company.com", 
-      status: "已完成",
-      preliminaryBudget: 800000,
-      decorationStyle: "中式",
-      propertyType: "办公室",
-      designerInCharge: "陈设计师",
-      responsiblePerson: "李经理",
-      lastContactDate: "2024-01-10",
-      notes: "项目已完工，客户满意度很高"
-    },
-    { 
-      id: 4, 
-      name: "赵女士", 
-      phone: "136****3333", 
-      email: "zhao@email.com", 
-      status: "潜在",
-      preliminaryBudget: 300000,
-      decorationStyle: "简约",
-      propertyType: "小商品",
-      responsiblePerson: "刘经理",
-      lastContactDate: "2024-01-22",
-      notes: "刚开始了解装修市场，需要引导"
-    },
-  ];
-
-  // 转换数据库客户数据为显示格式
-  const displayCustomers = customers.map(customer => ({
-    id: customer.id,
-    name: customer.name,
-    phone: customer.phone || "未提供",
-    email: customer.email || "未提供",
-    status: customer.status as "潜在" | "洽谈中" | "已签约" | "已完成" | "流失",
-    preliminaryBudget: customer.preliminary_budget,
-    decorationStyle: customer.decoration_style,
-    propertyType: customer.property_type,
-    designerInCharge: customer.designer_in_charge,
-    responsiblePerson: customer.responsible_person,
-    lastContactDate: customer.last_contact_date || "未记录",
-    notes: customer.notes,
-  }));
-
-  if (loading) {
-    return (
-      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">加载客户数据中...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-destructive mb-4">加载客户数据失败：{error}</p>
-          <Button onClick={() => window.location.reload()}>重试</Button>
-        </div>
-      </div>
-    );
-  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -168,19 +56,25 @@ export default function CustomersPage() {
 
       {/* Content */}
       <div className="p-6">
-        <div className="grid gap-6">
-          {displayCustomers.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-4">还没有客户记录，点击上方按钮添加第一个客户</p>
-              <AddCustomerDialog />
-            </div>
-          ) : (
-            displayCustomers.filter(customer =>
-              customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              customer.phone.includes(searchTerm) ||
-              customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              customer.status.toLowerCase().includes(searchTerm.toLowerCase())
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-muted-foreground">加载中...</div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-destructive">加载失败: {error}</div>
+          </div>
+        ) : customers.length === 0 ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-muted-foreground">暂无客户数据</div>
+          </div>
+        ) : (
+          <div className="grid gap-6">
+            {customers.filter(customer =>
+              customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              customer.phone?.includes(searchTerm) ||
+              customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              customer.status?.toLowerCase().includes(searchTerm.toLowerCase())
             ).map((customer) => (
             <Card key={customer.id} className="hover:shadow-elevated transition-all duration-smooth">
               <CardContent className="p-6">
@@ -217,30 +111,30 @@ export default function CustomersPage() {
                         <div className="flex items-center space-x-1">
                           <DollarSign className="w-4 h-4" />
                           <span className="font-medium text-foreground">
-                            {customer.preliminaryBudget ? `¥${(customer.preliminaryBudget / 10000).toFixed(0)}万` : "待定"}
+                            {customer.preliminary_budget ? `¥${(customer.preliminary_budget / 10000).toFixed(0)}万` : "待定"}
                           </span>
                         </div>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">装修风格</p>
-                        <span className="text-sm text-foreground">{customer.decorationStyle || "待定"}</span>
+                        <span className="text-sm text-foreground">{customer.decoration_style || "待定"}</span>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">户型结构</p>
                         <div className="flex items-center space-x-1">
                           <Home className="w-4 h-4" />
-                          <span className="text-sm text-foreground">{customer.propertyType || "待定"}</span>
+                          <span className="text-sm text-foreground">{customer.property_type || "待定"}</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                      {customer.designerInCharge && (
+                      {customer.designer_in_charge && (
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">负责设计师</p>
                           <div className="flex items-center space-x-1">
                             <User className="w-4 h-4" />
-                            <span className="text-sm text-foreground">{customer.designerInCharge}</span>
+                            <span className="text-sm text-foreground">{customer.designer_in_charge}</span>
                           </div>
                         </div>
                       )}
@@ -248,14 +142,14 @@ export default function CustomersPage() {
                         <p className="text-sm text-muted-foreground mb-1">跟踪负责人</p>
                         <div className="flex items-center space-x-1">
                           <User className="w-4 h-4" />
-                          <span className="text-sm text-foreground">{customer.responsiblePerson}</span>
+                          <span className="text-sm text-foreground">{customer.responsible_person}</span>
                         </div>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">最后联系日期</p>
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4" />
-                          <span className="text-sm text-foreground">{customer.lastContactDate}</span>
+                          <span className="text-sm text-foreground">{customer.last_contact_date}</span>
                         </div>
                       </div>
                     </div>
@@ -293,9 +187,9 @@ export default function CustomersPage() {
                 </div>
               </CardContent>
             </Card>
-            ))
-          )}
-        </div>
+          ))}
+          </div>
+        )}
       </div>
       
       <ContactDialog

@@ -49,16 +49,6 @@ export function AddFinanceDialog() {
 
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "错误",
-          description: "请先登录",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { error } = await supabase
         .from('financial_records')
         .insert({
@@ -69,8 +59,7 @@ export function AddFinanceDialog() {
           description: formData.description,
           transaction_date: formData.transactionDate,
           payment_method: formData.paymentMethod,
-          invoice_number: formData.invoiceNumber,
-          user_id: user.id
+          invoice_number: formData.invoiceNumber
         });
 
       if (error) throw error;
