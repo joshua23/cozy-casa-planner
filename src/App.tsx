@@ -20,6 +20,7 @@ import FinancePage from "./pages/FinancePage";
 import AIPage from "./pages/AIPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
+import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -60,6 +61,7 @@ const App = () => (
               <Route path="ai" element={<AIPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="admin" element={<AdminPage />} />
             </Route>
             {/* 404页面 */}
             <Route path="*" element={<NotFound />} />
