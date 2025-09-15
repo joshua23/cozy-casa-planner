@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProjects } from "@/hooks/useProjects";
@@ -22,9 +23,31 @@ interface ProjectFormData {
   endDate: string;
 }
 
+interface ProjectPhaseTemplate {
+  name: string;
+  description: string;
+  estimatedDuration: number;
+  selected: boolean;
+}
+
+const defaultPhases: ProjectPhaseTemplate[] = [
+  { name: '跟进洽谈', description: '项目前期沟通、需求确认、合同签订等', estimatedDuration: 3, selected: true },
+  { name: '设计阶段', description: '量房、设计方案、效果图制作、方案确认', estimatedDuration: 14, selected: true },
+  { name: '拆除阶段', description: '原有装修拆除、垃圾清理', estimatedDuration: 3, selected: true },
+  { name: '水电改造', description: '水电线路改造、开槽布线', estimatedDuration: 7, selected: true },
+  { name: '泥瓦工程', description: '防水、贴砖、地面找平等', estimatedDuration: 10, selected: true },
+  { name: '木工阶段', description: '吊顶、柜体制作、木工装饰', estimatedDuration: 12, selected: true },
+  { name: '油漆涂料', description: '墙面处理、刷漆、贴壁纸', estimatedDuration: 8, selected: true },
+  { name: '安装阶段', description: '灯具、开关插座、洁具安装', estimatedDuration: 5, selected: true },
+  { name: '软装配饰', description: '家具摆放、装饰品安装', estimatedDuration: 3, selected: true },
+  { name: '收尾阶段', description: '清洁、验收、整改', estimatedDuration: 2, selected: true },
+  { name: '已完工', description: '项目交付、售后服务', estimatedDuration: 1, selected: true },
+];
+
 export function AddProjectDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [phases, setPhases] = useState<ProjectPhaseTemplate[]>(defaultPhases);
   const [formData, setFormData] = useState<ProjectFormData>({
     name: "",
     clientName: "",
@@ -53,10 +76,20 @@ export function AddProjectDialog() {
       return;
     }
 
+    // 验证至少选择一个阶段
+    if (!phases.some(phase => phase.selected)) {
+      toast({
+        title: "错误",
+        description: "请至少选择一个项目阶段",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await createProject({
+      const projectData = {
         name: formData.name,
         client_name: formData.clientName,
         client_phone: formData.clientPhone || null,
@@ -68,7 +101,9 @@ export function AddProjectDialog() {
         start_date: formData.startDate || null,
         end_date: formData.endDate || null,
         status: "设计中",
-      });
+      };
+
+      await createProject(projectData);
 
       toast({
         title: "成功",
@@ -88,6 +123,7 @@ export function AddProjectDialog() {
         startDate: "",
         endDate: "",
       });
+      setPhases(defaultPhases);
       setOpen(false);
     } catch (error) {
       toast({
@@ -218,6 +254,47 @@ export function AddProjectDialog() {
                 value={formData.endDate}
                 onChange={(e) => handleInputChange("endDate", e.target.value)}
               />
+            </div>
+          </div>
+
+          {/* 项目阶段配置 */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>项目阶段配置</Label>
+              <p className="text-sm text-muted-foreground">选择适用于此项目的阶段，可以调整预计工期</p>
+            </div>
+            <div className="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto border rounded-lg p-4">
+              {phases.map((phase, index) => (
+                <div key={phase.name} className="flex items-center space-x-3 p-2 border rounded">
+                  <Checkbox
+                    checked={phase.selected}
+                    onCheckedChange={(checked) => {
+                      const newPhases = [...phases];
+                      newPhases[index].selected = checked as boolean;
+                      setPhases(newPhases);
+                    }}
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">{phase.name}</div>
+                    <div className="text-xs text-muted-foreground">{phase.description}</div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type="number"
+                      min="1"
+                      value={phase.estimatedDuration}
+                      onChange={(e) => {
+                        const newPhases = [...phases];
+                        newPhases[index].estimatedDuration = parseInt(e.target.value) || 1;
+                        setPhases(newPhases);
+                      }}
+                      className="w-16 text-center"
+                      disabled={!phase.selected}
+                    />
+                    <span className="text-xs text-muted-foreground">天</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
           
