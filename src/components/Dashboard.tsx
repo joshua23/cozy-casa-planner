@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { 
   TrendingUp, 
   DollarSign, 
@@ -18,6 +18,7 @@ import { NewsTickerBanner } from "./NewsTickerBanner";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line } from "recharts";
 import { useNavigate } from "react-router-dom";
+import { useDashboardStats, type TimeFilter } from "@/hooks/useDashboardStats";
 
 // 项目进度数据 - 按时间过滤
 const getAllProjectData = () => ({
@@ -104,49 +105,75 @@ const chartConfig = {
   },
 };
 
-const mainStats = [
-  {
-    title: "项目完成率",
-    value: "78%",
-    subtitle: "本月项目进度",
-    icon: TrendingUp,
-    color: "blue" as const,
-    trend: { value: "12%", isPositive: true }
-  },
-  {
-    title: "营业收入",
-    value: "￥286,500",
-    subtitle: "本月收入统计",
-    icon: DollarSign,
-    color: "green" as const,
-    trend: { value: "8.2%", isPositive: true }
-  },
-  {
-    title: "活跃客户",
-    value: "1,245",
-    subtitle: "当前活跃客户数",
-    icon: Users,
-    color: "purple" as const,
-    trend: { value: "15%", isPositive: true }
-  },
-  {
-    title: "工人数量",
-    value: "42",
-    subtitle: "在职工人统计",
-    icon: User,
-    color: "orange" as const,
-    trend: { value: "3", isPositive: true }
-  }
-];
+// 颜色表
 
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [timeFilter, setTimeFilter] = useState<'month' | 'quarter' | 'year'>('month');
-  
-  const projectProgressData = getAllProjectData()[timeFilter];
-  const financeData = getAllFinanceData()[timeFilter];
-  const secondaryStats = getAllSecondaryStats()[timeFilter];
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('month');
+  const { stats, loading, error } = useDashboardStats(timeFilter);
+
+  if (loading) {
+    return (
+      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">正在加载统计数据...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !stats) {
+    return (
+      <div className="flex-1 bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive mb-4">加载统计数据失败{error ? `：${error}` : ''}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+          >
+            重新加载
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const mainStats = [
+    {
+      title: "项目完成率",
+      value: `${stats.mainStats.projectCompletionRate.toFixed(1)}%`,
+      subtitle: "项目完成情况",
+      icon: TrendingUp,
+      color: "blue" as const,
+      trend: { value: `${stats.mainStats.projectCompletionRate.toFixed(1)}%`, isPositive: stats.mainStats.projectCompletionRate > 50 }
+    },
+    {
+      title: "营业收入",
+      value: `￥${(stats.mainStats.monthlyRevenue / 10000).toFixed(1)}万`,
+      subtitle: "当期收入统计",
+      icon: DollarSign,
+      color: "green" as const,
+      trend: { value: "实时数据", isPositive: true }
+    },
+    {
+      title: "活跃客户",
+      value: stats.mainStats.activeClients.toString(),
+      subtitle: "当前活跃客户数",
+      icon: Users,
+      color: "purple" as const,
+      trend: { value: `${stats.mainStats.activeClients}位`, isPositive: true }
+    },
+    {
+      title: "工人数量",
+      value: stats.mainStats.workerCount.toString(),
+      subtitle: "在职工人统计",
+      icon: User,
+      color: "orange" as const,
+      trend: { value: `${stats.mainStats.workerCount}人`, isPositive: true }
+    }
+  ];
   return (
     <div className="flex-1 bg-background min-h-screen">
       {/* Header */}
@@ -206,7 +233,7 @@ export default function Dashboard() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {secondaryStats.map((stat, index) => (
+            {stats.secondaryStats.map((stat, index) => (
               <StatCard key={index} {...stat} />
             ))}
           </div>
@@ -220,13 +247,13 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={projectProgressData}
+                    data={stats.projectDistribution}
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
                     dataKey="value"
                   >
-                    {projectProgressData.map((entry, index) => (
+                    {stats.projectDistribution.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -235,7 +262,7 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </ChartContainer>
             <div className="mt-4 space-y-2">
-              {projectProgressData.map((item, index) => (
+              {stats.projectDistribution.map((item, index) => (
                 <div key={item.name} className="flex items-center justify-between text-sm">
                   <div className="flex items-center space-x-2">
                     <div 
@@ -254,7 +281,7 @@ export default function Dashboard() {
             <h3 className="text-lg font-semibold text-foreground mb-4">财务概览</h3>
             <ChartContainer config={chartConfig} className="h-64 md:h-80 lg:h-96">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={financeData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={stats.financeData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <XAxis 
                     dataKey="month" 
                     axisLine={false}
