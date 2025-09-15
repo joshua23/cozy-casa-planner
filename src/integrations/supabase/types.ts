@@ -407,6 +407,51 @@ export type Database = {
         }
         Relationships: []
       }
+      suppliers: {
+        Row: {
+          contact_person: string | null
+          created_at: string
+          email: string | null
+          id: string
+          location: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          status: string
+          supplier_type: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          supplier_type: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          supplier_type?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       talents: {
         Row: {
           created_at: string

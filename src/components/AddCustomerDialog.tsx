@@ -187,12 +187,12 @@ export function AddCustomerDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="responsiblePerson">跟踪负责人</Label>
+              <Label htmlFor="responsiblePerson">工地负责人</Label>
               <Input
                 id="responsiblePerson"
                 value={formData.responsiblePerson}
                 onChange={(e) => handleInputChange("responsiblePerson", e.target.value)}
-                placeholder="请输入跟踪负责人"
+                placeholder="请输入工地负责人"
               />
             </div>
           </div>
