@@ -14,6 +14,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import StatCard from "./StatCard";
+import { NewsTickerBanner } from "./NewsTickerBanner";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line } from "recharts";
 import { useNavigate } from "react-router-dom";
@@ -95,11 +96,11 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accen
 const chartConfig = {
   income: {
     label: "收入",
-    color: "hsl(var(--primary))",
+    color: "hsl(var(--stat-green))",
   },
   expense: {
     label: "支出", 
-    color: "hsl(var(--secondary))",
+    color: "hsl(var(--stat-red))",
   },
 };
 
@@ -166,6 +167,9 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <div className="p-6 space-y-6">
+        {/* Dynamic News Banner */}
+        <NewsTickerBanner />
+        
         {/* Main Statistics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {mainStats.map((stat, index) => (
@@ -270,18 +274,18 @@ export default function Dashboard() {
                       name === 'income' ? '收入' : '支出'
                     ]}
                   />
-                  <Bar dataKey="income" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="expense" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="income" fill="hsl(var(--stat-green))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="expense" fill="hsl(var(--stat-red))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
             <div className="mt-4 flex items-center justify-center space-x-6">
               <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-primary" />
+                <div className="w-3 h-3 rounded-full bg-stat-green" />
                 <span className="text-sm text-foreground">收入</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-secondary" />
+                <div className="w-3 h-3 rounded-full bg-stat-red" />
                 <span className="text-sm text-foreground">支出</span>
               </div>
             </div>
