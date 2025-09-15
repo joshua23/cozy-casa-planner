@@ -55,6 +55,10 @@ export default function ProjectsPage() {
   const [projectPhases, setProjectPhases] = useState<Record<string, ProjectPhase[]>>({});
   const [phasesLoading, setPhasesLoading] = useState<Record<string, boolean>>({});
 
+  // 为每个项目获取付款节点数据
+  const [projectPayments, setProjectPayments] = useState<Record<string, any[]>>({});
+  const [paymentsLoading, setPaymentsLoading] = useState<Record<string, boolean>>({});
+
   // 获取所有项目的阶段数据
   useEffect(() => {
     const fetchAllPhases = async () => {
@@ -85,6 +89,46 @@ export default function ProjectsPage() {
       fetchAllPhases();
     }
   }, [projects]);
+
+  // 获取所有项目的付款节点数据
+  useEffect(() => {
+    const fetchAllPayments = async () => {
+      for (const project of projects) {
+        if (!projectPayments[project.id] && !paymentsLoading[project.id]) {
+          setPaymentsLoading(prev => ({ ...prev, [project.id]: true }));
+
+          try {
+            const { data, error } = await supabase
+              .from('payment_nodes')
+              .select('*')
+              .eq('project_id', project.id)
+              .order('created_at', { ascending: true });
+
+            if (error) throw error;
+
+            setProjectPayments(prev => ({ ...prev, [project.id]: data || [] }));
+          } catch (err) {
+            console.error('Error fetching payments for project', project.id, err);
+          } finally {
+            setPaymentsLoading(prev => ({ ...prev, [project.id]: false }));
+          }
+        }
+      }
+    };
+
+    if (projects.length > 0) {
+      fetchAllPayments();
+    }
+  }, [projects]);
+
+  // 计算付款汇总
+  const calcPaymentStats = (nodes: any[] | undefined) => {
+    const list = nodes || [];
+    const totalAmount = list.reduce((sum: number, n: any) => sum + (Number(n.amount) || 0), 0);
+    const totalPaid = list.reduce((sum: number, n: any) => sum + (Number(n.paid_amount) || 0), 0);
+    const progress = totalAmount > 0 ? Math.min(100, Math.round((totalPaid / totalAmount) * 100)) : 0;
+    return { totalAmount, totalPaid, progress };
+  };
 
   // 示例数据，用于演示UI结构
   const sampleProjects: Project[] = [
@@ -366,6 +410,57 @@ export default function ProjectsPage() {
                       </div>
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                         <span>合同：￥{(project.contractAmount / 10000).toFixed(0)}万</span>
+                      </div>
+                    </div>
+
+                    {/* 付款节点摘要（列表卡片外层展示） */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2 text-sm">
+                          <CreditCard className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-foreground">付款节点</span>
+                          {paymentsLoading[project.id] && (
+                            <span className="text-xs text-muted-foreground">加载中...</span>
+                          )}
+                        </div>
+                        {(() => {
+                          const stats = calcPaymentStats(projectPayments[project.id]);
+                          return (
+                            <span className="text-xs text-muted-foreground">
+                              ￥{(stats.totalPaid/10000).toFixed(1)}万 / ￥{(stats.totalAmount/10000).toFixed(1)}万
+                            </span>
+                          );
+                        })()}
+                      </div>
+                      {(() => {
+                        const stats = calcPaymentStats(projectPayments[project.id]);
+                        return (
+                          <div className="w-full bg-muted rounded-full h-2 mb-2">
+                            <div 
+                              className="bg-gradient-primary h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${stats.progress}%` }}
+                            ></div>
+                          </div>
+                        );
+                      })()}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {(projectPayments[project.id] || []).slice(0, 3).map((node: any) => (
+                          <div key={node.id} className="flex items-center justify-between bg-muted/30 rounded-md px-3 py-2">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm text-foreground">{node.node_type}</span>
+                              <Badge className={getPaymentStatusColor(node.status)}>{node.status}</Badge>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              ￥{(Number(node.paid_amount||0)/10000).toFixed(1)}万 / ￥{(Number(node.amount||0)/10000).toFixed(1)}万
+                            </span>
+                          </div>
+                        ))}
+                        {projectPayments[project.id] && projectPayments[project.id].length > 3 && (
+                          <div className="text-xs text-muted-foreground px-1 py-0.5">还有 {projectPayments[project.id].length - 3} 个节点...</div>
+                        )}
+                        {!paymentsLoading[project.id] && (!projectPayments[project.id] || projectPayments[project.id].length === 0) && (
+                          <div className="text-xs text-muted-foreground">暂无付款节点</div>
+                        )}
                       </div>
                     </div>
 
