@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useProjects } from "@/hooks/useProjects";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AssignmentFormData {
   projectId: string;
@@ -27,9 +29,10 @@ interface Worker {
 interface WorkerAssignDialogProps {
   worker: Worker;
   children: React.ReactNode;
+  onAssignmentCreated?: () => void;
 }
 
-export function WorkerAssignDialog({ worker, children }: WorkerAssignDialogProps) {
+export function WorkerAssignDialog({ worker, children, onAssignmentCreated }: WorkerAssignDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const [formData, setFormData] = useState<AssignmentFormData>({
@@ -40,19 +43,12 @@ export function WorkerAssignDialog({ worker, children }: WorkerAssignDialogProps
     endDate: "",
   });
 
-  // Mock projects data - in real app, this would come from Supabase
-  const projects = [
-    { id: "1", name: "海景别墅装修", status: "进行中", client: "张先生", deadline: "2024-02-15", progress: 75 },
-    { id: "2", name: "现代公寓改造", status: "设计中", client: "李女士", deadline: "2024-03-01", progress: 25 },
-    { id: "3", name: "办公室装修", status: "待开工", client: "王总", deadline: "2024-02-28", progress: 0 },
-    { id: "4", name: "商铺装修", status: "施工中", client: "陈总", deadline: "2024-03-15", progress: 45 },
-    { id: "5", name: "别墅改造", status: "待开工", client: "刘总", deadline: "2024-04-01", progress: 0 },
-    { id: "6", name: "工厂装修", status: "进行中", client: "宋总", deadline: "2024-03-20", progress: 60 },
-  ];
+  // 使用真实项目数据
+  const { projects, loading: projectsLoading } = useProjects();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.projectId || !formData.workDescription) {
       toast({
         title: "错误",
@@ -63,12 +59,32 @@ export function WorkerAssignDialog({ worker, children }: WorkerAssignDialogProps
     }
 
     try {
-      // Here you would create a worker assignment in Supabase
+      // 创建工人分配记录到Supabase
+      const { error } = await supabase
+        .from('worker_assignments')
+        .insert({
+          worker_id: worker.id.toString(),
+          project_id: formData.projectId,
+          work_description: formData.workDescription,
+          estimated_amount: formData.estimatedAmount ? parseFloat(formData.estimatedAmount) : null,
+          start_date: formData.startDate || null,
+          end_date: formData.endDate || null,
+          status: '分配中'
+        });
+
+      if (error) throw error;
+
       const selectedProject = projects.find(p => p.id === formData.projectId);
       toast({
         title: "分配成功",
         description: `${worker.name} 已分配到项目 ${selectedProject?.name}`,
       });
+
+      // 调用回调函数刷新数据
+      if (onAssignmentCreated) {
+        onAssignmentCreated();
+      }
+
       setOpen(false);
       setFormData({
         projectId: "",
@@ -78,6 +94,7 @@ export function WorkerAssignDialog({ worker, children }: WorkerAssignDialogProps
         endDate: "",
       });
     } catch (error) {
+      console.error('分配工人失败:', error);
       toast({
         title: "错误",
         description: "分配项目失败，请重试",
@@ -134,57 +151,61 @@ export function WorkerAssignDialog({ worker, children }: WorkerAssignDialogProps
 
           <div>
             <h4 className="font-medium text-foreground mb-3">可分配项目列表</h4>
-            <div className="space-y-3 max-h-72 overflow-y-auto">
-              {projects.map((project) => (
-                <div 
-                  key={project.id} 
-                  className={`p-4 border border-border rounded-lg cursor-pointer transition-all ${
-                    formData.projectId === project.id 
-                      ? 'bg-primary/10 border-primary shadow-sm' 
-                      : 'hover:bg-muted/50'
-                  }`}
-                  onClick={() => handleInputChange("projectId", project.id)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h5 className="font-medium text-foreground">{project.name}</h5>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(project.status)}`}>
-                          {project.status}
-                        </span>
+            {projectsLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="text-muted-foreground">加载项目中...</div>
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">暂无可分配的项目</p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-72 overflow-y-auto">
+                {projects.map((project) => (
+                  <div
+                    key={project.id}
+                    className={`p-4 border border-border rounded-lg cursor-pointer transition-all ${
+                      formData.projectId === project.id
+                        ? 'bg-primary/10 border-primary shadow-sm'
+                        : 'hover:bg-muted/50'
+                    }`}
+                    onClick={() => handleInputChange("projectId", project.id)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h5 className="font-medium text-foreground">{project.name}</h5>
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(project.status)}`}>
+                            {project.status}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                          <div>
+                            <span>客户: {project.client_name}</span>
+                          </div>
+                          <div>
+                            <span>截止: {project.end_date || '未设定'}</span>
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <div className="flex items-center justify-between text-sm mb-1">
+                            <span className="text-muted-foreground">合同金额</span>
+                            <span className="font-medium">¥{(project.total_contract_amount || 0).toLocaleString()}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                        <div>
-                          <span>客户: {project.client}</span>
+                      {formData.projectId === project.id && (
+                        <div className="ml-4 text-primary">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
                         </div>
-                        <div>
-                          <span>截止: {project.deadline}</span>
-                        </div>
-                      </div>
-                      <div className="mt-2">
-                        <div className="flex items-center justify-between text-sm mb-1">
-                          <span className="text-muted-foreground">进度</span>
-                          <span className="font-medium">{project.progress}%</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div 
-                            className="bg-gradient-primary h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${project.progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
+                      )}
                     </div>
-                    {formData.projectId === project.id && (
-                      <div className="ml-4 text-primary">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    )}
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">

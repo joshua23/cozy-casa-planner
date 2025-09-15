@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subMonths, subDays, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from 'date-fns';
+import { secureQuery, secureJoinQuery, getCurrentUser } from '@/utils/secureDataFetch';
 
 // 定义时间过滤类型
 export type TimeFilter = 'month' | 'quarter' | 'year';
@@ -75,40 +76,25 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
     }
   };
 
-  // 获取项目统计数据
+  // 获取项目统计数据（优化版本）
   const getProjectStats = async () => {
     try {
-      // 获取当前用户
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('用户未登录，返回默认项目统计');
-        return {
-          completionRate: 0,
-          projectDistribution: [],
-          totalProjects: 0,
-          completedProjects: 0,
-          inProgressProjects: 0,
-          pendingProjects: 0
-        };
-      }
-
-      // 获取项目数据及其阶段信息
-      const { data: projects, error: projectsError } = await supabase
-        .from('projects')
-        .select(`
+      // 获取项目数据及其阶段信息（使用安全查询）
+      const projects = await secureJoinQuery(
+        'projects',
+        `
           *,
           project_phases (
             phase_name,
             status,
             completion_percentage
           )
-        `)
-        .eq('user_id', user.id);
-
-      if (projectsError) {
-        console.error('获取项目数据失败:', projectsError);
-        throw projectsError;
-      }
+        `,
+        {},
+        {
+          orderBy: { column: 'created_at', ascending: false }
+        }
+      );
 
       console.log('获取到的项目数据（含阶段）:', projects);
 
@@ -243,67 +229,17 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
     }
   };
 
-  // 获取财务统计数据
+  // 获取财务统计数据（优化版本）
   const getFinanceStats = async (filter: TimeFilter) => {
     try {
-      // 获取当前用户
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('用户未登录，返回默认财务统计');
-        return {
-          financeData: [],
-          totalIncome: 0,
-          totalExpense: 0
-        };
-      }
-
-      // 获取财务记录（包含关联的项目信息）
-      // 首先尝试通过user_id获取，如果为空则获取所有记录（处理历史数据）
-      let { data: records, error } = await supabase
-        .from('financial_records')
-        .select(`
-          *,
-          projects (
-            id,
-            name,
-            client_name,
-            user_id
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('transaction_date', { ascending: true });
-
-      // 如果通过user_id查询为空，尝试获取所有财务记录并过滤
-      if (!records || records.length === 0) {
-        console.log('通过user_id查询财务记录为空，尝试获取所有记录...');
-        const { data: allRecords, error: allError } = await supabase
-          .from('financial_records')
-          .select(`
-            *,
-            projects (
-              id,
-              name,
-              client_name,
-              user_id
-            )
-          `)
-          .order('transaction_date', { ascending: true });
-        
-        if (allError) {
-          error = allError;
-        } else {
-          // 过滤属于当前用户的记录（通过项目关联或无user_id的历史记录）
-          records = allRecords?.filter(record => {
-            return !record.user_id || record.user_id === user.id || 
-                   (record.projects && record.projects.user_id === user.id);
-          }) || [];
+      // 使用安全查询获取财务记录
+      const records = await secureQuery(
+        'financial_records',
+        {
+          select: 'transaction_date, transaction_type, amount',
+          orderBy: { column: 'transaction_date', ascending: true }
         }
-      }
-
-      if (error) {
-        console.error('获取财务记录失败:', error);
-        throw error;
-      }
+      );
 
       console.log('获取到的财务记录:', records);
 
@@ -458,40 +394,19 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
     }
   };
 
-  // 获取客户统计数据（基于projects表的client信息）
+  // 获取客户统计数据（优化版本）
   const getClientStats = async () => {
     try {
-      // 获取当前用户
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('用户未登录，返回默认客户统计');
-        return {
-          activeClients: 0,
-          totalClients: 0,
-          potentialCustomers: 0
-        };
-      }
-
-      // 获取正式客户（来自projects表）
-      const { data: projects, error: projectsError } = await supabase
-        .from('projects')
-        .select('client_name, client_phone, client_email, status')
-        .eq('user_id', user.id)
-        .not('client_name', 'is', null);
-
-      if (projectsError) {
-        console.error('获取项目客户失败:', projectsError);
-      }
-
-      // 获取潜在客户（来自customers表，未转化的）
-      const { data: potentialCustomers, error: customersError } = await supabase
-        .from('customers')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (customersError) {
-        console.error('获取潜在客户失败:', customersError);
-      }
+      // 并行获取项目客户和潜在客户数据
+      const [projects, potentialCustomers] = await Promise.all([
+        secureQuery('projects', {
+          select: 'client_name, client_phone, client_email, status',
+          filters: { 'client_name': { not: 'is.null' } }
+        }),
+        secureQuery('customers', {
+          select: '*'
+        })
+      ]);
 
       console.log('获取到的项目客户数据:', projects);
       console.log('获取到的潜在客户数据:', potentialCustomers);
@@ -545,46 +460,13 @@ export function useDashboardStats(timeFilter: TimeFilter = 'month') {
     }
   };
 
-  // 获取工人统计数据
+  // 获取工人统计数据（优化版本）
   const getWorkerStats = async () => {
     try {
-      // 获取当前用户
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('用户未登录，返回默认工人统计');
-        return {
-          workerCount: 0,
-          totalWorkers: 0
-        };
-      }
-
-      // 尝试获取工人数据，处理user_id为null的情况
-      let { data: workers, error } = await supabase
-        .from('workers')
-        .select('*')
-        .eq('user_id', user.id);
-
-      // 如果为空，尝试获取所有工人数据（处理历史数据）
-      if (!workers || workers.length === 0) {
-        console.log('通过user_id查询工人为空，尝试获取所有工人...');
-        const { data: allWorkers, error: allError } = await supabase
-          .from('workers')
-          .select('*');
-        
-        if (allError) {
-          error = allError;
-        } else {
-          // 过滤属于当前用户的工人或无user_id的历史记录
-          workers = allWorkers?.filter(worker => {
-            return !worker.user_id || worker.user_id === user.id;
-          }) || [];
-        }
-      }
-
-      if (error) {
-        console.error('获取工人数据失败:', error);
-        throw error;
-      }
+      // 使用安全查询获取工人数据
+      const workers = await secureQuery('workers', {
+        select: 'status'
+      });
 
       console.log('获取到的工人数据:', workers);
 
