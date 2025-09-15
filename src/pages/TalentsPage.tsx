@@ -163,12 +163,6 @@ export default function TalentsPage() {
                               <span>{talent.phone}</span>
                             </div>
                           )}
-                          {talent.email && (
-                            <div className="flex items-center space-x-1">
-                              <Mail className="w-4 h-4" />
-                              <span>{talent.email}</span>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>

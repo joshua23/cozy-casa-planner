@@ -127,12 +127,6 @@ export default function SuppliersPage() {
                     </div>
                   )}
 
-                  {supplier.email && (
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <Mail className="w-4 h-4" />
-                      <span>{supplier.email}</span>
-                    </div>
-                  )}
 
                   {supplier.notes && (
                     <div className="text-sm text-muted-foreground">

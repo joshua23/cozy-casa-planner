@@ -92,10 +92,6 @@ export default function CustomersPage() {
                             <Phone className="w-4 h-4" />
                             <span>{customer.phone}</span>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <Mail className="w-4 h-4" />
-                            <span>{customer.email}</span>
-                          </div>
                         </div>
                       </div>
                     </div>

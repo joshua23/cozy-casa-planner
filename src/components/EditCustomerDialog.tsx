@@ -11,7 +11,6 @@ import { useCustomers, type Customer } from "@/hooks/useCustomers";
 interface CustomerFormData {
   name: string;
   phone: string;
-  email: string;
   preliminaryBudget: string;
   decorationStyle: string;
   propertyType: string;

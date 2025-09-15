@@ -12,7 +12,6 @@ import { useCustomers } from "@/hooks/useCustomers";
 interface CustomerFormData {
   name: string;
   phone: string;
-  email: string;
   preliminaryBudget: string;
   decorationStyle: string;
   propertyType: string;
@@ -27,7 +26,6 @@ export function AddCustomerDialog() {
   const [formData, setFormData] = useState<CustomerFormData>({
     name: "",
     phone: "",
-    email: "",
     preliminaryBudget: "",
     decorationStyle: "",
     propertyType: "",
@@ -56,7 +54,6 @@ export function AddCustomerDialog() {
       await createCustomer({
         name: formData.name,
         phone: formData.phone,
-        email: formData.email || null,
         preliminary_budget: formData.preliminaryBudget ? parseFloat(formData.preliminaryBudget) : null,
         decoration_style: formData.decorationStyle || null,
         property_type: formData.propertyType || null,
@@ -75,7 +72,6 @@ export function AddCustomerDialog() {
       setFormData({
         name: "",
         phone: "",
-        email: "",
         preliminaryBudget: "",
         decorationStyle: "",
         propertyType: "",
@@ -131,16 +127,6 @@ export function AddCustomerDialog() {
                 onChange={(e) => handleInputChange("phone", e.target.value)}
                 placeholder="请输入联系电话"
                 required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">邮箱地址</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                placeholder="邮箱地址"
               />
             </div>
             <div className="space-y-2">
