@@ -167,7 +167,6 @@ export default function Dashboard() {
               </select>
             </div>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.secondaryStats.map((stat, index) => {
               const icons = [Zap, CheckCircle, Calendar, Users];
