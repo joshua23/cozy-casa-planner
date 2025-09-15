@@ -296,7 +296,7 @@ export default function ProjectsPage() {
 
       {/* Content */}
       <div className="p-6">
-        {selectedProject ? (
+        {false ? (
           // 项目详情视图
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -522,16 +522,6 @@ export default function ProjectsPage() {
                   </div>
 
                   <div className="flex items-center space-x-2 ml-4">
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const dbProject = projects.find(p => p.id === project.id.toString());
-                        if (dbProject) setSelectedProject(dbProject);
-                      }}
-                    >
-                      查看详情
-                    </Button>
                     <EditProjectDialog project={{
                       id: project.id.toString(), // 确保传递string类型的ID
                       name: project.name,

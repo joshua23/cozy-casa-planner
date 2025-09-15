@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, XCircle, PlayCircle, PauseCircle, Clock, Calendar, Edit, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { PaymentNodesManager } from "@/components/PaymentNodesManager";
 import { useProjectPhases } from "@/hooks/useProjectPhases";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -234,9 +235,10 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
         </DialogHeader>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="info">基本信息</TabsTrigger>
             <TabsTrigger value="phases">项目阶段</TabsTrigger>
+            <TabsTrigger value="payments">付款节点</TabsTrigger>
           </TabsList>
           
           <TabsContent value="info" className="space-y-4">
@@ -552,6 +554,15 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          {/* 付款节点编辑 */}
+          <TabsContent value="payments" className="space-y-4">
+            <PaymentNodesManager 
+              projectId={project.id}
+              projectName={project.name}
+              totalContractAmount={project.contractAmount || 0}
+            />
           </TabsContent>
         </Tabs>
       </DialogContent>
