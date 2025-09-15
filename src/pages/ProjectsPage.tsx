@@ -234,24 +234,6 @@ export default function ProjectsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* 付款节点 */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <CreditCard className="w-5 h-5" />
-                    <span>付款节点</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground">暂无付款节点数据</p>
-                </CardContent>
-              </Card>
-
-              {/* 项目进度节点 */}
-              <ProjectGanttChart projectId={selectedProject.id} />
-            </div>
-
             {/* 项目基本信息 */}
             <Card>
               <CardHeader>
@@ -284,12 +266,34 @@ export default function ProjectsPage() {
                     <p className="font-medium text-foreground">{selectedProject.project_address || "未设定"}</p>
                   </div>
                   <div>
+                    <p className="text-sm text-muted-foreground">开始日期</p>
+                    <p className="font-medium text-foreground">{selectedProject.start_date || "未设定"}</p>
+                  </div>
+                  <div>
                     <p className="text-sm text-muted-foreground">截止日期</p>
                     <p className="font-medium text-foreground">{selectedProject.end_date}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* 付款节点 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <CreditCard className="w-5 h-5" />
+                    <span>付款节点</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-muted-foreground">暂无付款节点数据</p>
+                </CardContent>
+              </Card>
+
+              {/* 项目进度节点 */}
+              <ProjectGanttChart projectId={selectedProject.id} />
+            </div>
           </div>
         ) : (
           // 项目列表视图
