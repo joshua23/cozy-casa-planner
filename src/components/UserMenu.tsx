@@ -11,14 +11,28 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { User, LogOut, Settings, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function UserMenu() {
   const { user, signOut, userRoles, hasRole } = useAuth();
+  const navigate = useNavigate();
 
   if (!user) return null;
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+
+  const handleSettingsClick = () => {
+    navigate('/settings');
+  };
+
+  const handleAdminClick = () => {
+    navigate('/admin');
   };
 
   const getRoleColor = (role: string) => {
@@ -70,16 +84,16 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleProfileClick}>
           <User className="mr-2 h-4 w-4" />
           <span>个人资料</span>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSettingsClick}>
           <Settings className="mr-2 h-4 w-4" />
           <span>设置</span>
         </DropdownMenuItem>
         {hasRole('admin') && (
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={handleAdminClick}>
             <Shield className="mr-2 h-4 w-4" />
             <span>系统管理</span>
           </DropdownMenuItem>
