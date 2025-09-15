@@ -131,7 +131,7 @@ export default function WorkersPage() {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">日薪</p>
-                        <p className="font-medium text-foreground">¥{worker.daily_rate || 0}</p>
+                        <p className="font-medium text-foreground">￥{worker.daily_rate || 0}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">专长</p>

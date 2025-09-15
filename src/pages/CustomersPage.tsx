@@ -112,7 +112,7 @@ export default function CustomersPage() {
                         <div className="flex items-center space-x-1">
                           <DollarSign className="w-4 h-4" />
                           <span className="font-medium text-foreground">
-                            {customer.preliminary_budget ? `¥${(customer.preliminary_budget / 10000).toFixed(0)}万` : "待定"}
+                            {customer.preliminary_budget ? `￥${(customer.preliminary_budget / 10000).toFixed(0)}万` : "待定"}
                           </span>
                         </div>
                       </div>
