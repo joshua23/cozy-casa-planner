@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { CheckCircle, XCircle, PlayCircle, PauseCircle, Clock, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useProjectPhases } from "@/hooks/useProjectPhases";
 
 interface ProjectFormData {
   name: string;
@@ -38,7 +44,10 @@ interface EditProjectDialogProps {
 
 export function EditProjectDialog({ project, children }: EditProjectDialogProps) {
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("info");
   const { toast } = useToast();
+  const { phases, loading, updatePhaseStatus, updatePhaseProgress, updatePhaseDates } = useProjectPhases(project.id.toString());
+  
   const [formData, setFormData] = useState<ProjectFormData>({
     name: project.name,
     clientName: project.client,
@@ -84,148 +93,294 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "已完成": return "text-stat-green bg-stat-green/10";
+      case "进行中": return "text-stat-blue bg-stat-blue/10";
+      case "暂停": return "text-stat-orange bg-stat-orange/10";
+      case "未开始": return "text-muted-foreground bg-muted";
+      default: return "text-muted-foreground bg-muted";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "已完成": return <CheckCircle className="w-4 h-4 text-stat-green" />;
+      case "进行中": return <PlayCircle className="w-4 h-4 text-stat-blue" />;
+      case "暂停": return <PauseCircle className="w-4 h-4 text-stat-orange" />;
+      case "未开始": return <XCircle className="w-4 h-4 text-muted-foreground" />;
+      default: return <XCircle className="w-4 h-4 text-muted-foreground" />;
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>编辑项目</DialogTitle>
+          <DialogTitle>编辑项目 - {project.name}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">项目名称 *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                placeholder="请输入项目名称"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="clientName">客户姓名 *</Label>
-              <Input
-                id="clientName"
-                value={formData.clientName}
-                onChange={(e) => handleInputChange("clientName", e.target.value)}
-                placeholder="请输入客户姓名"
-              />
-            </div>
-          </div>
+        
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="info">基本信息</TabsTrigger>
+            <TabsTrigger value="phases">项目阶段</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="info" className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">项目名称 *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    placeholder="请输入项目名称"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="clientName">客户姓名 *</Label>
+                  <Input
+                    id="clientName"
+                    value={formData.clientName}
+                    onChange={(e) => handleInputChange("clientName", e.target.value)}
+                    placeholder="请输入客户姓名"
+                  />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="clientPhone">联系电话</Label>
-              <Input
-                id="clientPhone"
-                value={formData.clientPhone}
-                onChange={(e) => handleInputChange("clientPhone", e.target.value)}
-                placeholder="请输入联系电话"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="projectAddress">项目地址</Label>
-              <Input
-                id="projectAddress"
-                value={formData.projectAddress}
-                onChange={(e) => handleInputChange("projectAddress", e.target.value)}
-                placeholder="请输入项目地址（小区名称、门牌号等）"
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="clientPhone">联系电话</Label>
+                  <Input
+                    id="clientPhone"
+                    value={formData.clientPhone}
+                    onChange={(e) => handleInputChange("clientPhone", e.target.value)}
+                    placeholder="请输入联系电话"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="projectAddress">项目地址</Label>
+                  <Input
+                    id="projectAddress"
+                    value={formData.projectAddress}
+                    onChange={(e) => handleInputChange("projectAddress", e.target.value)}
+                    placeholder="请输入项目地址（小区名称、门牌号等）"
+                  />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="propertyType">户型结构</Label>
-              <Select value={formData.propertyType} onValueChange={(value) => handleInputChange("propertyType", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="选择户型结构" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="一居室">一居室</SelectItem>
-                  <SelectItem value="两居室">两居室</SelectItem>
-                  <SelectItem value="三居室">三居室</SelectItem>
-                  <SelectItem value="四居室">四居室</SelectItem>
-                  <SelectItem value="复式">复式</SelectItem>
-                  <SelectItem value="别墅">别墅</SelectItem>
-                  <SelectItem value="平层">平层</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="decorationStyle">装修风格</Label>
-              <Select value={formData.decorationStyle} onValueChange={(value) => handleInputChange("decorationStyle", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="选择装修风格" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="现代简约">现代简约</SelectItem>
-                  <SelectItem value="中式">中式</SelectItem>
-                  <SelectItem value="欧式">欧式</SelectItem>
-                  <SelectItem value="美式">美式</SelectItem>
-                  <SelectItem value="北欧风">北欧风</SelectItem>
-                  <SelectItem value="地中海">地中海</SelectItem>
-                  <SelectItem value="田园风">田园风</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="propertyType">户型结构</Label>
+                  <Select value={formData.propertyType} onValueChange={(value) => handleInputChange("propertyType", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择户型结构" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="平层">平层</SelectItem>
+                      <SelectItem value="小商品">小商品</SelectItem>
+                      <SelectItem value="别墅">别墅</SelectItem>
+                      <SelectItem value="办公室">办公室</SelectItem>
+                      <SelectItem value="商业空间">商业空间</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="decorationStyle">装修风格</Label>
+                  <Input
+                    id="decorationStyle"
+                    value={formData.decorationStyle}
+                    onChange={(e) => handleInputChange("decorationStyle", e.target.value)}
+                    placeholder="如：现代简约、中式、欧式等"
+                  />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="area">面积 (㎡)</Label>
-              <Input
-                id="area"
-                type="number"
-                value={formData.area}
-                onChange={(e) => handleInputChange("area", e.target.value)}
-                placeholder="请输入面积"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="contractAmount">合同金额 (元) *</Label>
-              <Input
-                id="contractAmount"
-                type="number"
-                value={formData.contractAmount}
-                onChange={(e) => handleInputChange("contractAmount", e.target.value)}
-                placeholder="请输入合同金额"
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="area">面积 (㎡)</Label>
+                  <Input
+                    id="area"
+                    type="number"
+                    value={formData.area}
+                    onChange={(e) => handleInputChange("area", e.target.value)}
+                    placeholder="请输入面积"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contractAmount">合同金额 (元) *</Label>
+                  <Input
+                    id="contractAmount"
+                    type="number"
+                    value={formData.contractAmount}
+                    onChange={(e) => handleInputChange("contractAmount", e.target.value)}
+                    placeholder="请输入合同金额"
+                  />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="startDate">开始日期</Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={formData.startDate}
-                onChange={(e) => handleInputChange("startDate", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="endDate">结束日期</Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={formData.endDate}
-                onChange={(e) => handleInputChange("endDate", e.target.value)}
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="startDate">开始日期</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => handleInputChange("startDate", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="endDate">结束日期</Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => handleInputChange("endDate", e.target.value)}
+                  />
+                </div>
+              </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              取消
-            </Button>
-            <Button type="submit">
-              更新项目
-            </Button>
-          </div>
-        </form>
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                  取消
+                </Button>
+                <Button type="submit">
+                  更新项目
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
+          
+          <TabsContent value="phases" className="space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">项目阶段管理</h3>
+                  <p className="text-sm text-muted-foreground">管理项目的各个阶段进度和状态</p>
+                </div>
+              </div>
+              
+              <Separator />
+              
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <span className="ml-2 text-muted-foreground">加载阶段数据...</span>
+                </div>
+              ) : phases.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  暂无项目阶段数据
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {phases.map((phase, index) => (
+                    <div key={phase.id} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {getStatusIcon(phase.status)}
+                          <div>
+                            <h4 className="font-medium">{phase.phase_name}</h4>
+                            <p className="text-sm text-muted-foreground">{phase.description}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={getStatusColor(phase.status)}>
+                            {phase.status}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            {Math.round(phase.progress)}%
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 进度条 */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">完成进度</span>
+                          <span className="font-medium">{Math.round(phase.progress)}%</span>
+                        </div>
+                        <Progress value={phase.progress} className="h-2" />
+                      </div>
+
+                      {/* 操作区域 */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                        <div className="flex items-center gap-2">
+                          <label className="text-sm text-muted-foreground min-w-fit">状态：</label>
+                          <Select
+                            value={phase.status}
+                            onValueChange={(value) => updatePhaseStatus(phase.id, value)}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="未开始">未开始</SelectItem>
+                              <SelectItem value="进行中">进行中</SelectItem>
+                              <SelectItem value="已完成">已完成</SelectItem>
+                              <SelectItem value="暂停">暂停</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <label className="text-sm text-muted-foreground min-w-fit">进度：</label>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={Math.round(phase.progress)}
+                            onChange={(e) => {
+                              const progress = parseInt(e.target.value);
+                              if (progress >= 0 && progress <= 100) {
+                                updatePhaseProgress(phase.id, progress);
+                              }
+                            }}
+                            className="w-full"
+                          />
+                          <span className="text-sm text-muted-foreground">%</span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="w-4 h-4" />
+                          <span>预计 {phase.estimated_duration} 天</span>
+                          {phase.actual_start_date && (
+                            <span className="ml-2">
+                              • 开始：{new Date(phase.actual_start_date).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 日期设置 */}
+                      <div className="grid grid-cols-2 gap-4 pt-2">
+                        <div className="space-y-2">
+                          <Label className="text-sm">计划开始日期</Label>
+                          <Input
+                            type="date"
+                            value={phase.start_date || ''}
+                            onChange={(e) => updatePhaseDates(phase.id, e.target.value, phase.end_date)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm">计划结束日期</Label>
+                          <Input
+                            type="date"
+                            value={phase.end_date || ''}
+                            onChange={(e) => updatePhaseDates(phase.id, phase.start_date, e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
