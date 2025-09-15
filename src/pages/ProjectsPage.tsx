@@ -11,7 +11,9 @@ import { ProjectGanttChart } from "@/components/ProjectGanttChart";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useProjects, type Project as DBProject } from "@/hooks/useProjects";
-import { useProjectPhases } from "@/hooks/useProjectPhases";
+import { useProjectPhases, ProjectPhase } from "@/hooks/useProjectPhases";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 
 interface PaymentNode {
   type: string;
@@ -48,6 +50,41 @@ export default function ProjectsPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { projects, loading, error } = useProjects();
+  
+  // 为每个项目获取阶段数据
+  const [projectPhases, setProjectPhases] = useState<Record<string, ProjectPhase[]>>({});
+  const [phasesLoading, setPhasesLoading] = useState<Record<string, boolean>>({});
+
+  // 获取所有项目的阶段数据
+  useEffect(() => {
+    const fetchAllPhases = async () => {
+      for (const project of projects) {
+        if (!projectPhases[project.id] && !phasesLoading[project.id]) {
+          setPhasesLoading(prev => ({ ...prev, [project.id]: true }));
+          
+          try {
+            const { data, error } = await supabase
+              .from('project_phases')
+              .select('*')
+              .eq('project_id', project.id)
+              .order('phase_order', { ascending: true });
+
+            if (error) throw error;
+            
+            setProjectPhases(prev => ({ ...prev, [project.id]: data || [] }));
+          } catch (err) {
+            console.error('Error fetching phases for project', project.id, err);
+          } finally {
+            setPhasesLoading(prev => ({ ...prev, [project.id]: false }));
+          }
+        }
+      }
+    };
+
+    if (projects.length > 0) {
+      fetchAllPhases();
+    }
+  }, [projects]);
 
   // 示例数据，用于演示UI结构
   const sampleProjects: Project[] = [
@@ -180,6 +217,7 @@ export default function ProjectsPage() {
       case "已完成": return <CheckCircle className="w-4 h-4 text-stat-green" />;
       case "进行中": return <Clock className="w-4 h-4 text-stat-orange" />;
       case "未开始": return <XCircle className="w-4 h-4 text-muted-foreground" />;
+      case "暂停": return <XCircle className="w-4 h-4 text-stat-red" />;
       default: return <XCircle className="w-4 h-4 text-muted-foreground" />;
     }
   };
@@ -341,8 +379,56 @@ export default function ProjectsPage() {
                     <div className="w-full bg-muted rounded-full h-2 mb-4">
                       <div 
                         className="bg-gradient-primary h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${project.phases.filter(p => p.status as string === '已完成').length / project.phases.length * 100}%` }}
+                        style={{ width: `${projectPhases[project.id]?.filter(p => p.status === '已完成').length / (projectPhases[project.id]?.length || 1) * 100 || 0}%` }}
                       ></div>
+                    </div>
+
+                    {/* 项目阶段详情 */}
+                    <div className="mt-4 space-y-3">
+                      <h4 className="text-sm font-medium text-foreground flex items-center space-x-2">
+                        <span>项目阶段进度</span>
+                        {phasesLoading[project.id] && (
+                          <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                        )}
+                      </h4>
+                      
+                      {projectPhases[project.id] && projectPhases[project.id].length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {projectPhases[project.id].slice(0, 6).map((phase) => (
+                            <div key={phase.id} className="bg-muted/30 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center space-x-2">
+                                  {getPhaseStatusIcon(phase.status)}
+                                  <span className="text-sm font-medium text-foreground">{phase.phase_name}</span>
+                                </div>
+                                <span className="text-xs text-muted-foreground">{Math.round(phase.progress || 0)}%</span>
+                              </div>
+                              <div className="w-full bg-background rounded-full h-1.5">
+                                <div 
+                                  className="bg-gradient-primary h-1.5 rounded-full transition-all duration-300"
+                                  style={{ width: `${phase.progress || 0}%` }}
+                                ></div>
+                              </div>
+                              {phase.start_date && phase.end_date && (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {phase.start_date} ~ {phase.end_date}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                          {projectPhases[project.id].length > 6 && (
+                            <div className="bg-muted/30 rounded-lg p-3 flex items-center justify-center">
+                              <span className="text-sm text-muted-foreground">
+                                还有 {projectPhases[project.id].length - 6} 个阶段...
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground bg-muted/30 rounded-lg p-3 text-center">
+                          {phasesLoading[project.id] ? "加载阶段数据中..." : "暂无阶段数据"}
+                        </div>
+                      )}
                     </div>
                   </div>
 
