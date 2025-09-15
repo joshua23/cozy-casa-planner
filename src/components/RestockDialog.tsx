@@ -146,7 +146,7 @@ export function RestockDialog({ material, children }: RestockDialogProps) {
           {formData.quantity && formData.unitPrice && (
             <div className="bg-primary/10 p-3 rounded-lg">
               <p className="text-sm font-medium">
-                总金额: ¥{(parseFloat(formData.quantity) * parseFloat(formData.unitPrice)).toFixed(2)}
+                总金额: ￥{(parseFloat(formData.quantity) * parseFloat(formData.unitPrice)).toFixed(2)}
               </p>
             </div>
           )}

@@ -230,7 +230,7 @@ export function AddFinanceDialog() {
                 客户：{projects.find(p => p.id === formData.projectId)?.client_name}
               </p>
               <p className="text-sm text-muted-foreground">
-                金额：{formData.transactionType} ¥{formData.amount ? parseFloat(formData.amount).toLocaleString() : '0'}
+                金额：{formData.transactionType} ￥{formData.amount ? parseFloat(formData.amount).toLocaleString() : '0'}
               </p>
             </div>
           )}

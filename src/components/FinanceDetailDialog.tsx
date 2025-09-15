@@ -68,7 +68,8 @@ export function FinanceDetailDialog({ transaction, children }: FinanceDetailDial
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('zh-CN', {
       style: 'currency',
-      currency: 'CNY'
+      currency: 'CNY',
+      currencyDisplay: 'symbol'
     }).format(amount);
   };
 

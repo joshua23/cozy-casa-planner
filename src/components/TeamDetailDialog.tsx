@@ -131,7 +131,7 @@ export function TeamDetailDialog({ team, children }: TeamDetailDialogProps) {
                   <TrendingUp className="w-4 h-4 text-stat-green" />
                   <p className="text-sm text-muted-foreground">总营收</p>
                 </div>
-                <p className="text-xl font-bold text-foreground">¥{(teamDetails.totalRevenue / 10000).toFixed(0)}万</p>
+                <p className="text-xl font-bold text-foreground">￥{(teamDetails.totalRevenue / 10000).toFixed(0)}万</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-4">
                 <div className="flex items-center space-x-2 mb-2">
@@ -218,7 +218,7 @@ export function TeamDetailDialog({ team, children }: TeamDetailDialogProps) {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">营收</p>
-                      <p className="font-medium text-foreground">¥{(month.revenue / 10000).toFixed(0)}万</p>
+                      <p className="font-medium text-foreground">￥{(month.revenue / 10000).toFixed(0)}万</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">项目数</p>

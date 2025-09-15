@@ -219,7 +219,7 @@ export default function AIPage() {
                     <h3 className="font-semibold text-foreground mb-1">{preset.label}</h3>
                     <p className="text-xs text-muted-foreground">{preset.description}</p>
                     <div className="mt-2 text-lg font-bold text-primary">
-                      {calculation.totalArea}㎡ = ¥{(calculation.totalArea * preset.value / 10000).toFixed(1)}万
+                      {calculation.totalArea}㎡ = ￥{(calculation.totalArea * preset.value / 10000).toFixed(1)}万
                     </div>
                   </div>
                 </div>
@@ -392,9 +392,9 @@ export default function AIPage() {
               <div className="bg-gradient-primary text-primary-foreground p-6 rounded-lg">
                 <div className="text-center">
                   <h2 className="text-2xl font-bold mb-2">装修总预算</h2>
-                  <div className="text-4xl font-bold mb-2">¥{(finalTotal / 10000).toFixed(1)}万</div>
+                  <div className="text-4xl font-bold mb-2">￥{(finalTotal / 10000).toFixed(1)}万</div>
                   <p className="text-primary-foreground/80">
-                    平均单价：¥{(finalTotal / calculation.totalArea).toFixed(0)}/㎡
+                    平均单价：￥{(finalTotal / calculation.totalArea).toFixed(0)}/㎡
                   </p>
                 </div>
               </div>
@@ -407,7 +407,7 @@ export default function AIPage() {
                     <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                       <span className="text-foreground">基础装修费用</span>
                       <div className="text-right">
-                        <div className="font-semibold text-foreground">¥{(baseCost / 10000).toFixed(1)}万</div>
+                        <div className="font-semibold text-foreground">￥{(baseCost / 10000).toFixed(1)}万</div>
                         <div className="text-xs text-muted-foreground">{((baseCost / finalTotal) * 100).toFixed(1)}%</div>
                       </div>
                     </div>
@@ -415,7 +415,7 @@ export default function AIPage() {
                       <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                         <span className="text-foreground">户型增项费用</span>
                         <div className="text-right">
-                          <div className="font-semibold text-foreground">¥{(totalAdditions / 10000).toFixed(1)}万</div>
+                          <div className="font-semibold text-foreground">￥{(totalAdditions / 10000).toFixed(1)}万</div>
                           <div className="text-xs text-muted-foreground">{((totalAdditions / finalTotal) * 100).toFixed(1)}%</div>
                         </div>
                       </div>
@@ -460,28 +460,28 @@ export default function AIPage() {
                     onClick={() => handleInputChange("unitPrice", 1500)}
                     className={calculation.unitPrice === 1500 ? "bg-primary text-primary-foreground" : ""}
                   >
-                    ¥1,500/㎡
+                    ￥1,500/㎡
                   </Button>
                   <Button 
                     variant="outline" 
                     onClick={() => handleInputChange("unitPrice", 2000)}
                     className={calculation.unitPrice === 2000 ? "bg-primary text-primary-foreground" : ""}
                   >
-                    ¥2,000/㎡
+                    ￥2,000/㎡
                   </Button>
                   <Button 
                     variant="outline" 
                     onClick={() => handleInputChange("unitPrice", 2500)}
                     className={calculation.unitPrice === 2500 ? "bg-primary text-primary-foreground" : ""}
                   >
-                    ¥2,500/㎡
+                    ￥2,500/㎡
                   </Button>
                   <Button 
                     variant="outline" 
                     onClick={() => handleInputChange("unitPrice", 3000)}
                     className={calculation.unitPrice === 3000 ? "bg-primary text-primary-foreground" : ""}
                   >
-                    ¥3,000/㎡
+                    ￥3,000/㎡
                   </Button>
                 </div>
               </div>

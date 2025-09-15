@@ -149,7 +149,7 @@ export function EditSupplierDialog({ supplier, children }: EditSupplierDialogPro
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
-                placeholder="请输入邮箱地址"
+                placeholder="邮箱"
               />
             </div>
             <div className="space-y-2">

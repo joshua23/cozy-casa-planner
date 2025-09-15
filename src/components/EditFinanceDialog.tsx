@@ -184,6 +184,7 @@ export function EditFinanceDialog({ transaction, children }: EditFinanceDialogPr
                     <p className="text-sm text-muted-foreground">项目：{selectedProject.name}</p>
                     <p className="text-sm text-muted-foreground">客户：{selectedProject.client_name}</p>
                     <p className="text-sm text-muted-foreground">合同金额：¥{selectedProject.total_contract_amount?.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">合同金额：￥{selectedProject.total_contract_amount?.toLocaleString()}</p>
                   </>
                 ) : null;
               })()}

@@ -306,7 +306,7 @@ export default function AuthPage() {
                     type="email"
                     placeholder="请输入邮箱"
                     value={signupForm.email}
-                    onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
+                    placeholder="邮箱"
                     required
                   />
                 </div>
@@ -345,7 +345,7 @@ export default function AuthPage() {
                   <Input
                     id="forgot-email"
                     type="email"
-                    placeholder="请输入注册时使用的邮箱"
+                    placeholder="注册邮箱"
                     value={forgotPasswordForm.email}
                     onChange={(e) => setForgotPasswordForm({ email: e.target.value })}
                     required
