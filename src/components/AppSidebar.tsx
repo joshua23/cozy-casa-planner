@@ -1,16 +1,17 @@
-import { 
-  BarChart3, 
-  FolderOpen, 
-  Users, 
-  Package, 
+import {
+  BarChart3,
+  FolderOpen,
+  Users,
+  Package,
   Store,
-  HardHat, 
-  Users as UsersIcon, 
-  UserCheck, 
+  HardHat,
+  Users as UsersIcon,
+  UserCheck,
   Calculator,
   Bot,
   Building2,
-  Shield
+  Shield,
+  UserCog
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -46,6 +47,7 @@ const menuItems = [
 
 const adminItems = [
   { title: "系统管理", url: "/admin", icon: Shield },
+  { title: "用户管理", url: "/users", icon: UserCog },
 ];
 
 export function AppSidebar() {

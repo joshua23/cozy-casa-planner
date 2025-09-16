@@ -9,15 +9,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  Shield, 
-  Users, 
-  UserPlus, 
-  Edit, 
-  Trash2, 
+import { CreateUserDialog } from "@/components/CreateUserDialog";
+import {
+  Shield,
+  Users,
+  UserPlus,
+  Edit,
+  Trash2,
   Search,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Key
 } from "lucide-react";
 import { 
   AlertDialog,
@@ -53,6 +55,7 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [assignEmail, setAssignEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("");
+  const [createUserDialogOpen, setCreateUserDialogOpen] = useState(false);
 
   // 权限检查
   if (!hasRole('admin')) {
@@ -243,12 +246,18 @@ export default function AdminPage() {
               <Shield className="h-6 w-6" />
               系统管理
             </h1>
-            <p className="text-muted-foreground">管理用户角色和权限</p>
+            <p className="text-muted-foreground">管理用户账号、角色和权限</p>
           </div>
-          <Button onClick={fetchUsers} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            刷新
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setCreateUserDialogOpen(true)}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              创建用户
+            </Button>
+            <Button onClick={fetchUsers} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              刷新
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -457,6 +466,13 @@ export default function AdminPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Create User Dialog */}
+      <CreateUserDialog
+        open={createUserDialogOpen}
+        onOpenChange={setCreateUserDialogOpen}
+        onSuccess={fetchUsers}
+      />
     </div>
   );
 }
