@@ -21,6 +21,7 @@ import AIPage from "./pages/AIPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import AdminPage from "./pages/AdminPage";
+import UserManagementPage from "./pages/UserManagementPage";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -87,6 +88,7 @@ const App = () => (
               <Route path="profile" element={<ProfilePage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="admin" element={<AdminPage />} />
+              <Route path="users" element={<UserManagementPage />} />
             </Route>
             {/* 404页面 */}
             <Route path="*" element={<NotFound />} />
